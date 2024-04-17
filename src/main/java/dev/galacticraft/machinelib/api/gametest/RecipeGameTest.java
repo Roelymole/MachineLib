@@ -24,10 +24,12 @@ package dev.galacticraft.machinelib.api.gametest;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import dev.galacticraft.machinelib.api.gametest.annotation.MachineTest;
+import dev.galacticraft.machinelib.api.gametest.recipe.IngredientSupplier;
 import dev.galacticraft.machinelib.api.machine.MachineType;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestGenerator;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Items;
@@ -47,40 +49,31 @@ import java.util.List;
  * @see RecipeMachineBlockEntity
  */
 public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> extends MachineGameTest<Machine> {
-    private final int inputSlotsStart;
-    private final int inputSlotsLength;
     private final int outputSlotsStart;
     private final int outputSlotsLength;
+    protected final int recipeRuntime;
 
-    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, int inputSlot, int outputSlot) {
-        this(type, inputSlot, 1, outputSlot);
+    private final List<IngredientSupplier<C, R, Machine>> conditions;
+
+    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, List<IngredientSupplier<C, R, Machine>> conditions, int recipeRuntime) {
+        this(type, conditions, -1, 0, recipeRuntime);
     }
 
-    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, int inputSlotsStart, int inputSlotsLength, int outputSlot) {
-        this(type, inputSlotsStart, inputSlotsLength, outputSlot, 1);
+    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, List<IngredientSupplier<C, R, Machine>> conditions, int outputSlot, int recipeRuntime) {
+        this(type, conditions, outputSlot, 1, recipeRuntime);
     }
 
-    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, int inputSlotsStart, int inputSlotsLength, int outputSlotsStart, int outputSlotsLength) {
+    protected RecipeGameTest(@NotNull MachineType<Machine, ?> type, List<IngredientSupplier<C, R, Machine>> conditions, int outputSlotsStart, int outputSlotsLength, int recipeRuntime) {
         super(type);
 
-        this.inputSlotsStart = inputSlotsStart;
-        this.inputSlotsLength = inputSlotsLength;
         this.outputSlotsStart = outputSlotsStart;
         this.outputSlotsLength = outputSlotsLength;
+        this.recipeRuntime = recipeRuntime;
+        this.conditions = conditions;
     }
-
-    protected abstract void fulfillRunRequirements(@NotNull Machine machine);
-    protected abstract int getRecipeRuntime();
-    protected abstract void createValidRecipe(@NotNull MachineItemStorage storage);
 
     protected boolean anyRecipeCrafted(@NotNull MachineItemStorage storage) {
         return !storage.isEmpty(this.outputSlotsStart, this.outputSlotsLength);
-    }
-
-    protected void createInvalidRecipe(@NotNull MachineItemStorage storage) {
-        for (int i = 0; i < this.inputSlotsLength; i++) {
-            storage.getSlot(this.inputSlotsStart + i).set(Items.BARRIER, 1);
-        }
     }
 
     protected void fillOutputSlots(@NotNull MachineItemStorage storage) {
@@ -89,10 +82,15 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
         }
     }
 
-    @MachineTest(group = "recipe", workTime = 1)
+    protected void fulfillRunConditions(Machine machine) {
+        for (IngredientSupplier<C, R, Machine> condition : this.conditions) {
+            condition.fulfillRunRequirements(machine);
+        }
+    }
+
+    @MachineTest(group = "recipe")
     public Runnable initialize(Machine machine) {
-        this.fulfillRunRequirements(machine);
-        this.createValidRecipe(machine.itemStorage());
+        this.fulfillRunConditions(machine);
         return () -> {
             if (machine.getActiveRecipe() == null) {
                 throw new GameTestAssertException("Failed to find recipe!");
@@ -100,22 +98,11 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
         };
     }
 
-    @MachineTest(group = "recipe", workTime = 1)
-    public Runnable invalid(Machine machine) {
-        this.fulfillRunRequirements(machine);
-        this.createInvalidRecipe(machine.itemStorage());
-        return () -> {
-            if (machine.getActiveRecipe() != null) {
-                throw new GameTestAssertException("Crafting something despite recipe being invalid!");
-            }
-        };
-    }
-
-    @MachineTest(group = "recipe", workTime = 1)
+    @MachineTest(group = "recipe")
     public Runnable full(Machine machine) {
-        this.fulfillRunRequirements(machine);
+        this.fulfillRunConditions(machine);
         this.fillOutputSlots(machine.itemStorage());
-        this.createValidRecipe(machine.itemStorage());
+
         return () -> {
             if (machine.getActiveRecipe() != null) {
                 throw new GameTestAssertException("Crafting something despite the output being full!");
@@ -123,36 +110,35 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
         };
     }
 
-    @MachineTest(group = "recipe", workTime = 1)
-    public Runnable craft(Machine machine) {
-        this.fulfillRunRequirements(machine);
-        this.fillOutputSlots(machine.itemStorage());
-        this.createValidRecipe(machine.itemStorage());
-        return () -> {
-            if (machine.getActiveRecipe() != null) {
-                throw new GameTestAssertException("Crafting something despite the output being full!");
+    protected void tryCraft(GameTestHelper helper) {
+        Machine machine = createMachine(helper);
+
+        fulfillRunConditions(machine);
+
+        helper.runAfterDelay(this.recipeRuntime, () -> {
+            if (!this.anyRecipeCrafted(machine.itemStorage())) {
+                helper.fail("Failed to craft recipe!", machine.getBlockPos());
+            } else {
+                helper.succeed();
             }
-        };
+        });
     }
 
-//    @InstantTest(group = "recipe")
-//    public Runnable recipeNoResources(Machine machine) {
-//        this.createValidRecipe(machine.itemStorage());
-//        return () -> {
-//            if (machine.getMaxProgress() != 0) { //fixme: recipe detection works differently
-//                throw new GameTestAssertException("Machine is crafting a recipe, despite not having relevant resources (e.g. energy)!");
-//            }
-//        };
-//    }
+    protected void tryCraftPartial(GameTestHelper helper, int ignored) {
+        Machine machine = createMachine(helper);
 
-    @MachineTest(group = "recipe", workTime = 1)
-    public Runnable resourcesNoRecipe(Machine machine) {
-        this.fulfillRunRequirements(machine);
-        return () -> {
-            if (machine.getActiveRecipe() != null) {
-                throw new GameTestAssertException("Machine is doing something, despite not having a recipe!");
+        for (int i = 0; i < this.conditions.size(); i++) {
+            if (i == ignored) continue;
+            this.conditions.get(i).fulfillRunRequirements(machine);
+        }
+
+        helper.runAfterDelay(this.recipeRuntime, () -> {
+            if (this.anyRecipeCrafted(machine.itemStorage())) {
+                helper.fail("Partial recipe %s crafted!".formatted(ignored), machine.getBlockPos());
+            } else {
+                helper.succeed();
             }
-        };
+        });
     }
 
     @Override
@@ -161,18 +147,12 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
     public @NotNull List<TestFunction> registerTests() {
         List<TestFunction> tests = super.registerTests();
         // variable runtime
-        tests.add(this.createTest("recipe", "craft", STRUCTURE_3x3, this.getRecipeRuntime(), 1, helper -> {
-            Machine machine = createMachine(helper);
-            this.fulfillRunRequirements(machine);
-            this.createValidRecipe(machine.itemStorage());
-            helper.runAfterDelay(this.getRecipeRuntime(), () -> {
-                if (!this.anyRecipeCrafted(machine.itemStorage())) {
-                    helper.fail("Failed to craft recipe!", machine.getBlockPos());
-                } else {
-                    helper.succeed();
-                }
-            });
-        }));
+        tests.add(this.createTest("recipe", "craft", STRUCTURE_3x3, this.recipeRuntime, 1, this::tryCraft));
+
+        for (int i = 0; i < this.conditions.size(); i++) {
+            int finalI = i;
+            tests.add(this.createTest("recipe", "craft.partial." + i, STRUCTURE_3x3, this.recipeRuntime, 1, helper -> this.tryCraftPartial(helper, finalI)));
+        }
         return tests;
     }
 }

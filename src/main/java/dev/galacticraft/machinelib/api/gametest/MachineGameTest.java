@@ -26,12 +26,16 @@ import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.gametest.annotation.BasicTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.MachineTest;
 import dev.galacticraft.machinelib.api.machine.MachineType;
+import dev.galacticraft.machinelib.impl.gametest.GameTestUtils;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestGenerator;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,12 +76,20 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
                 tests.add(this.createTest(machineTest.batch(), machineTest.group(), method.getName(), machineTest.structure(), machineTest.workTime(), machineTest.setupTime(), helper -> {
                     Machine machine = this.createMachine(helper);
 
-                    Runnable runnable = this.invokeTestMethod(method, machine, helper);
-                    if (runnable != null) {
-                        helper.runAfterDelay(machineTest.workTime(), () -> {
-                            runnable.run();
-                            helper.succeed();
-                        });
+                    try {
+                        Runnable runnable = GameTestUtils.invokeUnorderedArguments(this, method, machine, helper, new MachineTestContext(MACHINE_POS, helper));
+                        if (runnable != null) {
+                            helper.runAfterDelay(machineTest.workTime(), () -> {
+                                try {
+                                    runnable.run();
+                                    helper.succeed();
+                                } catch (AssertionError e) {
+                                    GameTestUtils.unwrapAssertions(helper, MACHINE_POS, e, machineTest.captureAssertions());
+                                }
+                            });
+                        }
+                    } catch (AssertionError e) {
+                        GameTestUtils.unwrapAssertions(helper, MACHINE_POS, e, machineTest.captureAssertions());
                     }
                 }));
             }
@@ -86,10 +98,10 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
         return tests;
     }
 
-    public TestFunction createChargeFromEnergyItemTest(int slot, Item infiniteBattery) {
+    public TestFunction createChargeFromEnergyItemTest(int slot, Item energyProvider) {
         return this.createTest("chargeFromItem", STRUCTURE_3x3, 2, 1, helper -> {
             Machine machine = this.createMachine(helper);
-            machine.itemStorage().getSlot(slot).set(infiniteBattery, 1);
+            machine.itemStorage().getSlot(slot).set(energyProvider, 1);
             helper.runAfterDelay(1, () -> {
                 if (machine.energyStorage().isEmpty()) {
                     helper.fail("Machine did not charge from the stack!", machine.getBlockPos());
@@ -100,16 +112,47 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
         });
     }
 
-    public TestFunction createDrainToEnergyItemTest(int slot, Item battery) {
+    public TestFunction createDrainToEnergyItemTest(int slot, Item energyConsumer) {
         return this.createTest("drainToItem", STRUCTURE_3x3, 2, 1, helper -> {
             Machine machine = this.createMachine(helper);
 
             machine.energyStorage().setEnergy(machine.energyStorage().getCapacity());
-            machine.itemStorage().getSlot(slot).set(battery, 1);
+            machine.itemStorage().getSlot(slot).set(energyConsumer, 1);
 
             helper.runAfterDelay(1, () -> {
                 if (machine.energyStorage().isFull()) {
                     helper.fail("Machine did not drain energy to the stack!", BlockPos.ZERO);
+                } else {
+                    helper.succeed();
+                }
+            });
+        });
+    }
+
+    public TestFunction createTakeFromFluidItemTest(int slot, Item fluidProvider, int tank) {
+        return this.createTest("takeFluidFromItem", STRUCTURE_3x3, 2, 1, helper -> {
+            Machine machine = this.createMachine(helper);
+            machine.itemStorage().getSlot(slot).set(fluidProvider, 1);
+            helper.runAfterDelay(1, () -> {
+                if (machine.fluidStorage().getSlot(tank).isEmpty()) {
+                    helper.fail("Machine did not take fluid from the stack!", machine.getBlockPos());
+                } else {
+                    helper.succeed();
+                }
+            });
+        });
+    }
+
+    public TestFunction createDrainFluidIntoItemTest(int slot, Fluid fluid, int tank) {
+        return this.createTest("drainFluidIntoItem", STRUCTURE_3x3, 2, 1, helper -> {
+            Machine machine = this.createMachine(helper);
+
+            machine.fluidStorage().getSlot(tank).set(fluid, FluidConstants.BUCKET);
+            machine.itemStorage().getSlot(slot).set(Items.BUCKET, 1);
+
+            helper.runAfterDelay(1, () -> {
+                if (machine.energyStorage().isFull()) {
+                    helper.fail("Machine did not drain fluid into the stack!", BlockPos.ZERO);
                 } else {
                     helper.succeed();
                 }

@@ -46,10 +46,10 @@ val isCI = System.getenv().getOrDefault("CI", "false") == "true";
 plugins {
     java
     `maven-publish`
-    id("fabric-loom") version("1.5-SNAPSHOT")
+    id("fabric-loom") version("1.6-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
     id("org.ajoberstar.grgit") version("5.2.1")
-    id("dev.galacticraft.mojarn") version("0.1.1")
+    id("dev.galacticraft.mojarn") version("0.1.2")
 }
 
 group = "dev.galacticraft"

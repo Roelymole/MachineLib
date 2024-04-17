@@ -25,14 +25,17 @@ package dev.galacticraft.machinelib.api.gametest;
 import dev.galacticraft.machinelib.api.gametest.annotation.BasicTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.MachineTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.TestSuite;
+import dev.galacticraft.machinelib.impl.gametest.GameTestUtils;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.gametest.framework.*;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestGenerator;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.world.level.block.Rotation;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +46,6 @@ import java.util.function.Consumer;
  * @see MachineTest
  */
 public abstract class SimpleGameTest implements FabricGameTest {
-    private static final char SEPARATOR = '.';
     public static final String STRUCTURE_3x3 = "machinelib:3x3";
 
     @MustBeInvokedByOverriders
@@ -55,7 +57,7 @@ public abstract class SimpleGameTest implements FabricGameTest {
             BasicTest basicTest = method.getAnnotation(BasicTest.class);
             if (basicTest != null) {
                 tests.add(this.createTest(basicTest.batch(), basicTest.group(), method.getName(), basicTest.structure(), basicTest.workTime(), basicTest.setupTime(), helper -> {
-                    Runnable runnable = this.invokeTestMethod(method, helper);
+                    Runnable runnable = GameTestUtils.invokeUnorderedArguments(this, method, helper);
                     if (runnable == null) {
                         if (basicTest.workTime() == 1) helper.succeed();
                     } else {
@@ -83,49 +85,6 @@ public abstract class SimpleGameTest implements FabricGameTest {
         if (method.getAnnotation(GameTest.class) != null) FabricGameTest.super.invokeTestMethod(context, method);
     }
 
-    private static String generateTestName(@Nullable String batch, @Nullable String group, @NotNull String name) {
-        if (batch == null || batch.isBlank() || batch.equals("defaultBatch")) {
-            if (group == null || group.isBlank()) return name;
-            return group + SEPARATOR + name;
-        }
-        if (group == null || group.isBlank()) return batch + SEPARATOR + name;
-        return batch + SEPARATOR + group + SEPARATOR + name;
-    }
-
-    protected <T> T invokeTestMethod(Method method, Object... args) {
-        method.setAccessible(true);
-
-        try {
-            int params = method.getParameters().length;
-            if (params > args.length) throw new IllegalArgumentException("Invalid number of arguments!");
-            if (params < args.length) {
-                Object[] newArgs = new Object[params];
-                System.arraycopy(args, 0, newArgs, 0, params);
-                args = newArgs;
-            }
-
-            return (T) method.invoke(this, args);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to invoke test method!", e);
-        } catch (InvocationTargetException t) {
-            Throwable inner = t;
-            while (inner != null) {
-                if (inner instanceof GameTestAssertException) {
-                    throw (GameTestAssertException) inner;
-                }
-                inner = inner.getCause();
-            }
-
-            if (t.getCause() instanceof RuntimeException rt){
-                throw rt;
-            } else {
-                throw new RuntimeException(t);
-            }
-        } catch (ClassCastException ex) {
-            throw new RuntimeException("Failed to cast test method return value!", ex);
-        }
-    }
-
     protected TestFunction createTest(String name, String structure, int ticks, int setupTicks, Consumer<GameTestHelper> test) {
         return this.createTest(null, name, structure, ticks, setupTicks, test);
     }
@@ -137,7 +96,7 @@ public abstract class SimpleGameTest implements FabricGameTest {
     protected TestFunction createTest(@Nullable String batch, @Nullable String group, String name, String structure, int ticks, int setupTicks, Consumer<GameTestHelper> test) {
         return new TestFunction(
                 batch == null || batch.isBlank() ? this.getTestBatch() : batch,
-                generateTestName(batch == null || batch.isBlank() ? this.getTestBatch() : batch, group, name),
+                GameTestUtils.generateTestName(batch == null || batch.isBlank() ? this.getTestBatch() : batch, group, name),
                 structure,
                 Rotation.NONE,
                 ticks,

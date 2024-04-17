@@ -20,30 +20,13 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.api.gametest.annotation;
+package dev.galacticraft.machinelib.api.gametest.recipe;
 
-import dev.galacticraft.machinelib.api.gametest.SimpleGameTest;
+import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.Recipe;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * Represents a test that has to wait a specified number of ticks for results.
- * Annotated methods should have initial setup in their body,
- * and return a {@link Runnable} that verifies state at the end.
- */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface MachineTest {
-    String batch() default "";
-    String group() default "";
-    String structure() default SimpleGameTest.STRUCTURE_3x3;
-
-    int setupTime() default 1;
-
-    int workTime() default 1;
-
-    boolean captureAssertions() default true;
+@FunctionalInterface
+public interface IngredientSupplier<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> {
+    void fulfillRunRequirements(Machine machine);
 }
