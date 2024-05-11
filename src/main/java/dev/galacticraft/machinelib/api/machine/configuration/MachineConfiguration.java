@@ -61,17 +61,17 @@ public interface MachineConfiguration extends Deserializable<CompoundTag>, MenuS
     @NotNull SecuritySettings getSecurity();
 
     /**
-     * Returns the redstone mode of the machine.
+     * Returns the redstone level of the machine.
      *
-     * @return The redstone mode of the machine.
+     * @return The redstone level of the machine.
      */
     @Contract(pure = true)
     @NotNull RedstoneMode getRedstoneMode();
 
     /**
-     * Sets the redstone mode of the machine.
+     * Sets the redstone level of the machine.
      *
-     * @param redstone The redstone mode of the machine.
+     * @param redstone The redstone level of the machine.
      */
     @Contract(mutates = "this")
     void setRedstoneMode(@NotNull RedstoneMode redstone);

@@ -41,14 +41,12 @@ val rei = project.property("rei.version").toString()
 val architectury = project.property("architectury.version").toString()
 val wthit = project.property("wthit.version").toString()
 
-val isCI = System.getenv().getOrDefault("CI", "false") == "true";
-
 plugins {
     java
     `maven-publish`
     id("fabric-loom") version("1.6-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
-    id("org.ajoberstar.grgit") version("5.2.1")
+    id("org.ajoberstar.grgit") version("5.2.2")
     id("dev.galacticraft.mojarn") version("0.1.2")
 }
 
@@ -79,8 +77,8 @@ println("$modName: $version")
 base.archivesName.set(modName)
 
 java {
-    targetCompatibility = JavaVersion.VERSION_17
-    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_21
 
     withSourcesJar()
     withJavadocJar()
@@ -132,11 +130,6 @@ loom {
 }
 
 repositories {
-    maven("https://maven.parchmentmc.org") {
-        content {
-            includeGroup("org.parchmentmc.data")
-        }
-    }
     maven("https://maven.terraformersmc.com/releases") {
         content {
             includeGroup("com.terraformersmc")
@@ -159,11 +152,7 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
-    mappings(if (!isCI && yarn.isNotEmpty()) {
-        mojarn.mappings("net.fabricmc:yarn:$minecraft+build.$yarn:v2")
-    } else {
-        loom.officialMojangMappings()
-    })
+    mappings(mojarn.mappings("net.fabricmc:yarn:$minecraft+build.$yarn:v2"))
     modImplementation("net.fabricmc:fabric-loader:$loader")
     testImplementation("net.fabricmc:fabric-loader-junit:$loader")
 

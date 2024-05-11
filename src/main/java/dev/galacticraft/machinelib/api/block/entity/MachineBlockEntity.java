@@ -27,10 +27,7 @@ import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
-import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
+import dev.galacticraft.machinelib.api.machine.configuration.*;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.misc.AdjacentBlockApiCache;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
@@ -45,9 +42,10 @@ import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
+import dev.galacticraft.machinelib.impl.machine.MachineIOConfigImpl;
+import dev.galacticraft.machinelib.impl.machine.MachineStateImpl;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -56,8 +54,9 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -67,7 +66,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -95,7 +93,7 @@ import java.util.Set;
  * @see MachineMenu
  * @see MachineScreen
  */
-public abstract class MachineBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory, RenderDataBlockEntity {
+public abstract class MachineBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<RegistryFriendlyByteBuf>, RenderDataBlockEntity {
     /**
      * The {@link MachineType type} of this machine.
      * It controls the storage configurations and applicable statuses for this machine.
@@ -210,7 +208,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         this.name = name;
 
         this.configuration = MachineConfiguration.create();
-        this.state = MachineState.create();
+
+        this.state = new InternalMachineState();
 
         this.energyStorage = type.createEnergyStorage();
         this.energyStorage.setListener(this::setChanged);
@@ -284,14 +283,15 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     /**
-     * Sets the redstone mode mode of this machine.
+     * Sets the redstone level level of this machine.
      *
-     * @param redstone the redstone mode mode to use.
+     * @param redstone the redstone level level to use.
      * @see #getRedstoneMode()
      */
     @Contract(mutates = "this")
-    public void setRedstone(@NotNull RedstoneMode redstone) {
-        this.configuration.setRedstoneMode(redstone);
+    public void setRedstoneMode(@NotNull RedstoneMode redstone) {
+        this.redstone = redstone;
+        this.setChanged();
     }
 
     /**
@@ -345,7 +345,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      *
      * @return how the machine reacts when it interacts with redstone.
      * @see RedstoneMode
-     * @see #setRedstone(RedstoneMode)
+     * @see #setRedstoneMode(RedstoneMode)
      */
     @Contract(pure = true)
     public final @NotNull RedstoneMode getRedstoneMode() {
@@ -566,6 +566,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@Nullable BlockFace face) {
+        if (face == null) return this.createExposedItemStorage(ResourceFlow.BOTH);
         return this.getIOConfig().get(face).getExposedItemStorage(this::createExposedItemStorage);
     }
 
@@ -606,6 +607,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@Nullable BlockFace face) {
+        if (face == null) return this.createExposedFluidStorage(ResourceFlow.BOTH);
         return this.getIOConfig().get(face).getExposedFluidStorage(this::createExposedFluidStorage);
     }
 
@@ -619,8 +621,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * @param nbt the nbt to serialize to.
      */
     @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider lookup) {
+        super.saveAdditional(nbt, lookup);
         nbt.put(Constant.Nbt.ENERGY_STORAGE, this.energyStorage.createTag());
         nbt.put(Constant.Nbt.ITEM_STORAGE, this.itemStorage.createTag());
         nbt.put(Constant.Nbt.FLUID_STORAGE, this.fluidStorage.createTag());
@@ -635,8 +637,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * @param nbt the nbt to deserialize from.
      */
     @Override
-    public void load(CompoundTag nbt) {
-        super.load(nbt);
+    public void loadAdditional(CompoundTag nbt, HolderLookup.Provider lookup) {
+        super.loadAdditional(nbt, lookup);
         if (nbt.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND))
             this.configuration.readTag(nbt.getCompound(Constant.Nbt.CONFIGURATION));
         if (nbt.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
@@ -773,7 +775,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayer player, @NotNull FriendlyByteBuf buf) {
+    public RegistryFriendlyByteBuf getScreenOpeningData(ServerPlayer player) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.server.registryAccess());
         if (!this.getSecurity().hasAccess(player)) {
             MachineLib.LOGGER.error("Player {} has illegally accessed machine at {}", player.getStringUUID(), this.worldPosition);
         }
@@ -784,6 +787,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         this.energyStorage.writePacket(buf);
         this.itemStorage.writePacket(buf);
         this.fluidStorage.writePacket(buf);
+
+        return buf;
     }
 
     @Override
@@ -802,7 +807,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
         CompoundTag tag = new CompoundTag();
         tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
         return tag;
@@ -820,6 +825,24 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
             if (optional.isPresent()) {
                 player.awardRecipes(Collections.singleton(optional.get()));
                 player.triggerRecipeCrafted(optional.get(), Collections.emptyList());
+            }
+        }
+    }
+
+    private class InternalMachineState extends MachineStateImpl {
+        @Override
+        public void setStatus(@Nullable MachineStatus status) {
+            if (this.status != status) {
+                this.status = status;
+                MachineBlockEntity.this.setChanged();
+            }
+        }
+
+        @Override
+        public void setPowered(boolean powered) {
+            if (this.powered != powered) {
+                this.powered = powered;
+                MachineBlockEntity.this.setChanged();
             }
         }
     }

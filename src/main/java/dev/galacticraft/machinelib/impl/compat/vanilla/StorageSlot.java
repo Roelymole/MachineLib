@@ -98,7 +98,7 @@ public class StorageSlot extends Slot {
         if (this.watchModCount == this.slot.getModifications()) {
             assert this.watchedStack != null;
             if (this.watchedStack.getCount() != this.slot.getAmount()
-                    || !Utils.tagsEqual(this.watchedStack.getTag(), this.slot.getTag())
+                    || !Utils.componentsEqual(this.watchedStack.getTag(), this.slot.getTag())
                     || !Utils.itemsEqual(this.slot.getResource(), this.watchedStack.getItem())
             ) {
                 if (true) throw new AssertionError();

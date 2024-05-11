@@ -23,12 +23,16 @@
 package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Dictates how a machine behaves when it interacts with redstone.
@@ -50,14 +54,15 @@ public enum RedstoneMode implements StringRepresentable {
     HIGH(Component.translatable(Constant.TranslationKey.HIGH_REDSTONE).setStyle(Constant.Text.RED_STYLE));
 
     public static final RedstoneMode[] VALUES = RedstoneMode.values();
+    public static final StreamCodec<ByteBuf, RedstoneMode> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : VALUES[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
-     * The text of the redstone mode state.
+     * The text of the redstone level state.
      */
     private final @NotNull Component name;
 
     /**
-     * Constructs a redstone mode type with the given text.
+     * Constructs a redstone level type with the given text.
      *
      * @param name the name of the interaction.
      */
@@ -75,20 +80,21 @@ public enum RedstoneMode implements StringRepresentable {
     }
 
     /**
-     * Deserializes an redstone mode from NBT.
+     * Deserializes an redstone level from NBT.
      *
      * @param tag the NBT.
-     * @return the redstone mode.
+     * @return the redstone level.
      * @see #createTag()
      */
-    public static @NotNull RedstoneMode readTag(@NotNull ByteTag tag) {
+    public static @NotNull RedstoneMode readTag(@Nullable ByteTag tag) {
+        if (tag == null || tag.getAsByte() < 0 || tag.getAsByte() >= VALUES.length) return IGNORE;
         return VALUES[tag.getAsByte()];
     }
 
     /**
-     * Deserializes an redstone mode from a packet.
+     * Deserializes an redstone level from a packet.
      * @param buf the buffer to read from
-     * @return the redstone mode
+     * @return the redstone level
      * @see #writePacket(FriendlyByteBuf)
      */
     public static @NotNull RedstoneMode readPacket(@NotNull FriendlyByteBuf buf) {
@@ -96,9 +102,9 @@ public enum RedstoneMode implements StringRepresentable {
     }
 
     /**
-     * Returns the name of the redstone mode state.
+     * Returns the name of the redstone level state.
      *
-     * @return The text of the redstone mode state.
+     * @return The text of the redstone level state.
      */
     @Contract(pure = true)
     public @NotNull Component getName() {
@@ -117,7 +123,7 @@ public enum RedstoneMode implements StringRepresentable {
 
     /**
      * Serializes this state as a NBT.
-     * @return this redstone mode as a tag.
+     * @return this redstone level as a tag.
      * @see #readTag(ByteTag)
      */
     public @NotNull ByteTag createTag() {

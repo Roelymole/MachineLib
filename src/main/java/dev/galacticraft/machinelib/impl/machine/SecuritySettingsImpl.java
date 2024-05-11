@@ -42,7 +42,7 @@ import java.util.UUID;
  * Represents a security setting of a machine.
  */
 @ApiStatus.Internal
-public final class SecuritySettingsImpl implements SecuritySettings {
+public class SecuritySettingsImpl implements SecuritySettings {
     /**
      * The profile of the player who owns the linked machine.
      */

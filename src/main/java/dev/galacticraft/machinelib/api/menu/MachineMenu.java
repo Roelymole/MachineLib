@@ -26,6 +26,7 @@ import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineType;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
+import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
@@ -36,18 +37,30 @@ import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
+import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.client.api.screen.Tank;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import lol.bai.badpackets.api.PacketSender;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -57,6 +70,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.*;
 
 import java.util.ArrayList;
@@ -72,6 +86,20 @@ import java.util.function.Supplier;
  * @param <Machine> The type of machine block entity this menu is linked to.
  */
 public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractContainerMenu {
+    public static final StreamCodec<RegistryFriendlyByteBuf, RegistryFriendlyByteBuf> BUF_IDENTITY_CODEC = new StreamCodec<>() {
+        @Override
+        public void encode(RegistryFriendlyByteBuf src, RegistryFriendlyByteBuf dst) {
+            dst.writeBytes(src);
+        }
+
+        @Override
+        public RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
+            RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(src.capacity()), src.registryAccess());
+            buf.writeBytes(src);
+            return src;
+        }
+    };
+
     /**
      * The machine type associated with this menu.
      */
@@ -210,7 +238,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * @param inventory The inventory of the player interacting with this menu.
      * @param type      The type of menu this is.
      */
-    protected MachineMenu(int syncId, @NotNull Inventory inventory, @NotNull FriendlyByteBuf buf, int invX, int invY, @NotNull MachineType<Machine, ? extends MachineMenu<Machine>> type) {
+    protected MachineMenu(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY, @NotNull MachineType<Machine, ? extends MachineMenu<Machine>> type) {
         super(type.getMenuType(), syncId);
 
         this.type = type;
@@ -274,7 +302,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static <Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> @NotNull MenuType<Menu> createType(@NotNull MachineMenuFactory<Machine, Menu> factory, Supplier<MachineType<Machine, Menu>> typeSupplier) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> factory.create(syncId, inventory, buf, typeSupplier.get()));
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> factory.create(syncId, inventory, buf, typeSupplier.get()), BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -287,7 +315,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_ -> new", pure = true)
     public static <Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> @NotNull MenuType<Menu> createType(@NotNull BasicMachineMenuFactory<Machine, Menu> factory) {
-        return new ExtendedScreenHandlerType<>(factory::create);
+        return new ExtendedScreenHandlerType<>(factory::create, BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -301,7 +329,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static <Machine extends MachineBlockEntity> @NotNull MenuType<MachineMenu<Machine>> createSimple(int invX, int invY, Supplier<MachineType<Machine, MachineMenu<Machine>>> typeSupplier) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new MachineMenu<>(syncId, inventory, buf, invX, invY, typeSupplier.get()));
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new MachineMenu<>(syncId, inventory, buf, invX, invY, typeSupplier.get()), BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -381,7 +409,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
             long insert = stack1.getCount();
             for (StorageSlot slot1 : this.machineSlots) {
-                if (slot1.getSlot().inputType().playerInsertion() && slot1.getSlot().contains(stack1.getItem(), stack1.getTag())) {
+                if (slot1.getSlot().inputType().playerInsertion() && slot1.getSlot().contains(stack1.getItem(), stack1.getComponentsPatch())) {
                     insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getTag(), insert);
                     if (insert == 0) break;
                 }
@@ -423,7 +451,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         for (int i = size; i >= this.machineSlots.length; i--) {
             Slot slot1 = this.slots.get(i);
             assert !(slot1 instanceof StorageSlot);
-            if (ItemStack.isSameItemSameTags(itemStack, slot1.getItem())) {
+            if (ItemStack.isSameItemSameComponents(itemStack, slot1.getItem())) {
                 itemStack = slot1.safeInsert(itemStack);
                 if (itemStack.isEmpty()) break;
             }
@@ -479,6 +507,93 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         this.synchronizeState();
     }
 
+    @ApiStatus.Internal
+    public void cycleFaceConfig(BlockFace face, boolean reverse, boolean reset) {
+        MachineIOFace option = this.configuration.getIOConfiguration().get(face);
+
+        short bits = calculateIoBitmask();
+        if (bits != 0b1_000_000_000_000 && !reset && !isFaceLocked(face)) {
+            ResourceType type = option.getType();
+            ResourceFlow flow = option.getFlow();
+            int index = switch (type) {
+                case NONE -> 12;
+                case ENERGY, ITEM, FLUID, ANY -> (type.ordinal() - 1) * 3 + flow.ordinal();
+            };
+            int i = index + (reverse ? -1 : 1);
+            while (i != index) {
+                if (i == -1) {
+                    i = 12;
+                } else if (i == 13) {
+                    i = 0;
+                }
+
+                if ((bits >>> i & 0b1) != 0) {
+                    break;
+                }
+                if (reverse) {
+                    i--;
+                } else {
+                    i++;
+                }
+            }
+
+            if (i == 12) {
+                option.setOption(ResourceType.NONE, ResourceFlow.BOTH);
+            } else {
+                byte flowIndex = (byte) (i % 3);
+                byte typeIndex = (byte) ((i - flowIndex) / 3 + 1);
+                type = ResourceType.getFromOrdinal(typeIndex);
+                flow = ResourceFlow.getFromOrdinal(flowIndex);
+
+                option.setOption(type, flow);
+            }
+        } else {
+            option.setOption(ResourceType.NONE, ResourceFlow.BOTH);
+        }
+
+        this.machine.setChanged();
+    }
+
+    private short calculateIoBitmask() {
+        // Format: NONE, any [any][out][in], fluid [any][out][in], item [any][out][in], energy [any][out][in]
+        short bits = 0b0_000_000_000_000;
+
+        for (FluidResourceSlot slot : this.fluidStorage) {
+            InputType inputType = slot.inputType();
+            if (inputType.externalInsertion()) bits |= 0b001;
+            if (inputType.externalExtraction()) bits |= 0b010;
+            if ((bits & 0b011) == 0b011) break;
+        }
+        if ((bits & 0b011) == 0b011) bits |= 0b100;
+        bits <<= 3;
+
+        for (ItemResourceSlot slot : this.itemStorage) {
+            InputType inputType = slot.inputType();
+            if (inputType.externalInsertion()) bits |= 0b001;
+            if (inputType.externalExtraction()) bits |= 0b010;
+            if ((bits & 0b011) == 0b011) break;
+        }
+        if ((bits & 0b011) == 0b011) bits |= 0b100;
+        bits <<= 3;
+
+        if (this.energyStorage.canExposedInsert()) bits |= 0b001;
+        if (this.energyStorage.canExposedExtract()) bits |= 0b010;
+        if ((bits & 0b011) == 0b011) bits |= 0b100;
+
+        if (Integer.bitCount(bits & 0b000_001_001_001) > 1) {
+            bits |= 0b001_000_000_000;
+        }
+        if (Integer.bitCount(bits & 0b000_010_010_010) > 1) {
+            bits |= 0b010_000_000_000;
+        }
+        if (Integer.bitCount(bits & 0b000_100_100_100) > 1) {
+            bits |= 0b100_000_000_000;
+        }
+
+        bits |= 0b1_000_000_000_000; //set NONE bit
+        return bits;
+    }
+
     /**
      * Synchronizes this menu's state from the server to the client.
      *
@@ -493,7 +608,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
             }
 
             if (sync > 0) {
-                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+                RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), this.player.registryAccess());
                 buf.writeByte(this.containerId);
                 buf.writeVarInt(sync);
                 for (int i = 0; i < this.syncHandlers.size(); i++) {
@@ -552,7 +667,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
          * @param type the type of the machine associated with the menu
          * @return the created menu
          */
-        Menu create(int syncId, @NotNull Inventory inventory, @NotNull FriendlyByteBuf buf, @NotNull MachineType<Machine, Menu> type);
+        Menu create(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, @NotNull MachineType<Machine, Menu> type);
     }
 
 
@@ -572,6 +687,6 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
          * @param buf the byte buffer containing data for the menu
          * @return the created menu
          */
-        Menu create(int syncId, @NotNull Inventory inventory, @NotNull FriendlyByteBuf buf);
+        Menu create(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf);
     }
 }

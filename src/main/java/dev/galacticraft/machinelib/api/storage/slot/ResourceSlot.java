@@ -27,6 +27,7 @@ import dev.galacticraft.machinelib.api.misc.Deserializable;
 import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import dev.galacticraft.machinelib.api.transfer.InputType;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -43,9 +44,7 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
 
     long getAmount();
 
-    @Nullable CompoundTag getTag();
-
-    @Nullable CompoundTag copyTag();
+    @Nullable DataComponentPatch getTag();
 
     long getCapacity();
 
@@ -57,7 +56,7 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
 
     boolean contains(@NotNull Resource resource);
 
-    boolean contains(@NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean contains(@NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canExtract(long amount);
 
@@ -68,7 +67,7 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
     long extract(long amount);
 
     @Contract("null, !null, _ -> fail")
-    void set(@Nullable Resource resource, @Nullable CompoundTag tag, long amount);
+    void set(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount);
     void set(@Nullable Resource resource, long amount);
 
     @ApiStatus.Internal

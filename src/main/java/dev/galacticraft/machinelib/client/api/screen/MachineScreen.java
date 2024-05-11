@@ -45,10 +45,17 @@ import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
+import dev.galacticraft.machinelib.impl.network.c2s.AccessLevelPacket;
+import dev.galacticraft.machinelib.impl.network.c2s.RedstoneModePacket;
+import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPacket;
+import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPacket;
 import io.netty.buffer.ByteBufAllocator;
 import lol.bai.badpackets.api.PacketSender;
+import lol.bai.badpackets.api.play.PlayPackets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.impl.transfer.context.PlayerContainerItemContext;
 import net.minecraft.client.Minecraft;
@@ -544,17 +551,17 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void setAccessibility(@NotNull AccessLevel accessLevel) {
         this.menu.configuration.getSecurity().setAccessLevel(accessLevel);
-        PacketSender.c2s().send(Constant.id("security_config"), new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(1, 1).writeByte(accessLevel.ordinal())));
+        PacketSender.c2s().send(new AccessLevelPacket(accessLevel));
     }
 
     /**
-     * Sets the redstone mode of the machine and syncs it to the server.
+     * Sets the redstone level of the machine and syncs it to the server.
      *
-     * @param redstone The redstone mode to set.
+     * @param redstone The redstone level to set.
      */
     protected void setRedstone(@NotNull RedstoneMode redstone) {
         this.menu.configuration.setRedstoneMode(redstone);
-        PacketSender.c2s().send(Constant.id("redstone_config"), new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(1, 1).writeByte(redstone.ordinal())));
+        PacketSender.c2s().send(new RedstoneModePacket(redstone));
     }
 
     /**
@@ -850,16 +857,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        boolean tankMod = false;
-        if (this.hoveredTank != null && button == 0) {
-            tankMod = this.hoveredTank.acceptStack(new PlayerContainerItemContext(this.menu.playerInventory.player, PlayerInventoryStorage.getCursorStorage(this.menu)));
-            if (tankMod) {
-                FriendlyByteBuf buf = new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(Integer.BYTES * 2)).writeVarInt(this.menu.containerId);
-                buf.writeInt(this.hoveredTank.getId());
-                PacketSender.c2s().send(Constant.id("tank_modify"), buf);
+        if (this.hoveredTank != null && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            if (this.hoveredTank.acceptStack(ContainerItemContext.ofPlayerCursor(this.menu.playerInventory.player, this.menu))) {
+                PacketSender.c2s().send(new TankInteractionPacket(this.menu.containerId, this.hoveredTank.getIndex()));
             }
+            return true;
         }
-        return this.checkConfigurationPanelClick(mouseX, mouseY, button) | super.mouseClicked(mouseX, mouseY, button) | tankMod;
+        return this.checkConfigurationPanelClick(mouseX, mouseY, button) | super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -924,116 +928,10 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private void modifyFace(int button, BlockFace face) {
         if (this.menu.isFaceLocked(face)) return;
         if (button == 0) {
-            cycleFace(face, Screen.hasShiftDown(), Screen.hasControlDown());
+            ClientPlayNetworking.send(new SideConfigurationClickPacket(face, Screen.hasShiftDown(), Screen.hasControlDown()));
+            this.menu.cycleFaceConfig(face, Screen.hasShiftDown(), Screen.hasControlDown());
         }
         this.playButtonSound();
-    }
-
-    private void cycleFace(BlockFace face, boolean reverse, boolean reset) {
-        MachineIOFace option = this.menu.configuration.getIOConfiguration().get(face);
-        if (reset) {
-            option.setOption(ResourceType.NONE, ResourceFlow.BOTH);
-            PacketSender.c2s().send(Constant.id("reset_face"),
-                    new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(2, 2)
-                            .writeByte(face.ordinal())
-                            .writeBoolean(true)
-                    )
-            );
-            return;
-        }
-
-        // Format: NONE, any [any][out][in], fluid [any][out][in], item [any][out][in], energy [any][out][in]
-        short bits = 0b0_000_000_000_000;
-
-        for (FluidResourceSlot slot : this.menu.fluidStorage) {
-            InputType inputType = slot.inputType();
-            if (inputType.externalInsertion()) bits |= 0b001;
-            if (inputType.externalExtraction()) bits |= 0b010;
-            if ((bits & 0b011) == 0b011) break;
-        }
-        if ((bits & 0b011) == 0b011) bits |= 0b100;
-        bits <<= 3;
-
-        for (ItemResourceSlot slot : this.menu.itemStorage) {
-            InputType inputType = slot.inputType();
-            if (inputType.externalInsertion()) bits |= 0b001;
-            if (inputType.externalExtraction()) bits |= 0b010;
-            if ((bits & 0b011) == 0b011) break;
-        }
-        if ((bits & 0b011) == 0b011) bits |= 0b100;
-        bits <<= 3;
-
-        if (this.menu.energyStorage.canExposedInsert()) bits |= 0b001;
-        if (this.menu.energyStorage.canExposedExtract()) bits |= 0b010;
-        if ((bits & 0b011) == 0b011) bits |= 0b100;
-
-        if (Integer.bitCount(bits & 0b000_001_001_001) > 1) {
-            bits |= 0b001_000_000_000;
-        }
-        if (Integer.bitCount(bits & 0b000_010_010_010) > 1) {
-            bits |= 0b010_000_000_000;
-        }
-        if (Integer.bitCount(bits & 0b000_100_100_100) > 1) {
-            bits |= 0b100_000_000_000;
-        }
-
-        bits |= 0b1_000_000_000_000; //set NONE bit
-
-        if (bits != 0b1_000_000_000_000) {
-            ResourceType type = option.getType();
-            ResourceFlow flow = option.getFlow();
-            int index = switch (type) {
-                case NONE -> 12;
-                case ENERGY, ITEM, FLUID, ANY -> (type.ordinal() - 1) * 3 + flow.ordinal();
-            };
-            int i = index + (reverse ? -1 : 1);
-            while (i != index) {
-                if (i == -1) {
-                    i = 12;
-                } else if (i == 13) {
-                    i = 0;
-                }
-
-                if ((bits >>> i & 0b1) != 0) {
-                    break;
-                }
-                if (reverse) {
-                    i--;
-                } else {
-                    i++;
-                }
-            }
-            if (i == 12) {
-                option.setOption(ResourceType.NONE, ResourceFlow.BOTH);
-                PacketSender.c2s().send(Constant.id("reset_face"),
-                        new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(2, 2)
-                                .writeByte(face.ordinal())
-                                .writeBoolean(true)
-                        )
-                );
-            } else {
-                byte iflow = (byte) (i % 3);
-                byte itype = (byte) ((i - iflow) / 3 + 1);
-                type = ResourceType.getFromOrdinal(itype);
-                flow = ResourceFlow.getFromOrdinal(iflow);
-                option.setOption(type, flow);
-                PacketSender.c2s().send(Constant.id("face_type"),
-                        new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(3, 3)
-                                .writeByte(face.ordinal())
-                                .writeByte(itype)
-                                .writeByte(iflow)
-                        )
-                );
-            }
-        } else {
-            option.setOption(ResourceType.NONE, ResourceFlow.BOTH);
-            PacketSender.c2s().send(Constant.id("reset_face"),
-                    new FriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(2, 2)
-                            .writeByte(face.ordinal())
-                            .writeBoolean(true)
-                    )
-            );
-        }
     }
 
     /**

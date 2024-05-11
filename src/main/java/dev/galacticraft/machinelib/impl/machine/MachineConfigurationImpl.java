@@ -31,6 +31,7 @@ import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.menu.sync.MachineConfigurationSyncHandler;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -78,10 +79,10 @@ public final class MachineConfigurationImpl implements MachineConfiguration {
     @Override
     public void readTag(@NotNull CompoundTag tag) {
         this.security.readTag(tag.getCompound(Constant.Nbt.SECURITY));
-        this.configuration.readTag(tag.getCompound(Constant.Nbt.CONFIGURATION));
+        this.configuration.readTag(tag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
 
         if (tag.contains(Constant.Nbt.REDSTONE_MODE)) {
-            this.redstone = RedstoneMode.readTag(Objects.requireNonNull((ByteTag) tag.get(Constant.Nbt.REDSTONE_MODE)));
+            this.redstone = RedstoneMode.readTag((ByteTag) tag.get(Constant.Nbt.REDSTONE_MODE));
         }
     }
 

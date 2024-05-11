@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.api.storage;
 
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,47 +35,47 @@ public interface StorageAccess<Resource> {
 
     boolean canInsert(@NotNull Resource resource);
 
-    boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canInsert(@NotNull Resource resource, long amount);
 
-    boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryInsert(@NotNull Resource resource, long amount);
 
-    long tryInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long insert(@NotNull Resource resource, long amount);
 
-    long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long insertMatching(@NotNull Resource resource, long amount);
 
-    long insertMatching(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long insertMatching(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     boolean contains(@NotNull Resource resource);
 
-    boolean contains(@NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean contains(@NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canExtract(@NotNull Resource resource, long amount);
 
-    boolean canExtract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryExtract(@NotNull Resource resource, long amount);
 
-    long tryExtract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     boolean extractOne(@NotNull Resource resource);
 
-    boolean extractOne(@NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean extractOne(@NotNull Resource resource, @Nullable DataComponentPatch components);
 
     long extract(@NotNull Resource resource, long amount);
 
-    long extract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long extract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     // required for FAPI
-    long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context);
+    long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context);
 
     // required for FAPI
-    long extract(@Nullable Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context);
+    long extract(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context);
 }

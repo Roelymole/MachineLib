@@ -36,8 +36,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class MachineStateImpl implements MachineState {
-    private @Nullable MachineStatus status = null;
-    private boolean powered = false;
+    protected @Nullable MachineStatus status = null;
+    protected boolean powered = false;
 
     public MachineStateImpl() {
     }

@@ -22,26 +22,22 @@
 
 package dev.galacticraft.machinelib.impl;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public final class Utils {
     private Utils() {
     }
 
     @Contract(value = "null, null -> true", pure = true)
-    public static boolean tagsEqual(@Nullable CompoundTag a, @Nullable CompoundTag b) {
-        if (a == null) {
-            return b == null || b.isEmpty();
-        } else if (b == null) {
-            return a.isEmpty();
-        } else {
-            return a.equals(b);
-        }
+    public static boolean componentsEqual(@Nullable DataComponentPatch a, @Nullable DataComponentPatch b) {
+        return ((a == null || a.isEmpty()) && (b == null || b.isEmpty())) || Objects.equals(a, b);
     }
 
     @Contract(pure = true)

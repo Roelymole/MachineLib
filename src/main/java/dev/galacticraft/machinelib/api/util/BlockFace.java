@@ -23,9 +23,14 @@
 package dev.galacticraft.machinelib.api.util;
 
 import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,32 +39,35 @@ import org.jetbrains.annotations.Nullable;
  * An enum representing a face of a block.
  * Used in machine I/O face calculations.
  */
-public enum BlockFace {
+public enum BlockFace implements StringRepresentable {
     /**
      * The face of a block that is facing forwards.
      */
-    FRONT(Component.translatable(Constant.TranslationKey.FRONT), true),
+    FRONT("Front", Component.translatable(Constant.TranslationKey.FRONT), true),
     /**
      * The face of a block that is facing to the right, when facing in the direction the block is facing.
      */
-    RIGHT(Component.translatable(Constant.TranslationKey.LEFT), true),
+    RIGHT("Right", Component.translatable(Constant.TranslationKey.LEFT), true),
     /**
      * The face of a block that is facing backwards.
      */
-    BACK(Component.translatable(Constant.TranslationKey.BACK), true),
+    BACK("Back", Component.translatable(Constant.TranslationKey.BACK), true),
     /**
      * The face of a block that is facing to the left, when facing in the direction the block is facing.
      */
-    LEFT(Component.translatable(Constant.TranslationKey.RIGHT), true),
+    LEFT("Left", Component.translatable(Constant.TranslationKey.RIGHT), true),
     /**
      * The top face of a block.
      */
-    TOP(Component.translatable(Constant.TranslationKey.TOP), false),
+    TOP("Top", Component.translatable(Constant.TranslationKey.TOP), false),
     /**
      * The bottom face of a block.
      */
-    BOTTOM(Component.translatable(Constant.TranslationKey.BOTTOM), false);
+    BOTTOM("Bottom", Component.translatable(Constant.TranslationKey.BOTTOM), false);
 
+    public static final StreamCodec<ByteBuf, BlockFace> CODEC = ByteBufCodecs.BYTE.map(i -> values()[i], face -> (byte) face.ordinal());
+
+    private final String id;
     /**
      * The text of the face
      */
@@ -76,7 +84,8 @@ public enum BlockFace {
      * @param name The name of the block face.
      * @param side Whether the block face is a side face or not.
      */
-    BlockFace(@NotNull MutableComponent name, boolean side) {
+    BlockFace(String id, @NotNull MutableComponent name, boolean side) {
+        this.id = id;
         this.name = name.setStyle(Constant.Text.GOLD_STYLE);
         this.side = side;
     }
@@ -227,5 +236,10 @@ public enum BlockFace {
     @Contract(pure = true)
     public boolean base() {
         return !this.side;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return this.id;
     }
 }

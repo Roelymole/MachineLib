@@ -28,6 +28,7 @@ import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.impl.menu.sync.MachineIOConfigSyncHandler;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -36,68 +37,52 @@ import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public final class MachineIOConfigImpl implements MachineIOConfig {
-    private final @NotNull MachineIOFace front = MachineIOFace.blank();
-    private final @NotNull MachineIOFace back = MachineIOFace.blank();
-    private final @NotNull MachineIOFace left = MachineIOFace.blank();
-    private final @NotNull MachineIOFace right = MachineIOFace.blank();
-    private final @NotNull MachineIOFace top = MachineIOFace.blank();
-    private final @NotNull MachineIOFace bottom = MachineIOFace.blank();
-    private final @NotNull MachineIOFace nullFace = MachineIOFace.directionless();
+    private final @NotNull MachineIOFace[] faces;
 
-    @Override
-    public @NotNull MachineIOFace get(@Nullable BlockFace face) {
-        if (face == null) return this.nullFace;
-        return switch (face) {
-            case FRONT -> this.front;
-            case TOP -> this.top;
-            case BACK -> this.back;
-            case RIGHT -> this.right;
-            case LEFT -> this.left;
-            case BOTTOM -> this.bottom;
-//            case null -> this.nullFace;
-        };
+    public MachineIOConfigImpl(@NotNull MachineIOFace[] faces) {
+        this.faces = faces;
+    }
+
+    public MachineIOConfigImpl() {
+        this.faces = new MachineIOFace[6];
+        for (int i = 0; i < 6; i++) {
+            this.faces[i] = MachineIOFace.blank();
+        }
     }
 
     @Override
-    public @NotNull CompoundTag createTag() {
-        CompoundTag nbt = new CompoundTag();
-        nbt.put("Front", this.front.createTag());
-        nbt.put("Back", this.back.createTag());
-        nbt.put("Left", this.left.createTag());
-        nbt.put("Right", this.right.createTag());
-        nbt.put("Top", this.top.createTag());
-        nbt.put("Bottom", this.bottom.createTag());
+    public @NotNull MachineIOFace get(@Nullable BlockFace face) {
+        return this.faces[face.ordinal()];
+    }
+
+    @Override
+    public @NotNull ListTag createTag() {
+        ListTag nbt = new ListTag();
+        for (MachineIOFace face : this.faces) {
+            nbt.add(face.createTag());
+        }
         return nbt;
     }
 
     @Override
-    public void readTag(@NotNull CompoundTag tag) {
-        this.front.readTag(tag.getCompound("Front"));
-        this.back.readTag(tag.getCompound("Back"));
-        this.left.readTag(tag.getCompound("Left"));
-        this.right.readTag(tag.getCompound("Right"));
-        this.top.readTag(tag.getCompound("Top"));
-        this.bottom.readTag(tag.getCompound("Bottom"));
+    public void readTag(@NotNull ListTag tag) {
+        for (int i = 0; i < tag.size(); i++) {
+            this.faces[i].readTag(tag.getCompound(i));
+        }
     }
 
     @Override
     public void writePacket(@NotNull FriendlyByteBuf buf) {
-        this.front.writePacket(buf);
-        this.back.writePacket(buf);
-        this.left.writePacket(buf);
-        this.right.writePacket(buf);
-        this.top.writePacket(buf);
-        this.bottom.writePacket(buf);
+        for (MachineIOFace face : this.faces) {
+            face.writePacket(buf);
+        }
     }
 
     @Override
     public void readPacket(@NotNull FriendlyByteBuf buf) {
-        this.front.readPacket(buf);
-        this.back.readPacket(buf);
-        this.left.readPacket(buf);
-        this.right.readPacket(buf);
-        this.top.readPacket(buf);
-        this.bottom.readPacket(buf);
+        for (MachineIOFace face : this.faces) {
+            face.readPacket(buf);
+        }
     }
 
     @Contract(" -> new")

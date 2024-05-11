@@ -26,10 +26,13 @@ import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -71,7 +74,9 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.FLUID.getKey(this.resource).toString());
         tag.putLong(AMOUNT_KEY, this.amount);
-        if (this.tag != null && !this.tag.isEmpty()) tag.put(TAG_KEY, this.tag);
+        if (this.components != null && !this.components.isEmpty()) {
+            tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encode(this.components, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
+        }
         return tag;
     }
 
@@ -80,24 +85,27 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (tag.isEmpty()) {
             this.setEmpty();
         } else {
-            this.set(BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(TAG_KEY, Tag.TAG_COMPOUND) ? tag.getCompound(TAG_KEY) : null, tag.getLong(AMOUNT_KEY));
+            this.set(BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString(RESOURCE_KEY))),
+                    tag.contains(COMPONENTS_KEY, Tag.TAG_COMPOUND) ? DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag.getCompound(COMPONENTS_KEY)).getOrThrow().getFirst() : null,
+                    tag.getLong(AMOUNT_KEY)
+            );
         }
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         assert this.isSane();
         if (this.amount > 0) {
             buf.writeLong(this.amount);
             buf.writeUtf(BuiltInRegistries.FLUID.getKey(this.resource).toString());
-            buf.writeNbt(this.tag);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
         } else {
             buf.writeLong(0);
         }
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         long amount = buf.readLong();
         if (amount == 0) {
             this.setEmpty();

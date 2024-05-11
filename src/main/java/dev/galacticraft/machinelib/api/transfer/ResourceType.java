@@ -23,9 +23,12 @@
 package dev.galacticraft.machinelib.api.transfer;
 
 import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +57,8 @@ public enum ResourceType {
      * All resources can be stored/transferred.
      */
     ANY(Component.translatable(Constant.TranslationKey.ANY).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
+
+    public static final StreamCodec<ByteBuf, ResourceType> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
      * The text of the resource type.

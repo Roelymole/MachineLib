@@ -30,7 +30,7 @@ import dev.galacticraft.machinelib.impl.Utils;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +43,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<ResourceSlotImpl.Snapshot<Resource>> implements ResourceSlot<Resource> {
     protected static final String RESOURCE_KEY = "Resource";
     protected static final String AMOUNT_KEY = "Amount";
-    protected static final String TAG_KEY = "Tag";
+    protected static final String COMPONENTS_KEY = "Components";
 
     private final InputType inputType;
     private final ResourceFilter<Resource> externalFilter;
@@ -51,7 +51,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     private MutableModifiable parent;
 
     protected @Nullable Resource resource = null;
-    protected @Nullable CompoundTag tag = null;
+    protected @Nullable DataComponentPatch components = null;
     protected long amount = 0;
 
     private long modifications = 1;
@@ -80,15 +80,9 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public @Nullable CompoundTag getTag() {
+    public @Nullable DataComponentPatch getTag() {
         assert this.isSane();
-        return this.tag;
-    }
-
-    @Override
-    public @Nullable CompoundTag copyTag() {
-        assert this.isSane();
-        return this.tag == null ? null : this.tag.copy();
+        return this.components;
     }
 
     @Override
@@ -120,9 +114,9 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components) {
         assert this.isSane();
-        return this.amount <= this.getCapacityFor(resource) && this.canAccept(resource, tag);
+        return this.amount <= this.getCapacityFor(resource) && this.canAccept(resource, components);
     }
 
     @Override
@@ -133,10 +127,10 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
-        return this.amount + amount <= this.getCapacityFor(resource) && this.canAccept(resource, tag);
+        return this.amount + amount <= this.getCapacityFor(resource) && this.canAccept(resource, components);
     }
 
     @Override
@@ -148,11 +142,11 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long tryInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
 
-        return this.canAccept(resource, tag) ? Math.min(this.amount + amount, this.getCapacityFor(resource)) - this.amount : 0;
+        return this.canAccept(resource, components) ? Math.min(this.amount + amount, this.getCapacityFor(resource)) - this.amount : 0;
     }
 
     @Override
@@ -160,7 +154,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
         long inserted = this.tryInsert(resource, amount);
         if (inserted > 0) {
             this.resource = resource;
-            this.tag = null;
+            this.components = null;
             this.amount += inserted;
             this.markModified();
             return inserted;
@@ -169,11 +163,11 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        long inserted = this.tryInsert(resource, tag, amount);
+    public long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        long inserted = this.tryInsert(resource, components, amount);
         if (inserted > 0) {
             this.resource = resource;
-            this.tag = stripTag(tag);
+            this.components = stripComponents(components);
             this.amount += inserted;
             this.markModified();
             return inserted;
@@ -187,8 +181,8 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long insertMatching(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.insert(resource, tag, amount);
+    public long insertMatching(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.insert(resource, components, amount);
     }
 
     @Override
@@ -198,9 +192,9 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public boolean contains(@NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean contains(@NotNull Resource resource, @Nullable DataComponentPatch components) {
         assert this.isSane();
-        return this.resource == resource && Utils.tagsEqual(this.tag, tag);
+        return this.resource == resource && Utils.componentsEqual(this.components, components);
     }
 
     @Override
@@ -220,11 +214,11 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public boolean canExtract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
 
-        return this.contains(resource, tag) && this.amount >= amount;
+        return this.contains(resource, components) && this.amount >= amount;
     }
 
     @Override
@@ -241,11 +235,11 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long tryExtract(@Nullable Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryExtract(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount) {
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
 
-        return this.amount > 0 && (resource == null || resource == this.resource) && Utils.tagsEqual(this.tag, tag) ? Math.min(this.amount, amount) : 0;
+        return this.amount > 0 && (resource == null || resource == this.resource) && Utils.componentsEqual(this.components, components) ? Math.min(this.amount, amount) : 0;
     }
 
     @Override
@@ -274,8 +268,8 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public boolean extractOne(@Nullable Resource resource, @Nullable CompoundTag tag) {
-        if (resource == null ? !this.isEmpty() : this.contains(resource, tag)) {
+    public boolean extractOne(@Nullable Resource resource, @Nullable DataComponentPatch components) {
+        if (resource == null ? !this.isEmpty() : this.contains(resource, components)) {
             if (--this.amount == 0) {
                 this.setEmpty();
             }
@@ -300,20 +294,20 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long extract(@Nullable Resource resource, @Nullable CompoundTag tag, long amount) {
-        long extracted = this.tryExtract(resource, tag, amount);
+    public long extract(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount) {
+        long extracted = this.tryExtract(resource, components, amount);
 
         return doExtraction(extracted);
     }
 
     @Override
-    public long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context) {
-        long inserted = this.tryInsert(resource, tag, amount);
+    public long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context) {
+        long inserted = this.tryInsert(resource, components, amount);
 
         if (inserted > 0) {
             this.updateSnapshots(context);
             this.resource = resource;
-            this.tag = stripTag(tag);
+            this.components = stripComponents(components);
             this.amount += inserted;
             return inserted;
         }
@@ -321,8 +315,8 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public long extract(@Nullable Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context) {
-        long extracted = this.tryExtract(resource, tag, amount);
+    public long extract(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context) {
+        long extracted = this.tryExtract(resource, components, amount);
 
         if (extracted > 0) {
             this.updateSnapshots(context);
@@ -354,14 +348,14 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
 
     @Override
     protected Snapshot<Resource> createSnapshot() {
-        return new Snapshot<>(this.resource, this.amount, this.tag, this.modifications);
+        return new Snapshot<>(this.resource, this.amount, this.components, this.modifications);
     }
 
     @Override
     protected void readSnapshot(Snapshot<Resource> snapshot) {
         this.resource = snapshot.resource;
         this.amount = snapshot.amount;
-        this.tag = snapshot.tag;
+        this.components = snapshot.components;
         this.modifications = snapshot.modifications;
         assert this.isSane();
     }
@@ -377,14 +371,14 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
 
     protected void setEmpty() {
         this.resource = null;
-        this.tag = null;
+        this.components = null;
         this.amount = 0;
     }
 
     @Override
-    public void set(@Nullable Resource resource, @Nullable CompoundTag tag, long amount) {
+    public void set(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount) {
         this.resource = resource;
-        this.tag = tag;
+        this.components = components;
         this.amount = amount;
         assert this.isSane();
     }
@@ -392,13 +386,14 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     @Override
     public void set(@Nullable Resource resource, long amount) {
         this.resource = resource;
-        this.tag = null;
+        this.components = null;
         this.amount = amount;
         assert this.isSane();
     }
 
     @Override
     public void _setParent(MutableModifiable parent) {
+        assert this.parent == null;
         this.parent = parent;
     }
 
@@ -408,13 +403,13 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Contract(pure = true)
-    private boolean canAccept(@NotNull Resource resource, @Nullable CompoundTag tag) {
-        return (this.resource == resource && Utils.tagsEqual(this.tag, tag)) || this.resource == null;
+    private boolean canAccept(@NotNull Resource resource, @Nullable DataComponentPatch components) {
+        return (this.resource == resource && Utils.componentsEqual(this.components, components)) || this.resource == null;
     }
 
     @VisibleForTesting
     public boolean isSane() {
-        return (this.resource == null && this.tag == null && this.amount == 0) || (this.resource != null && this.amount > 0 && (this.tag == null || !this.tag.isEmpty()));
+        return (this.resource == null && this.components == null && this.amount == 0) || (this.resource != null && this.amount > 0 && (this.components == null || !this.components.isEmpty()));
     }
 
     private long doExtraction(long extracted) {
@@ -430,10 +425,10 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Contract("null -> null")
-    private static @Nullable CompoundTag stripTag(@Nullable CompoundTag tag) {
-        return tag == null ? null : (tag.isEmpty() ? null : tag);
+    private static @Nullable DataComponentPatch stripComponents(@Nullable DataComponentPatch components) {
+        return components == null ? null : (components.isEmpty() ? null : components);
     }
 
-    protected record Snapshot<Resource>(@Nullable Resource resource, long amount, @Nullable CompoundTag tag, long modifications) {
+    protected record Snapshot<Resource>(@Nullable Resource resource, long amount, @Nullable DataComponentPatch components, long modifications) {
     }
 }

@@ -97,7 +97,7 @@ public final class ResourceFilters {
      * @return A resource filter that checks the resource's NBT.
      */
     public static <Resource> @NotNull ResourceFilter<Resource> ofNBT(CompoundTag tag) {
-        return (resource, tag1) -> Utils.tagsEqual(tag, tag1);
+        return (resource, tag1) -> Utils.componentsEqual(tag, tag1);
     }
 
     /**
@@ -113,7 +113,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static <Resource> @NotNull ResourceFilter<Resource> ofResource(@NotNull Resource resource, @Nullable CompoundTag tag) {
-        return (r, t) -> r == resource && Utils.tagsEqual(t, tag);
+        return (r, t) -> r == resource && Utils.componentsEqual(t, tag);
     }
 
     /**
@@ -152,7 +152,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> itemTag(@NotNull TagKey<Item> tag, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.tagsEqual(nbtC, nbt);
+        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(nbtC, nbt);
     }
 
     /**
@@ -177,7 +177,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Fluid> fluidTag(@NotNull TagKey<Fluid> tag, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.tagsEqual(nbtC, nbt);
+        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(nbtC, nbt);
     }
 
     /**

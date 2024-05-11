@@ -31,8 +31,8 @@ import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
 import dev.galacticraft.machinelib.client.impl.model.MachineModelLoadingPlugin;
-import dev.galacticraft.machinelib.client.impl.network.MachineLibS2CPackets;
 import dev.galacticraft.machinelib.impl.Constant;
+import dev.galacticraft.machinelib.impl.network.MachineLibPackets;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.minecraft.resources.ResourceLocation;
@@ -74,6 +74,6 @@ public final class MachineLibClient implements ClientModInitializer {
         MachineModelRegistry.register(Constant.id("single"), MachineBakedModel.SingleSpriteProvider::new);
         MachineModelRegistry.register(Constant.id("z_axis"), MachineBakedModel.ZAxisSpriteProvider::new);
 
-        MachineLibS2CPackets.register();
+        MachineLibPackets.registerClient();
     }
 }

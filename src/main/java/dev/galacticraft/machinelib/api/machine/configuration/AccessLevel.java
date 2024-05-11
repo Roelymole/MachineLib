@@ -23,7 +23,10 @@
 package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +49,7 @@ public enum AccessLevel implements StringRepresentable {
     PRIVATE(Component.translatable(Constant.TranslationKey.PRIVATE_ACCESS));
 
     public static final AccessLevel[] VALUES = AccessLevel.values();
+    public static final StreamCodec<ByteBuf, AccessLevel> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : VALUES[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
      * The text of the access level.
