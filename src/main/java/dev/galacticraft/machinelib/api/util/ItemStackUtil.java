@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.api.util;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,8 +34,7 @@ public class ItemStackUtil {
     public static @NotNull ItemStack create(ResourceSlot<Item> slot) {
         if (slot.isEmpty()) return ItemStack.EMPTY;
         assert slot.getResource() != null && slot.getAmount() < Integer.MAX_VALUE;
-        ItemStack stack = new ItemStack(slot.getResource(), (int) slot.getAmount());
-        stack.setTag(slot.getTag());
+        ItemStack stack = new ItemStack(slot.getResource().builtInRegistryHolder(), (int) slot.getAmount(), slot.getComponents());
         return stack;
     }
 
@@ -46,10 +46,9 @@ public class ItemStackUtil {
         return stack;
     }
 
-    public static ItemStack of(@Nullable Item resource, @Nullable CompoundTag tag, int amount) {
+    public static ItemStack of(@Nullable Item resource, DataComponentPatch components, int amount) {
         if (resource == null) return ItemStack.EMPTY;
-        ItemStack stack = new ItemStack(resource, amount);
-        stack.setTag(tag);
+        ItemStack stack = new ItemStack(resource.builtInRegistryHolder(), amount, components);
         return stack;
     }
 

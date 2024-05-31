@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.compat.transfer;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +35,7 @@ public class ExposedItemSlotImpl extends ExposedSlotImpl<Item, ItemVariant> {
     }
 
     @Override
-    protected @NotNull ItemVariant createVariant(@Nullable Item item, @Nullable CompoundTag tag) {
-        return item != null ? ItemVariant.of(item, tag) : ItemVariant.blank();
+    protected @NotNull ItemVariant createVariant(@Nullable Item item, @Nullable DataComponentPatch components) {
+        return item != null ? ItemVariant.of(item, components) : ItemVariant.blank();
     }
 }

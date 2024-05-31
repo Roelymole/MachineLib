@@ -20,25 +20,20 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.api.misc;
+package dev.galacticraft.machinelib.api.machine;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import org.jetbrains.annotations.NotNull;
+import dev.galacticraft.machinelib.impl.Constant;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
 
-/**
- * Represents objects that can be serialized to a packet.
- *
- * @see PacketDeserializable
- */
-public interface PacketSerializable/*<T>*/ {
-    /**
-     * Serializes this object into a buffer.
-     *
-     * @param buf the buffer to write into
-     * @see PacketDeserializable#readPacket(RegistryFriendlyByteBuf)
-     */
-    void writePacket(@NotNull RegistryFriendlyByteBuf buf);
+import java.util.function.UnaryOperator;
 
-//    StreamCodec<RegistryFriendlyByteBuf, T> networkCodec();
+public class MachineComponents {
+
+    private static <T> DataComponentType<T> register(String id, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
+        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Constant.id(id), ((DataComponentType.Builder)builderOperator.apply(DataComponentType.builder())).build());
+    }
+
+    public static void register() {}
 }

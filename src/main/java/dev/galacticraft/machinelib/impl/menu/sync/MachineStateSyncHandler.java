@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +44,7 @@ public class MachineStateSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         this.status = this.state.getStatus();
         this.powered = this.state.isPowered();
 
@@ -53,7 +53,7 @@ public class MachineStateSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         this.status = MachineStatus.readPacket(buf);
         this.powered = buf.readBoolean();
 

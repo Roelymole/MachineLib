@@ -28,8 +28,10 @@ import dev.galacticraft.machinelib.api.machine.MachineType;
 import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -249,14 +251,16 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayer player, @NotNull FriendlyByteBuf buf) {
-        super.writeScreenOpeningData(player, buf);
+    public RegistryFriendlyByteBuf getScreenOpeningData(ServerPlayer player) {
+        RegistryFriendlyByteBuf buf = super.getScreenOpeningData(player);
         if (this.activeRecipe != null) {
             buf.writeInt(this.getProcessingTime(this.activeRecipe));
             buf.writeInt(this.progress);
         } else {
             buf.writeInt(0);
         }
+
+        return buf;
     }
 
     /**
@@ -316,14 +320,14 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag nbt) {
-        super.saveAdditional(nbt);
-        nbt.putInt(Constant.Nbt.PROGRESS, this.getProgress());
+    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.putInt(Constant.Nbt.PROGRESS, this.getProgress());
     }
 
     @Override
-    public void load(@NotNull CompoundTag nbt) {
-        super.load(nbt);
-        this.progress = nbt.getInt(Constant.Nbt.PROGRESS);
+    public void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.progress = tag.getInt(Constant.Nbt.PROGRESS);
     }
 }

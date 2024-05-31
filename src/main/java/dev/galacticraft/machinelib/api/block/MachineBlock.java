@@ -38,11 +38,9 @@ import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.block.entity.MachineBlockEntityTicker;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -52,13 +50,15 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -101,7 +101,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     /**
      * Tooltip prompt text. Shown instead of the long-form description when shift is not pressed.
      *
-     * @see #shiftDescription(ItemStack, BlockGetter, TooltipFlag)
+     * @see #shiftDescription(ItemStack, TooltipContext, TooltipFlag)
      */
     private static final Component PRESS_SHIFT = Component.translatable(Constant.TranslationKey.PRESS_SHIFT).setStyle(Constant.Text.DARK_GRAY_STYLE);
 
@@ -113,7 +113,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     /**
      * The line-wrapped long description of this machine.
      *
-     * @see #shiftDescription(ItemStack, BlockGetter, TooltipFlag)
+     * @see #shiftDescription(ItemStack, TooltipContext, TooltipFlag)
      */
     private List<Component> description = null;
 
@@ -214,8 +214,8 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
      * @see #shiftDescription
      */
     @Override
-    public void appendHoverText(ItemStack stack, BlockGetter view, List<Component> tooltip, @NotNull TooltipFlag context) {
-        Component text = this.shiftDescription(stack, view, context);
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
+        Component text = this.shiftDescription(stack, context, flag);
         if (text != null) {
             if (Screen.hasShiftDown()) {
                 if (this.description == null) {
@@ -227,36 +227,39 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
             }
         }
 
-        if (stack != null && stack.getTag() != null && stack.getTag().contains(Constant.Nbt.BLOCK_ENTITY_TAG)) {
-            CompoundTag nbt = stack.getTag().getCompound(Constant.Nbt.BLOCK_ENTITY_TAG);
-            tooltip.add(Component.empty());
-            if (nbt.contains(Constant.Nbt.ENERGY, Tag.TAG_INT))
-                tooltip.add(Component.translatable(Constant.TranslationKey.CURRENT_ENERGY, Component.literal(String.valueOf(nbt.getInt(Constant.Nbt.ENERGY))).setStyle(Constant.Text.BLUE_STYLE)).setStyle(Constant.Text.GOLD_STYLE));
-            if (nbt.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND)) {
-                CompoundTag security = nbt.getCompound(Constant.Nbt.SECURITY);
-                if (security.contains(Constant.Nbt.OWNER, Tag.TAG_COMPOUND)) {
-                    GameProfile profile = NbtUtils.readGameProfile(security.getCompound(Constant.Nbt.OWNER));
-                    if (profile != null) {
-                        MutableComponent owner = Component.translatable(Constant.TranslationKey.OWNER, Component.literal(profile.getName()).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
-                        if (Screen.hasControlDown()) {
-                            owner.append(Component.literal(" (" + profile.getId().toString() + ")").setStyle(Constant.Text.AQUA_STYLE));
+        if (stack != null) {
+            CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+            if (!data.isEmpty()) {
+                CompoundTag nbt = data.getUnsafe();
+                tooltip.add(Component.empty());
+                if (nbt.contains(Constant.Nbt.ENERGY, Tag.TAG_INT))
+                    tooltip.add(Component.translatable(Constant.TranslationKey.CURRENT_ENERGY, Component.literal(String.valueOf(nbt.getInt(Constant.Nbt.ENERGY))).setStyle(Constant.Text.BLUE_STYLE)).setStyle(Constant.Text.GOLD_STYLE));
+                if (nbt.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND)) {
+                    CompoundTag security = nbt.getCompound(Constant.Nbt.SECURITY);
+                    if (security.contains(Constant.Nbt.OWNER, Tag.TAG_COMPOUND)) {
+                        GameProfile profile = ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, security.getCompound(Constant.Nbt.OWNER)).getOrThrow().gameProfile();
+                        if (profile != null) {
+                            MutableComponent owner = Component.translatable(Constant.TranslationKey.OWNER, Component.literal(profile.getName()).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
+                            if (Screen.hasControlDown()) {
+                                owner.append(Component.literal(" (" + profile.getId().toString() + ")").setStyle(Constant.Text.AQUA_STYLE));
+                            }
+                            tooltip.add(owner);
+                        } else {
+                            tooltip.add(Component.translatable(Constant.TranslationKey.OWNER, Component.translatable(Constant.TranslationKey.UNKNOWN).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE));
                         }
-                        tooltip.add(owner);
-                    } else {
-                        tooltip.add(Component.translatable(Constant.TranslationKey.OWNER, Component.translatable(Constant.TranslationKey.UNKNOWN).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE));
+                        tooltip.add(Component.translatable(Constant.TranslationKey.ACCESS_LEVEL, AccessLevel.fromString(security.getString(Constant.Nbt.ACCESS_LEVEL)).getName()).setStyle(Constant.Text.GREEN_STYLE));
                     }
-                    tooltip.add(Component.translatable(Constant.TranslationKey.ACCESS_LEVEL, AccessLevel.fromString(security.getString(Constant.Nbt.ACCESS_LEVEL)).getName()).setStyle(Constant.Text.GREEN_STYLE));
                 }
-            }
 
-            if (nbt.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE)) {
-                tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag((ByteTag) Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
+                if (nbt.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE)) {
+                    tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag((ByteTag) Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
+                }
             }
         }
     }
 
     @Override
-    public final @NotNull InteractionResult use(BlockState state, @NotNull Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public final @NotNull InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player, BlockHitResult hit) {
         if (!world.isClientSide) {
             BlockEntity entity = world.getBlockEntity(pos);
             if (entity instanceof MachineBlockEntity machine) {
@@ -312,7 +315,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         if (blockEntity instanceof MachineBlockEntity machine) {
             CompoundTag config = new CompoundTag();
             config.put(Constant.Nbt.CONFIGURATION, machine.getConfiguration().createTag());
-            stack.getOrCreateTag().put(Constant.Nbt.BLOCK_ENTITY_TAG, config);
+            BlockItem.setBlockEntityData(stack, blockEntity.getType(), config);
         }
 
         return stack;
@@ -328,11 +331,11 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
      * Returns this machine's description for the tooltip when left shift is pressed.
      *
      * @param stack The item stack (the contained item is this block).
-     * @param view The world.
-     * @param context Extra tooltip information.
+     * @param context The context of the tooltip.
+     * @param flag Flags to determine if extra information should be added
      * @return This machine's description.
      */
-    public @Nullable Component shiftDescription(ItemStack stack, BlockGetter view, TooltipFlag context) {
+    public @Nullable Component shiftDescription(ItemStack stack, TooltipContext context, TooltipFlag flag) {
         return Component.translatable(this.getDescriptionId() + ".description");
     }
 }

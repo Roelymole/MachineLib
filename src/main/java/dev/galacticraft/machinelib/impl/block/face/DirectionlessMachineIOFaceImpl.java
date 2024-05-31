@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.impl.block.face;
 
+import com.mojang.serialization.Codec;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
@@ -32,7 +33,8 @@ import dev.galacticraft.machinelib.impl.menu.sync.MachineIOFaceSyncHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.ApiStatus;
@@ -43,6 +45,8 @@ import team.reborn.energy.api.EnergyStorage;
 
 @ApiStatus.Internal
 public final class DirectionlessMachineIOFaceImpl implements MachineIOFace {
+    public static final Codec<MachineIOFace> CODEC = Codec.unit(DirectionlessMachineIOFaceImpl::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MachineIOFace> STREAM_CODEC = StreamCodec.of((buf, face) -> {}, buf -> new DirectionlessMachineIOFaceImpl());
     private @Nullable ExposedStorage<Item, ItemVariant> cachedItemStorage = null;
     private @Nullable ExposedStorage<Fluid, FluidVariant> cachedFluidStorage = null;
     private @Nullable EnergyStorage cachedEnergyStorage = null;
@@ -98,12 +102,22 @@ public final class DirectionlessMachineIOFaceImpl implements MachineIOFace {
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
     }
+
+//    @Override
+//    public @NotNull Codec<MachineIOFace> codec() {
+//        return CODEC;
+//    }
+//
+//    @Override
+//    public StreamCodec<RegistryFriendlyByteBuf, MachineIOFace> networkCodec() {
+//        return STREAM_CODEC;
+//    }
 
     @Contract(" -> new")
     @Override

@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.api.filter;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,9 +37,9 @@ public interface ResourceFilter<Resource> {
      * Tests the given resource and compound tag for a specific condition.
      *
      * @param resource The resource to be tested. Can be {@code null}.
-     * @param tag The compound tag to be tested. Can be {@code null}.
+     * @param components The component map to be tested.
      * @return {@code true} if the resource and tag meet the specific condition, {@code false} otherwise.
      */
     @Contract(pure = true)
-    boolean test(@Nullable Resource resource, @Nullable CompoundTag tag);
+    boolean test(@Nullable Resource resource, DataComponentPatch components);
 }

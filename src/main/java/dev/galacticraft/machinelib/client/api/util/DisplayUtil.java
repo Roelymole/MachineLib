@@ -33,6 +33,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -118,13 +119,13 @@ public final class DisplayUtil {
         return Mth.hsvToRgb((float) ((120.0 / 360.0) * scale), 1.0f, 0.90f);
     }
 
-    public static void createFluidTooltip(@NotNull List<Component> tooltip, @Nullable Fluid fluid, @Nullable CompoundTag tag, long amount, long capacity) {
+    public static void createFluidTooltip(@NotNull List<Component> tooltip, @Nullable Fluid fluid, @Nullable DataComponentPatch components, long amount, long capacity) {
         if (amount == 0) {
             tooltip.add(Component.translatable(Constant.TranslationKey.TANK_EMPTY).setStyle(Constant.Text.GRAY_STYLE));
             return;
         }
 
-        tooltip.add(Component.translatable(Constant.TranslationKey.TANK_CONTENTS).setStyle(Constant.Text.GRAY_STYLE).append(FluidVariantAttributes.getName(FluidVariant.of(fluid, tag))));
+        tooltip.add(Component.translatable(Constant.TranslationKey.TANK_CONTENTS).setStyle(Constant.Text.GRAY_STYLE).append(FluidVariantAttributes.getName(FluidVariant.of(fluid, components))));
         tooltip.add(Component.translatable(Constant.TranslationKey.TANK_AMOUNT).setStyle(Constant.Text.GRAY_STYLE).append(DisplayUtil.formatFluid(amount, Screen.hasShiftDown()).setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE))));
 
         if (capacity != -1) {

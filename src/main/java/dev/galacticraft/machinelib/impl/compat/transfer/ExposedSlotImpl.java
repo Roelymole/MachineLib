@@ -26,6 +26,7 @@ import dev.galacticraft.machinelib.api.compat.transfer.ExposedSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,17 +42,17 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
         this.extraction = extraction;
     }
 
-    protected abstract @NotNull Variant createVariant(@Nullable Resource resource, @Nullable CompoundTag tag);
+    protected abstract @NotNull Variant createVariant(@Nullable Resource resource, @Nullable DataComponentPatch components);
 
     @Override
     public long insert(Variant variant, long maxAmount, TransactionContext transaction) {
-        if (this.insertion) return this.slot.insert(variant.getObject(), variant.getNbt(), maxAmount, transaction);
+        if (this.insertion) return this.slot.insert(variant.getObject(), variant.getComponents(), maxAmount, transaction);
         return 0;
     }
 
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
-        if (this.extraction) return this.slot.extract(variant.getObject(), variant.getNbt(), maxAmount, transaction);
+        if (this.extraction) return this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction);
         return 0;
     }
 
@@ -72,7 +73,7 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
 
     @Override
     public Variant getResource() {
-        return this.createVariant(this.slot.getResource(), this.slot.getTag());
+        return this.createVariant(this.slot.getResource(), this.slot.getComponents());
     }
 
     @Override

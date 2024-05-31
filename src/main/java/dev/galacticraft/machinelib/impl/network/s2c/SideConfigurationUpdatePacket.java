@@ -15,8 +15,8 @@ public record SideConfigurationUpdatePacket(BlockFace face, ResourceType resourc
     public static final Type<SideConfigurationUpdatePacket> TYPE = new Type<>(Constant.id("io_update"));
     public static final StreamCodec<ByteBuf, SideConfigurationUpdatePacket> CODEC = StreamCodec.composite(
             BlockFace.CODEC, p -> p.face,
-            ResourceType.CODEC, p -> p.resource,
-            ResourceFlow.CODEC, p -> p.flow,
+            ResourceType.STREAM_CODEC, p -> p.resource,
+            ResourceFlow.STREAM_CODEC, p -> p.flow,
             SideConfigurationUpdatePacket::new
     );
 

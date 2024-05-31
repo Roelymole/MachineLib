@@ -29,6 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
  * Defines the types of resource that are be stored in a storage
  */
 @SuppressWarnings("unused")
-public enum ResourceType {
+public enum ResourceType implements StringRepresentable {
     /**
      * No resources can be stored/transferred.
      */
@@ -58,7 +59,8 @@ public enum ResourceType {
      */
     ANY(Component.translatable(Constant.TranslationKey.ANY).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
 
-    public static final StreamCodec<ByteBuf, ResourceType> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
+    public static final StringRepresentable.EnumCodec<ResourceType> CODEC = StringRepresentable.fromEnum(ResourceType::values);
+    public static final StreamCodec<ByteBuf, ResourceType> STREAM_CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
      * The text of the resource type.
@@ -132,5 +134,17 @@ public enum ResourceType {
     @Contract(pure = true)
     public boolean willAcceptResource(ResourceType other) {
         return this != NONE && (this == other || this == ANY);
+    }
+
+    @Override
+    @Contract(pure = true)
+    public @NotNull String getSerializedName() {
+        return switch (this) {
+            case NONE -> "none";
+            case ENERGY -> "energy";
+            case ITEM -> "item";
+            case FLUID -> "fluid";
+            case ANY -> "any";
+        };
     }
 }

@@ -30,7 +30,7 @@ import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.impl.menu.TankImpl;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.ApiStatus;
@@ -60,9 +60,7 @@ public interface Tank {
      */
     @Nullable Fluid getFluid();
 
-    @Nullable CompoundTag getTag();
-
-    @Nullable CompoundTag copyTag();
+    @Nullable DataComponentPatch getComponents();
 
     long getAmount();
 

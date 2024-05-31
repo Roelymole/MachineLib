@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class MachineEnergyStorageSyncHandler implements MenuSyncHandler {
@@ -42,13 +42,13 @@ public class MachineEnergyStorageSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         this.prevValue = this.storage.getAmount();
         buf.writeLong(this.storage.getAmount());
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         this.storage.setEnergy(buf.readLong());
     }
 }

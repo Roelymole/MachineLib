@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.menu.sync.simple;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +46,7 @@ public final class BooleansMenuSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         int len = this.input.length;
         int bLen = (len - len % 8) / 8 + 1;
         byte[] bytes = new byte[bLen];
@@ -67,7 +67,7 @@ public final class BooleansMenuSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         int len = this.output.length;
         int bLen = (len - len % 8) / 8 + 1;
         byte[] bytes = new byte[bLen];

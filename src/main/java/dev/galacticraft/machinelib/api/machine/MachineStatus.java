@@ -24,9 +24,11 @@ package dev.galacticraft.machinelib.api.machine;
 
 import dev.galacticraft.machinelib.impl.machine.MachineStatusImpl;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +37,10 @@ import org.jetbrains.annotations.Nullable;
  * Represents the status of a machine.
  */
 public interface MachineStatus {
+    StreamCodec<RegistryFriendlyByteBuf, MachineStatus> STREAM_CODEC = StreamCodec.composite(
+
+    );
+
     /**
      * Creates a new machine status.
      *
@@ -78,13 +84,13 @@ public interface MachineStatus {
      * Serializes this machine status to a packet, based on the machine type
      * @param buf the buffer to write to
      */
-    static void writePacket(@Nullable MachineStatus status, @NotNull FriendlyByteBuf buf) {
+    static void writePacket(@Nullable MachineStatus status, @NotNull RegistryFriendlyByteBuf buf) {
         if (status == null) {
             buf.writeByte(-1);
             return;
         }
         buf.writeByte(status.getType().ordinal());
-        buf.writeComponent(status.getText());
+        ComponentSerialization.TRUSTED_STREAM_CODEC.encode(buf, status.getText());
     }
 
     /**
@@ -92,10 +98,10 @@ public interface MachineStatus {
      * @param buf the buffer to write to
      * @return the deserialized machine status
      */
-    static @Nullable MachineStatus readPacket(@NotNull FriendlyByteBuf buf) {
+    static @Nullable MachineStatus readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         byte b = buf.readByte();
         if (b == -1) return null;
-        return MachineStatus.create(buf.readComponent(), Type.values()[b]);
+        return MachineStatus.create(ComponentSerialization.TRUSTED_STREAM_CODEC.decode(buf), Type.values()[b]);
     }
 
     /**

@@ -80,7 +80,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public @Nullable DataComponentPatch getTag() {
+    public @Nullable DataComponentPatch getComponents() {
         assert this.isSane();
         return this.components;
     }

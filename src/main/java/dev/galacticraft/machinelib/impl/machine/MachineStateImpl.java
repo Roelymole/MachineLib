@@ -22,6 +22,8 @@
 
 package dev.galacticraft.machinelib.impl.machine;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
@@ -30,16 +32,34 @@ import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.menu.sync.MachineStateSyncHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class MachineStateImpl implements MachineState {
+    public static final Codec<MachineState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.BOOL.fieldOf("powered").forGetter(MachineState::isPowered)
+    ).apply(instance, MachineStateImpl::new));
+//    public static final StreamCodec<RegistryFriendlyByteBuf, MachineStateImpl> STREAM_CODEC = Packet.codec((state, buf) -> {
+//        MachineStatus.writePacket(state.getStatus(), buf);
+////        buf.writeBoolean(state.isPowered());
+//    }, MachineStateImpl::new);
+
     protected @Nullable MachineStatus status = null;
-    protected boolean powered = false;
+    protected boolean powered;
 
     public MachineStateImpl() {
+        this(false);
+    }
+
+    public MachineStateImpl(boolean powered) {
+        this.powered = powered;
+    }
+
+    public MachineStateImpl(RegistryFriendlyByteBuf buf) {
+        this.status = MachineStatus.readPacket(buf);
+        this.powered = powered;
     }
 
     @Override
@@ -70,7 +90,7 @@ public class MachineStateImpl implements MachineState {
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         MachineStatus.writePacket(this.status, buf);
         buf.writeBoolean(this.powered);
     }
@@ -81,10 +101,20 @@ public class MachineStateImpl implements MachineState {
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         this.status = MachineStatus.readPacket(buf);
         this.powered = buf.readBoolean();
     }
+
+//    @Override
+//    public @NotNull Codec<MachineState> codec() {
+//        return CODEC;
+//    }
+//
+//    @Override
+//    public StreamCodec<RegistryFriendlyByteBuf, MachineState> networkCodec() {
+//        return STREAM_CODEC;
+//    }
 
     @Override
     public boolean isPowered() {

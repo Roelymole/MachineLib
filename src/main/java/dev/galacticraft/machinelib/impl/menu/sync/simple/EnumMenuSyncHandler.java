@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.menu.sync.simple;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -47,13 +47,13 @@ public final class EnumMenuSyncHandler<E extends Enum<E>> implements MenuSyncHan
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         this.value = this.supplier.get();
         buf.writeVarInt(this.value.ordinal());
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         this.value = this.world[buf.readVarInt()];
         this.consumer.accept(this.value);
     }

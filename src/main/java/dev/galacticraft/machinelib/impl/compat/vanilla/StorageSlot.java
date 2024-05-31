@@ -65,7 +65,7 @@ public class StorageSlot extends Slot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        return this.slot.inputType().playerInsertion() && (stack.isEmpty() || this.slot.getFilter().test(stack.getItem(), stack.getTag()));
+        return this.slot.inputType().playerInsertion() && (stack.isEmpty() || this.slot.getFilter().test(stack.getItem(), stack.getComponentsPatch()));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class StorageSlot extends Slot {
         if (stack.isEmpty()) {
             this.slot.set(null, null, 0);
         } else {
-            this.slot.set(stack.getItem(), stack.getTag(), stack.getCount());
+            this.slot.set(stack.getItem(), stack.getComponentsPatch(), stack.getCount());
         }
         this.slot.markModified();
     }
@@ -98,7 +98,7 @@ public class StorageSlot extends Slot {
         if (this.watchModCount == this.slot.getModifications()) {
             assert this.watchedStack != null;
             if (this.watchedStack.getCount() != this.slot.getAmount()
-                    || !Utils.componentsEqual(this.watchedStack.getTag(), this.slot.getTag())
+                    || !Utils.componentsEqual(this.watchedStack.getComponentsPatch(), this.slot.getComponents())
                     || !Utils.itemsEqual(this.slot.getResource(), this.watchedStack.getItem())
             ) {
                 if (true) throw new AssertionError();
@@ -135,7 +135,7 @@ public class StorageSlot extends Slot {
     @Override //return failed
     public @NotNull ItemStack safeInsert(@NotNull ItemStack stack, int count) {
         if (this.mayPlace(stack)) {
-            long inserted = this.slot.insert(stack.getItem(), stack.getTag(), Math.min(count, stack.getCount()));
+            long inserted = this.slot.insert(stack.getItem(), stack.getComponentsPatch(), Math.min(count, stack.getCount()));
             stack.shrink((int) inserted);
             return stack;
         }

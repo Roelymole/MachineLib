@@ -32,7 +32,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
@@ -89,36 +89,36 @@ public final class ResourceFilters {
     }
 
     /**
-     * Creates a resource filter based on the given NBT.
-     * The filter will check if the NBT of the resource is equal to the given NBT.
+     * Creates a resource filter based on the given components.
+     * The filter will check if the components of the resource is equal to the given components.
      *
-     * @param tag The NBT to match.
+     * @param components The components to match.
      * @param <Resource> The type of the resource being filtered.
-     * @return A resource filter that checks the resource's NBT.
+     * @return A resource filter that checks the resource's components.
      */
-    public static <Resource> @NotNull ResourceFilter<Resource> ofNBT(CompoundTag tag) {
-        return (resource, tag1) -> Utils.componentsEqual(tag, tag1);
+    public static <Resource> @NotNull ResourceFilter<Resource> ofComponents(DataComponentPatch components) {
+        return (resource, tag1) -> Utils.componentsEqual(components, tag1);
     }
 
     /**
-     * Creates a resource filter based on the given resource and compound tag.
-     * The filter will check if the resource is equal to the given resource and if the compound tag of the
-     * resource is equal to the given compound tag.
-     * If the compound tag is {@code null} it will also check for an empty tag.
+     * Creates a resource filter based on the given resource and components.
+     * The filter will check if the resource is equal to the given resource and if the components of the
+     * resource is equal to the given components.
+     * If the component map is {@code null} it will also check for empty components.
      *
      * @param resource The resource to match.
-     * @param tag The NBT to match.
+     * @param components The components to match.
      * @param <Resource> The type of the resource being filtered.
-     * @return A resource filter that checks the resource and NBT.
+     * @return A resource filter that checks the resource and components.
      */
     @Contract(pure = true)
-    public static <Resource> @NotNull ResourceFilter<Resource> ofResource(@NotNull Resource resource, @Nullable CompoundTag tag) {
-        return (r, t) -> r == resource && Utils.componentsEqual(t, tag);
+    public static <Resource> @NotNull ResourceFilter<Resource> ofResource(@NotNull Resource resource, @Nullable DataComponentPatch components) {
+        return (r, t) -> r == resource && Utils.componentsEqual(t, components);
     }
 
     /**
      * Creates a resource filter based on the given resource.
-     * The filter will check if the resource is equal to the given resource and will accept any NBT.
+     * The filter will check if the resource is equal to the given resource and will accept any components.
      *
      * @param resource The resource to match.
      * @param <Resource> The type of the resource being filtered.
@@ -131,28 +131,28 @@ public final class ResourceFilters {
 
     /**
      * Creates a resource filter based on the given item tag.
-     * The filter will check if the item has the given tag and will accept any NBT.
+     * The filter will check if the item has the given tag and will accept any components.
      *
      * @param tag The item tag to match.
      * @return A resource filter that checks the item is contained in the given tag.
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> itemTag(@NotNull TagKey<Item> tag) {
-        return (r, nbt) -> r != null && r.builtInRegistryHolder().is(tag);
+        return (r, components) -> r != null && r.builtInRegistryHolder().is(tag);
     }
 
     /**
-     * Creates a resource filter based on the given item tag and NBT tag.
-     * The filter will check if the item has the given tag and the NBT tag matches the provided tag.
+     * Creates a resource filter based on the given item tag and components.
+     * The filter will check if the item has the given tag and the components matches the provided components.
      * If the compound tag is {@code null} it will also accept an empty tag.
      *
      * @param tag The item tag to match.
-     * @param nbt The NBT to match.
-     * @return A resource filter that checks the item is contained in the given tag and has the correct NBT.
+     * @param components The components to match.
+     * @return A resource filter that checks the item is contained in the given tag and has the correct components.
      */
     @Contract(pure = true)
-    public static @NotNull ResourceFilter<Item> itemTag(@NotNull TagKey<Item> tag, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(nbtC, nbt);
+    public static @NotNull ResourceFilter<Item> itemTag(@NotNull TagKey<Item> tag, @Nullable DataComponentPatch components) {
+        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(componentsC, components);
     }
 
     /**
@@ -164,20 +164,20 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Fluid> fluidTag(@NotNull TagKey<Fluid> tag) {
-        return (r, nbt) -> r != null && r.builtInRegistryHolder().is(tag);
+        return (r, components) -> r != null && r.builtInRegistryHolder().is(tag);
     }
 
     /**
-     * Creates a resource filter based on the given fluid tag and additional NBT data.
-     * The filter will check if the fluid is contained in the given tag and if the NBT data matches.
+     * Creates a resource filter based on the given fluid tag and additional components.
+     * The filter will check if the fluid is contained in the given tag and if the components matches.
      *
      * @param tag The fluid tag to match.
-     * @param nbt The NBT data to match (can be null).
-     * @return A resource filter that checks if the fluid is contained in the given tag and if the NBT data matches.
+     * @param components The components to match (can be null).
+     * @return A resource filter that checks if the fluid is contained in the given tag and if the components matches.
      */
     @Contract(pure = true)
-    public static @NotNull ResourceFilter<Fluid> fluidTag(@NotNull TagKey<Fluid> tag, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(nbtC, nbt);
+    public static @NotNull ResourceFilter<Fluid> fluidTag(@NotNull TagKey<Fluid> tag, @Nullable DataComponentPatch components) {
+        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(componentsC, components);
     }
 
     /**
@@ -189,9 +189,9 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> providesApi(ItemApiLookup<?, ContainerItemContext> apiLookup) {
-        return (r, nbt) -> {
+        return (r, components) -> {
             if (r == null) return false;
-            return ContainerItemContext.withConstant(ItemVariant.of(r, nbt), 1).find(apiLookup) != null;
+            return ContainerItemContext.withConstant(ItemVariant.of(r, components), 1).find(apiLookup) != null;
         };
     }
 
@@ -203,9 +203,9 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> canExtractFluid(@NotNull Fluid fluid) {
-        return (r, nbt) -> {
+        return (r, components) -> {
             if (r == null) return false;
-            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, nbt), 1).find(FluidStorage.ITEM);
+            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, components), 1).find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsExtraction()) return false;
             try (Transaction transaction = Transaction.openNested(Transaction.getCurrentUnsafe())) {
                 if (storage.extract(FluidVariant.of(fluid), FluidConstants.BUCKET, transaction) > 0) {
@@ -217,20 +217,20 @@ public final class ResourceFilters {
     }
 
     /**
-     * Checks if the specified item can have the given fluid (with NBT) extracted from it.
+     * Checks if the specified item can have the given fluid (with components) extracted from it.
      *
      * @param fluid The desired fluid to extract.
-     * @param nbt The desired fluid NBT tag.
-     * @return A resource filter that checks if the item can have the given fluid (with NBT) extracted from it.
+     * @param components The desired fluid components.
+     * @return A resource filter that checks if the item can have the given fluid (with components) extracted from it.
      */
     @Contract(pure = true)
-    public static @NotNull ResourceFilter<Item> canExtractFluid(@NotNull Fluid fluid, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> {
+    public static @NotNull ResourceFilter<Item> canExtractFluid(@NotNull Fluid fluid, @Nullable DataComponentPatch components) {
+        return (r, componentsC) -> {
             if (r == null) return false;
-            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, nbtC), 1).find(FluidStorage.ITEM);
+            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, componentsC), 1).find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsExtraction()) return false;
             try (Transaction transaction = Transaction.openNested(Transaction.getCurrentUnsafe())) {
-                if (storage.extract(FluidVariant.of(fluid, nbt), FluidConstants.BUCKET, transaction) > 0) {
+                if (storage.extract(FluidVariant.of(fluid, components), FluidConstants.BUCKET, transaction) > 0) {
                     return true;
                 }
             }
@@ -239,16 +239,16 @@ public final class ResourceFilters {
     }
 
     /**
-     * Checks if the specified item can have the given fluid (with NBT) extracted from it.
+     * Checks if the specified item can have the given fluid (with components) extracted from it.
      *
      * @param tag The desired fluids to extract.
-     * @return A resource filter that checks if the item can have the given fluid (with NBT) extracted from it.
+     * @return A resource filter that checks if the item can have the given fluid (with components) extracted from it.
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> canExtractFluid(@NotNull TagKey<Fluid> tag) {
-        return (r, nbtC) -> {
+        return (r, components) -> {
             if (r == null) return false;
-            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, nbtC), 1).find(FluidStorage.ITEM);
+            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, components), 1).find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsExtraction()) return false;
             try (Transaction transaction = Transaction.openNested(Transaction.getCurrentUnsafe())) {
                 for (StorageView<FluidVariant> view : storage) {
@@ -272,9 +272,9 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> canInsertFluid(@NotNull Fluid fluid) {
-        return (r, nbt) -> {
+        return (r, components) -> {
             if (r == null) return false;
-            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, nbt), 1).find(FluidStorage.ITEM);
+            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, components), 1).find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsInsertion()) return false;
             try (Transaction transaction = Transaction.openNested(Transaction.getCurrentUnsafe())) {
                 if (storage.insert(FluidVariant.of(fluid), FluidConstants.BUCKET, transaction) > 0) {
@@ -286,20 +286,20 @@ public final class ResourceFilters {
     }
 
     /**
-     * Checks if the specified item can have the given fluid with NBT inserted into it.
+     * Checks if the specified item can have the given fluid with components inserted into it.
      *
      * @param fluid The desired fluid to insert.
-     * @param nbt The associated compound tag of the fluid. If the NBT is {@code null} it will also accept empty compounds.
+     * @param components The associated compound tag of the fluid. If the components is {@code null} it will also accept empty components.
      * @return A resource filter that checks if the item can have the given fluid inserted into it.
      */
     @Contract(pure = true)
-    public static @NotNull ResourceFilter<Item> canInsertFluid(@NotNull Fluid fluid, @Nullable CompoundTag nbt) {
-        return (r, nbtC) -> {
+    public static @NotNull ResourceFilter<Item> canInsertFluid(@NotNull Fluid fluid, @Nullable DataComponentPatch components) {
+        return (r, componentsC) -> {
             if (r == null) return false;
-            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, nbtC), 1).find(FluidStorage.ITEM);
+            Storage<FluidVariant> storage = ContainerItemContext.withConstant(ItemVariant.of(r, componentsC), 1).find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsInsertion()) return false;
             try (Transaction transaction = Transaction.openNested(Transaction.getCurrentUnsafe())) {
-                if (storage.insert(FluidVariant.of(fluid, nbt), FluidConstants.BUCKET, transaction) > 0) {
+                if (storage.insert(FluidVariant.of(fluid, components), FluidConstants.BUCKET, transaction) > 0) {
                     return true;
                 }
             }

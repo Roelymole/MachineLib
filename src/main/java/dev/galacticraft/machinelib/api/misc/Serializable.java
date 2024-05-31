@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,11 +32,14 @@ import org.jetbrains.annotations.NotNull;
  * @param <T> The type of tag that represents the serialized object.
  * @see Deserializable
  */
-public interface Serializable<T extends Tag> extends PacketSerializable {
+public interface Serializable<T extends Tag> extends PacketSerializable/*<T>*/ {
     /**
      * Serializes this object as a tag.
      *
      * @return the created tag
      */
     @NotNull T createTag();
+
+
+//    @NotNull Codec<T> codec();
 }

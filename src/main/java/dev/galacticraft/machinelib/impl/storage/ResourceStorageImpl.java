@@ -32,7 +32,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -141,14 +141,14 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         for (Slot slot : this.slots) {
             slot.writePacket(buf);
         }
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         for (Slot slot : this.slots) {
             slot.readPacket(buf);
         }

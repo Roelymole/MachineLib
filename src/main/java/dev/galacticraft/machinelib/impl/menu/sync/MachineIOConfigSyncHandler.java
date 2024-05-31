@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.impl.Constant;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class MachineIOConfigSyncHandler implements MenuSyncHandler {
@@ -46,7 +46,7 @@ public class MachineIOConfigSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         byte total = 0;
         for (MenuSyncHandler syncHandler : this.syncHandlers) {
             if (syncHandler.needsSyncing()) total++;
@@ -63,7 +63,7 @@ public class MachineIOConfigSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         byte total = buf.readByte();
         for (byte i = 0; i < total; i++) {
             byte b = buf.readByte();

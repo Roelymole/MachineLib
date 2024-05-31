@@ -25,7 +25,6 @@ package dev.galacticraft.machinelib.testmod.block;
 import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.block.entity.GeneratorBlockEntity;
-import dev.galacticraft.machinelib.testmod.block.entity.TestModBlockEntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;

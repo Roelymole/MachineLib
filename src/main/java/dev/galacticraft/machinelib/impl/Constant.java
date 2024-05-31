@@ -59,7 +59,6 @@ public interface Constant {
     }
 
     interface Nbt {
-        String BLOCK_ENTITY_TAG = "BlockEntityTag";
         String DISABLE_DROPS = "NoDrop";
         String OWNER = "Owner";
         String PROGRESS = "Progress";

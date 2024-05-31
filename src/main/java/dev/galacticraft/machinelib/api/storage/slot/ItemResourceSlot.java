@@ -30,7 +30,7 @@ import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.compat.vanilla.FakeRecipeHolder;
 import dev.galacticraft.machinelib.impl.storage.slot.ItemResourceSlotImpl;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.Contract;
@@ -58,13 +58,13 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
 
     boolean consumeOne(@NotNull Item resource);
 
-    boolean consumeOne(@NotNull Item resource, @Nullable CompoundTag tag);
+    boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components);
 
     long consume(long amount);
 
     long consume(@NotNull Item resource, long amount);
 
-    long consume(@NotNull Item resource, @Nullable CompoundTag tag, long amount);
+    long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
     @Nullable ItemSlotDisplay getDisplay();
 

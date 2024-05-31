@@ -32,7 +32,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
@@ -71,13 +71,8 @@ public final class TankImpl implements Tank {
     }
 
     @Override
-    public @Nullable CompoundTag getTag() {
-        return this.slot.getTag();
-    }
-
-    @Override
-    public @Nullable CompoundTag copyTag() {
-        return this.slot.copyTag();
+    public @Nullable DataComponentPatch getComponents() {
+        return this.slot.getComponents();
     }
 
     @Override
@@ -97,7 +92,7 @@ public final class TankImpl implements Tank {
 
     @Override
     public FluidVariant createVariant() {
-        return this.getFluid() == null ? FluidVariant.blank() : FluidVariant.of(this.getFluid(), this.getTag());
+        return this.getFluid() == null ? FluidVariant.blank() : FluidVariant.of(this.getFluid(), this.getComponents());
     }
 
     @Override
@@ -138,7 +133,7 @@ public final class TankImpl implements Tank {
     @Override
     public List<Component> getTooltip() {
         List<Component> list = new ArrayList<>();
-        DisplayUtil.createFluidTooltip(list, this.getFluid(), this.getTag(), this.getAmount(), this.getCapacity());
+        DisplayUtil.createFluidTooltip(list, this.getFluid(), this.getComponents(), this.getAmount(), this.getCapacity());
         return list;
     }
 
@@ -149,7 +144,7 @@ public final class TankImpl implements Tank {
             if (storage.supportsExtraction() && this.inputType.playerInsertion()) {
                 FluidVariant storedResource;
                 if (this.isEmpty()) {
-                    storedResource = StorageUtil.findStoredResource(storage, variant -> this.slot.getFilter().test(variant.getFluid(), variant.getNbt()));
+                    storedResource = StorageUtil.findStoredResource(storage, variant -> this.slot.getFilter().test(variant.getFluid(), variant.getComponents()));
                 } else {
                     storedResource = this.createVariant();
                 }

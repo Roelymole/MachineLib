@@ -128,7 +128,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
     @Override
     protected void outputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
-        this.itemStorage().insertMatching(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getTag(), assembled.getCount());
+        this.itemStorage().insertMatching(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
     @Override
     protected boolean canOutputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
-        return this.itemStorage().canInsert(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getTag(), assembled.getCount());
+        return this.itemStorage().canInsert(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
     /**

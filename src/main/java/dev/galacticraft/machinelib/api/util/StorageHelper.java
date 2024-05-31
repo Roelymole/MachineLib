@@ -73,13 +73,13 @@ public final class StorageHelper {
         StoragePreconditions.notNegative(maxAmount);
         long maxExtracted;
         try (Transaction test = Transaction.openNested(context)) {
-            maxExtracted = from.extract(variant.getObject(), variant.getNbt(), maxAmount, test);
+            maxExtracted = from.extract(variant.getObject(), variant.getComponents(), maxAmount, test);
         }
 
         try (Transaction moveTransaction = Transaction.openNested(context)) {
             long accepted = to.insert(variant, maxExtracted, moveTransaction);
 
-            if (from.extract(variant.getObject(), variant.getNbt(), accepted, moveTransaction) == accepted) {
+            if (from.extract(variant.getObject(), variant.getComponents(), accepted, moveTransaction) == accepted) {
                 moveTransaction.commit();
                 return accepted;
             }
@@ -98,7 +98,7 @@ public final class StorageHelper {
         }
 
         try (Transaction moveTransaction = Transaction.openNested(context)) {
-            long accepted = to.insert(variant.getObject(), variant.getNbt(), maxExtracted, moveTransaction);
+            long accepted = to.insert(variant.getObject(), variant.getComponents(), maxExtracted, moveTransaction);
 
             if (from.extract(variant, accepted, moveTransaction) == accepted) {
                 moveTransaction.commit();
@@ -141,7 +141,7 @@ public final class StorageHelper {
             long maxExtracted = 0;
             try (Transaction test = Transaction.openNested(context)) {
                 variant = view.getResource();
-                if (filter.test(variant.getObject(), variant.getNbt())) {
+                if (filter.test(variant.getObject(), variant.getComponents())) {
                     maxExtracted = from.extract(variant, maxAmount, test);
                 }
             }
@@ -149,7 +149,7 @@ public final class StorageHelper {
             if (maxExtracted == 0 || variant.isBlank()) continue;
 
             try (Transaction moveTransaction = Transaction.openNested(context)) {
-                long accepted = to.insert(variant.getObject(), variant.getNbt(), maxExtracted, moveTransaction);
+                long accepted = to.insert(variant.getObject(), variant.getComponents(), maxExtracted, moveTransaction);
 
                 if (view.extract(variant, accepted, moveTransaction) == accepted) {
                     moveTransaction.commit();
@@ -171,7 +171,7 @@ public final class StorageHelper {
             long maxExtracted = 0;
             try (Transaction test = Transaction.openNested(context)) {
                 variant = view.getResource();
-                if (filter.test(variant.getObject(), variant.getNbt())) {
+                if (filter.test(variant.getObject(), variant.getComponents())) {
                     maxExtracted = from.extract(variant, maxAmount, test);
                 }
             }

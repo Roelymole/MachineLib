@@ -26,7 +26,7 @@ import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.impl.Utils;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -103,9 +103,9 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public boolean consumeOne(@NotNull Item resource, @Nullable CompoundTag tag) {
+    public boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components) {
         for (ItemResourceSlot slot : this.slots) {
-            if (slot.consumeOne(resource, tag)) return true;
+            if (slot.consumeOne(resource, components)) return true;
         }
         return false;
     }
@@ -121,10 +121,10 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public long consume(@NotNull Item resource, @Nullable CompoundTag tag, long amount) {
+    public long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
         long consumed = 0;
         for (ItemResourceSlot slot : this.slots) {
-            consumed += slot.consume(resource, tag, amount - consumed);
+            consumed += slot.consume(resource, components, amount - consumed);
             if (consumed == amount) break;
         }
         return consumed;
@@ -141,8 +141,8 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public boolean consumeOne(int slot, @NotNull Item resource, @Nullable CompoundTag tag) {
-        return this.slots[slot].consumeOne(resource, tag);
+    public boolean consumeOne(int slot, @NotNull Item resource, @Nullable DataComponentPatch components) {
+        return this.slots[slot].consumeOne(resource, components);
     }
 
     @Override
@@ -156,8 +156,8 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public long consume(int slot, @NotNull Item resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].consume(resource, tag, amount);
+    public long consume(int slot, @NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].consume(resource, components, amount);
     }
 
     @Override
@@ -170,10 +170,10 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public boolean consumeOne(int start, int len, @NotNull Item resource, @Nullable CompoundTag tag) {
+    public boolean consumeOne(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components) {
         for (int i = start; i < start + len; i++) {
             ItemResourceSlot slot = this.slots[i];
-            if (slot.consumeOne(resource, tag)) return true;
+            if (slot.consumeOne(resource, components)) return true;
         }
         return false;
     }
@@ -190,11 +190,11 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     }
 
     @Override
-    public long consume(int start, int len, @NotNull Item resource, @Nullable CompoundTag tag, long amount) {
+    public long consume(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
         long consumed = 0;
         for (int i = start; i < start + len; i++) {
             ItemResourceSlot slot = this.slots[i];
-            consumed += slot.consume(resource, tag, amount - consumed);
+            consumed += slot.consume(resource, components, amount - consumed);
             if (consumed == amount) break;
         }
         return consumed;

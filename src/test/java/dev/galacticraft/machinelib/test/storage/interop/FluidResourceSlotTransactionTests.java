@@ -64,7 +64,7 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
                 assertTrue(this.slot.isEmpty());
                 assertNull(this.slot.getResource());
-                assertNull(this.slot.getTag());
+                assertNull(this.slot.getComponents());
                 assertEquals(0, this.slot.getAmount());
             }
 
@@ -78,13 +78,13 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getTag());
+                assertEquals(tag, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
             }
 
             assertTrue(this.slot.isEmpty());
             assertNull(this.slot.getResource());
-            assertNull(this.slot.getTag());
+            assertNull(this.slot.getComponents());
             assertEquals(0, this.slot.getAmount());
         }
 
@@ -95,13 +95,13 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getTag());
+                assertEquals(tag, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
             }
 
             assertTrue(this.slot.isEmpty());
             assertNull(this.slot.getResource());
-            assertNull(this.slot.getTag());
+            assertNull(this.slot.getComponents());
             assertEquals(0, this.slot.getAmount());
         }
     }
@@ -117,7 +117,7 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
                 assertTrue(this.slot.isEmpty());
                 assertNull(this.slot.getResource());
-                assertNull(this.slot.getTag());
+                assertNull(this.slot.getComponents());
                 assertEquals(0, this.slot.getAmount());
 
                 transaction.commit();
@@ -133,7 +133,7 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getTag());
+                assertEquals(tag, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
 
                 transaction.commit();
@@ -149,7 +149,7 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getTag());
+                assertEquals(tag, this.slot.getComponents());
 
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
                 transaction.commit();

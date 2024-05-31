@@ -290,7 +290,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @Contract(mutates = "this")
     public void setRedstoneMode(@NotNull RedstoneMode redstone) {
-        this.redstone = redstone;
+        this.configuration.setRedstoneMode(redstone);
         this.setChanged();
     }
 
@@ -618,38 +618,38 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     /**
      * Serializes the machine's state to nbt.
      *
-     * @param nbt the nbt to serialize to.
+     * @param tag the nbt to serialize to.
      */
     @Override
-    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider lookup) {
-        super.saveAdditional(nbt, lookup);
-        nbt.put(Constant.Nbt.ENERGY_STORAGE, this.energyStorage.createTag());
-        nbt.put(Constant.Nbt.ITEM_STORAGE, this.itemStorage.createTag());
-        nbt.put(Constant.Nbt.FLUID_STORAGE, this.fluidStorage.createTag());
-        nbt.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
-        nbt.put(Constant.Nbt.STATE, this.state.createTag());
-        nbt.putBoolean(Constant.Nbt.DISABLE_DROPS, this.disableDrops);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.put(Constant.Nbt.ENERGY_STORAGE, this.energyStorage.createTag());
+        tag.put(Constant.Nbt.ITEM_STORAGE, this.itemStorage.createTag());
+        tag.put(Constant.Nbt.FLUID_STORAGE, this.fluidStorage.createTag());
+        tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
+        tag.put(Constant.Nbt.STATE, this.state.createTag());
+        tag.putBoolean(Constant.Nbt.DISABLE_DROPS, this.disableDrops);
     }
 
     /**
      * Deserializes the machine's state from nbt.
      *
-     * @param nbt the nbt to deserialize from.
+     * @param tag the nbt to deserialize from.
      */
     @Override
-    public void loadAdditional(CompoundTag nbt, HolderLookup.Provider lookup) {
-        super.loadAdditional(nbt, lookup);
-        if (nbt.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND))
-            this.configuration.readTag(nbt.getCompound(Constant.Nbt.CONFIGURATION));
-        if (nbt.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
-            this.state.readTag(nbt.getCompound(Constant.Nbt.CONFIGURATION));
-        if (nbt.contains(Constant.Nbt.ENERGY_STORAGE, Tag.TAG_LONG))
-            this.energyStorage.readTag(Objects.requireNonNull(((LongTag) nbt.get(Constant.Nbt.ENERGY_STORAGE))));
-        if (nbt.contains(Constant.Nbt.ITEM_STORAGE, Tag.TAG_LIST))
-            this.itemStorage.readTag(Objects.requireNonNull(nbt.getList(Constant.Nbt.ITEM_STORAGE, Tag.TAG_COMPOUND)));
-        if (nbt.contains(Constant.Nbt.FLUID_STORAGE, Tag.TAG_LIST))
-            this.fluidStorage.readTag(Objects.requireNonNull(nbt.getList(Constant.Nbt.FLUID_STORAGE, Tag.TAG_COMPOUND)));
-        this.disableDrops = nbt.getBoolean(Constant.Nbt.DISABLE_DROPS);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        if (tag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND))
+            this.configuration.readTag(tag.getCompound(Constant.Nbt.CONFIGURATION));
+        if (tag.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
+            this.state.readTag(tag.getCompound(Constant.Nbt.CONFIGURATION));
+        if (tag.contains(Constant.Nbt.ENERGY_STORAGE, Tag.TAG_LONG))
+            this.energyStorage.readTag(Objects.requireNonNull(((LongTag) tag.get(Constant.Nbt.ENERGY_STORAGE))));
+        if (tag.contains(Constant.Nbt.ITEM_STORAGE, Tag.TAG_LIST))
+            this.itemStorage.readTag(Objects.requireNonNull(tag.getList(Constant.Nbt.ITEM_STORAGE, Tag.TAG_COMPOUND)));
+        if (tag.contains(Constant.Nbt.FLUID_STORAGE, Tag.TAG_LIST))
+            this.fluidStorage.readTag(Objects.requireNonNull(tag.getList(Constant.Nbt.FLUID_STORAGE, Tag.TAG_COMPOUND)));
+        this.disableDrops = tag.getBoolean(Constant.Nbt.DISABLE_DROPS);
 
         if (level != null && level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);

@@ -29,13 +29,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A resource flow is a way to describe how a resource can be transferred between two storages.
  */
-public enum ResourceFlow {
+public enum ResourceFlow implements StringRepresentable {
     /**
      * Resources can flow into the machine.
      */
@@ -54,7 +55,8 @@ public enum ResourceFlow {
      */
     public static final ResourceFlow[] VALUES = ResourceFlow.values();
 
-    public static final StreamCodec<ByteBuf, ResourceFlow> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
+    public static final StringRepresentable.EnumCodec<ResourceFlow> CODEC = StringRepresentable.fromEnum(ResourceFlow::values);
+    public static final StreamCodec<ByteBuf, ResourceFlow> STREAM_CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
      * The text of the flow direction.
@@ -94,5 +96,15 @@ public enum ResourceFlow {
     @Contract(pure = true)
     public boolean canFlowIn(ResourceFlow flow) {
         return this == flow || this == BOTH || flow == BOTH;
+    }
+
+    @Override
+    @Contract(pure = true)
+    public @NotNull String getSerializedName() {
+        return switch (this) {
+            case INPUT -> "input";
+            case OUTPUT -> "output";
+            case BOTH -> "both";
+        };
     }
 }

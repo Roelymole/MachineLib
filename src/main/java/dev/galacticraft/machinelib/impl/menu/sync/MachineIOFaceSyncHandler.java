@@ -26,7 +26,7 @@ import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class MachineIOFaceSyncHandler implements MenuSyncHandler {
@@ -47,7 +47,7 @@ public class MachineIOFaceSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = 0b00000;
         if (this.prevType != face.getType()) ref |= 0b00001;
         if (this.prevFlow != face.getFlow()) ref |= 0b00010;
@@ -65,7 +65,7 @@ public class MachineIOFaceSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = buf.readByte();
         if ((ref & 0b00001) != 0) {
             face.setOption(ResourceType.getFromOrdinal(buf.readByte()), face.getFlow());

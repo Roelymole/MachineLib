@@ -26,7 +26,7 @@ import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.storage.SlottedStorageAccess;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,9 +65,9 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (Slot slot : this.slots) {
-            if (slot.canInsert(resource, tag)) return true;
+            if (slot.canInsert(resource, components)) return true;
         }
         return false;
     }
@@ -83,10 +83,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (Slot slot : this.slots) {
-            inserted += slot.tryInsert(resource, tag, amount - inserted);
+            inserted += slot.tryInsert(resource, components, amount - inserted);
             if (inserted == amount) return true;
         }
         return inserted == amount;
@@ -103,10 +103,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long tryInsert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryInsert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (Slot slot : this.slots) {
-            inserted += slot.tryInsert(resource, tag, amount - inserted);
+            inserted += slot.tryInsert(resource, components, amount - inserted);
             if (inserted == amount) break;
         }
         return inserted;
@@ -123,10 +123,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (Slot slot : this.slots) {
-            inserted += slot.insert(resource, tag, amount - inserted);
+            inserted += slot.insert(resource, components, amount - inserted);
             if (inserted == amount) break;
         }
         return inserted;
@@ -146,16 +146,16 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long insertMatching(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long insertMatching(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (Slot slot : this.slots) {
-            if (slot.contains(resource, tag)) {
-                inserted += slot.insert(resource, tag, amount - inserted);
+            if (slot.contains(resource, components)) {
+                inserted += slot.insert(resource, components, amount - inserted);
                 if (inserted == amount) return inserted;
             }
         }
 
-        return this.insert(resource, tag, amount - inserted) + inserted;
+        return this.insert(resource, components, amount - inserted) + inserted;
     }
 
     @Override
@@ -167,9 +167,9 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean contains(@NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean contains(@NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (Slot slot : this.slots) {
-            if (slot.contains(resource, tag)) return true;
+            if (slot.contains(resource, components)) return true;
         }
         return false;
     }
@@ -183,9 +183,9 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canExtract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         for (Slot slot : this.slots) {
-            if (slot.canExtract(resource, tag, amount)) return true;
+            if (slot.canExtract(resource, components, amount)) return true;
         }
         return false;
     }
@@ -209,18 +209,18 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean extractOne(@NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean extractOne(@NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (Slot slot : this.slots) {
-            if (slot.extractOne(resource, tag)) return true;
+            if (slot.extractOne(resource, components)) return true;
         }
         return false;
     }
 
     @Override
-    public long tryExtract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long extracted = 0;
         for (Slot slot : this.slots) {
-            extracted += slot.tryExtract(resource, tag, amount - extracted);
+            extracted += slot.tryExtract(resource, components, amount - extracted);
             if (extracted == amount) break;
         }
         return extracted;
@@ -237,30 +237,30 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long extract(@NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long extract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long extracted = 0;
         for (Slot slot : this.slots) {
-            extracted += slot.extract(resource, tag, amount - extracted);
+            extracted += slot.extract(resource, components, amount - extracted);
             if (extracted == amount) break;
         }
         return extracted;
     }
 
     @Override
-    public long insert(@NotNull Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context) {
+    public long insert(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context) {
         long inserted = 0;
         for (Slot slot : this.slots) {
-            inserted += slot.insert(resource, tag, amount - inserted);
+            inserted += slot.insert(resource, components, amount - inserted);
             if (inserted == amount) break;
         }
         return inserted;
     }
 
     @Override
-    public long extract(@Nullable Resource resource, @Nullable CompoundTag tag, long amount, @Nullable TransactionContext context) {
+    public long extract(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context) {
         long extracted = 0;
         for (Slot slot : this.slots) {
-            extracted += slot.extract(resource, tag, amount - extracted, context);
+            extracted += slot.extract(resource, components, amount - extracted, context);
             if (extracted == amount) break;
         }
         return extracted;
@@ -298,13 +298,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public @Nullable CompoundTag getTag(int slot) {
-        return this.slots[slot].getTag();
-    }
-
-    @Override
-    public @Nullable CompoundTag copyTag(int slot) {
-        return this.slots[slot].copyTag();
+    public @Nullable DataComponentPatch getComponents(int slot) {
+        return this.slots[slot].getComponents();
     }
 
     @Override
@@ -338,8 +333,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag) {
-        return this.slots[slot].canInsert(resource, tag);
+    public boolean canInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components) {
+        return this.slots[slot].canInsert(resource, components);
     }
 
     @Override
@@ -348,8 +343,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].canInsert(resource, tag, amount);
+    public boolean canInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].canInsert(resource, components, amount);
     }
 
     @Override
@@ -358,8 +353,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long tryInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].tryInsert(resource, tag, amount);
+    public long tryInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].tryInsert(resource, components, amount);
     }
 
     @Override
@@ -368,8 +363,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long insert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].insert(resource, tag, amount);
+    public long insert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].insert(resource, components, amount);
     }
 
     @Override
@@ -378,8 +373,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean contains(int slot, @NotNull Resource resource, @Nullable CompoundTag tag) {
-        return this.slots[slot].contains(resource, tag);
+    public boolean contains(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components) {
+        return this.slots[slot].contains(resource, components);
     }
 
     @Override
@@ -393,8 +388,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canExtract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].canExtract(resource, tag, amount);
+    public boolean canExtract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].canExtract(resource, components, amount);
     }
 
     @Override
@@ -408,8 +403,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long tryExtract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].tryExtract(resource, tag, amount);
+    public long tryExtract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].tryExtract(resource, components, amount);
     }
 
     @Override
@@ -423,8 +418,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean extractOne(int slot, @NotNull Resource resource, @Nullable CompoundTag tag) {
-        return this.slots[slot].extractOne(resource, tag);
+    public boolean extractOne(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components) {
+        return this.slots[slot].extractOne(resource, components);
     }
 
     @Override
@@ -438,8 +433,8 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long extract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
-        return this.slots[slot].extract(resource, tag, amount);
+    public long extract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
+        return this.slots[slot].extract(resource, components, amount);
     }
 
     @Override
@@ -470,10 +465,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            if (slot.canInsert(resource, tag)) return true;
+            if (slot.canInsert(resource, components)) return true;
         }
         return false;
     }
@@ -490,11 +485,11 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            inserted += slot.tryInsert(resource, tag, amount - inserted);
+            inserted += slot.tryInsert(resource, components, amount - inserted);
             if (inserted == amount) return true;
         }
         return inserted == amount;
@@ -512,11 +507,11 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long tryInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            inserted += slot.tryInsert(resource, tag, amount - inserted);
+            inserted += slot.tryInsert(resource, components, amount - inserted);
             if (inserted == amount) break;
         }
         return inserted;
@@ -534,11 +529,11 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long insert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long insert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            inserted += slot.insert(resource, tag, amount - inserted);
+            inserted += slot.insert(resource, components, amount - inserted);
             if (inserted == amount) break;
         }
         return inserted;
@@ -559,17 +554,17 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long insertMatching(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long insertMatching(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long inserted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            if (slot.contains(resource, tag)) {
-                inserted += slot.insert(resource, tag, amount - inserted);
+            if (slot.contains(resource, components)) {
+                inserted += slot.insert(resource, components, amount - inserted);
                 if (inserted == amount) return inserted;
             }
         }
 
-        return this.insert(start, len, resource, tag, amount - inserted) + inserted;
+        return this.insert(start, len, resource, components, amount - inserted) + inserted;
     }
 
     @Override
@@ -582,10 +577,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean contains(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean contains(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            if (slot.contains(resource, tag)) return true;
+            if (slot.contains(resource, components)) return true;
         }
         return false;
     }
@@ -600,10 +595,10 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean canExtract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public boolean canExtract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            if (slot.canExtract(resource, tag, amount)) return true;
+            if (slot.canExtract(resource, components, amount)) return true;
         }
         return false;
     }
@@ -629,20 +624,20 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public boolean extractOne(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag) {
+    public boolean extractOne(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components) {
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            if (slot.extractOne(resource, tag)) return true;
+            if (slot.extractOne(resource, components)) return true;
         }
         return false;
     }
 
     @Override
-    public long tryExtract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long tryExtract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long extracted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            extracted += slot.tryExtract(resource, tag, amount - extracted);
+            extracted += slot.tryExtract(resource, components, amount - extracted);
             if (extracted == amount) break;
         }
         return extracted;
@@ -660,11 +655,11 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     }
 
     @Override
-    public long extract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount) {
+    public long extract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount) {
         long extracted = 0;
         for (int i = start; i < start + len; i++) {
             Slot slot = this.slots[i];
-            extracted += slot.extract(resource, tag, amount - extracted);
+            extracted += slot.extract(resource, components, amount - extracted);
             if (extracted == amount) break;
         }
         return extracted;

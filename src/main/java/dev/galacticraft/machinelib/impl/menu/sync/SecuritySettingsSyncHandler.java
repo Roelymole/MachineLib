@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +62,7 @@ public class SecuritySettingsSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = 0b00000;
         byte nullRef = 0b00000;
         if (!Objects.equals(this.prevOwner, settings.getOwner())) {
@@ -119,7 +119,7 @@ public class SecuritySettingsSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = buf.readByte();
         byte nullRef = buf.readByte();
         ref ^= nullRef;

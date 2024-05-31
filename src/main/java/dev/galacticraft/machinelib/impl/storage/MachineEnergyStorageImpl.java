@@ -30,7 +30,7 @@ import dev.galacticraft.machinelib.impl.menu.sync.MachineEnergyStorageSyncHandle
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.LongTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -252,12 +252,12 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         buf.writeLong(this.amount);
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         this.amount = buf.readLong();
     }
 

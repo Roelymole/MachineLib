@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class MachineConfigurationSyncHandler implements MenuSyncHandler {
@@ -49,7 +49,7 @@ public class MachineConfigurationSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = 0b000;
         if (this.ioConfig.needsSyncing()) ref |= 0b001;
         if (this.security.needsSyncing()) ref |= 0b010;
@@ -71,7 +71,7 @@ public class MachineConfigurationSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         byte ref = buf.readByte();
         if ((ref & 0b001) != 0) {
             this.ioConfig.read(buf);

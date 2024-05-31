@@ -22,6 +22,8 @@
 
 package dev.galacticraft.machinelib.impl.block.face;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
@@ -33,7 +35,8 @@ import dev.galacticraft.machinelib.impl.menu.sync.MachineIOFaceSyncHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.ApiStatus;
@@ -44,6 +47,16 @@ import team.reborn.energy.api.EnergyStorage;
 
 @ApiStatus.Internal
 public final class MachineIOFaceImpl implements MachineIOFace {
+    public static final Codec<MachineIOFace> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceType.CODEC.fieldOf("type").forGetter(MachineIOFace::getType),
+            ResourceFlow.CODEC.fieldOf("flow").forGetter(MachineIOFace::getFlow)
+    ).apply(instance, MachineIOFaceImpl::new));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MachineIOFace> STREAM_CODEC = StreamCodec.composite(
+            ResourceType.STREAM_CODEC, MachineIOFace::getType,
+            ResourceFlow.STREAM_CODEC, MachineIOFace::getFlow,
+            MachineIOFaceImpl::new
+    );
+
     /**
      * The type of resource that this face is configured to accept.
      */
@@ -119,6 +132,16 @@ public final class MachineIOFaceImpl implements MachineIOFace {
         return null;
     }
 
+//    @Override
+//    public @NotNull Codec<MachineIOFace> codec() {
+//        return CODEC;
+//    }
+//
+//    @Override
+//    public StreamCodec<RegistryFriendlyByteBuf, MachineIOFace> networkCodec() {
+//        return STREAM_CODEC;
+//    }
+
     @Override
     public @NotNull CompoundTag createTag() {
         CompoundTag tag = new CompoundTag();
@@ -139,12 +162,12 @@ public final class MachineIOFaceImpl implements MachineIOFace {
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         buf.writeByte(this.type.ordinal()).writeByte(this.flow.ordinal());
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         this.type = ResourceType.getFromOrdinal(buf.readByte());
         this.flow = ResourceFlow.getFromOrdinal(buf.readByte());
 

@@ -47,6 +47,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -54,6 +55,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -220,10 +222,11 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
     public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
         assert stack.getItem() instanceof BlockItem;
         assert ((BlockItem) stack.getItem()).getBlock() instanceof MachineBlock;
-        CompoundTag tag = stack.getTag();
+        CustomData customData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+
         MachineIOConfig config = MachineIOConfig.create();
-        if (tag != null && tag.contains(Constant.Nbt.BLOCK_ENTITY_TAG, Tag.TAG_COMPOUND)) {
-            CompoundTag beTag = tag.getCompound(Constant.Nbt.BLOCK_ENTITY_TAG);
+        if (!customData.isEmpty()) {
+            CompoundTag beTag = customData.getUnsafe();
             if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {
                 CompoundTag confTag = beTag.getCompound(Constant.Nbt.CONFIGURATION);
                 if (confTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {

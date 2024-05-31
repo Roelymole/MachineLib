@@ -36,11 +36,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.*;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -100,9 +97,9 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch tag) {
-        if (this.extractOne(resource, tag)) {
-            this.insertRemainder(resource, tag, 1);
+    public boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components) {
+        if (this.extractOne(resource, components)) {
+            this.insertRemainder(resource, components, 1);
             return true;
         } else {
             return false;
@@ -133,20 +130,20 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public long consume(@NotNull Item resource, @Nullable DataComponentPatch tag, long amount) {
-        long consumed = this.extract(resource, tag, amount);
+    public long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
+        long consumed = this.extract(resource, components, amount);
         if (consumed > 0) {
-            this.insertRemainder(resource, tag, (int) consumed);
+            this.insertRemainder(resource, components, (int) consumed);
         }
         return consumed;
     }
 
-    private void insertRemainder(@NotNull Item resource, @Nullable DataComponentPatch tag, int extracted) {
+    private void insertRemainder(@NotNull Item resource, DataComponentPatch tag, int extracted) {
         if (resource.hasCraftingRemainingItem()) {
             if (this.isEmpty()) {
                 ItemStack remainder = resource.getRecipeRemainder(ItemStackUtil.of(resource, tag, extracted));
                 if (!remainder.isEmpty()) {
-                    this.insert(remainder.getItem(), remainder.getTag(), remainder.getCount());
+                    this.insert(remainder.getItem(), remainder.getComponentsPatch(), remainder.getCount());
                 }
             }
         }
@@ -163,7 +160,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.ITEM.getKey(this.resource).toString());
         tag.putInt(AMOUNT_KEY, (int) this.amount);
-        if (this.components != null && !this.components.isEmpty()) tag.put(COMPONENTS_KEY, this.components);
+        if (this.components != null && !this.components.isEmpty()) tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, this.components).getOrThrow());
         if (this.recipes != null) {
             ListTag recipeTag = new ListTag();
             for (ResourceLocation entry : this.recipes) {
@@ -179,7 +176,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (tag.isEmpty()) {
             this.setEmpty();
         } else {
-            this.set(BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(COMPONENTS_KEY, Tag.TAG_COMPOUND) ? tag.getCompound(COMPONENTS_KEY) : null, tag.getInt(AMOUNT_KEY));
+            this.set(BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : null, tag.getInt(AMOUNT_KEY));
             if (this.inputType() == InputType.RECIPE_OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
                 ListTag list = tag.getList(RECIPES_KEY, Tag.TAG_STRING);
                 if (!list.isEmpty()) {
@@ -197,24 +194,24 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         if (this.amount > 0) {
             buf.writeInt((int) this.amount);
             buf.writeUtf(BuiltInRegistries.ITEM.getKey(this.resource).toString());
-            buf.writeNbt(this.components);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
         } else {
             buf.writeInt(0);
         }
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         int amount = buf.readInt();
         if (amount == 0) {
             this.setEmpty();
         } else {
             Item resource = BuiltInRegistries.ITEM.get(new ResourceLocation(buf.readUtf()));
-            DataComponentPatch tag = buf.readNbt();
+            DataComponentPatch tag = DataComponentPatch.STREAM_CODEC.decode(buf);
             this.set(resource, tag, amount);
         }
     }

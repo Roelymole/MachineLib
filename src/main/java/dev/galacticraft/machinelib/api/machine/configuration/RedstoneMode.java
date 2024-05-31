@@ -54,7 +54,8 @@ public enum RedstoneMode implements StringRepresentable {
     HIGH(Component.translatable(Constant.TranslationKey.HIGH_REDSTONE).setStyle(Constant.Text.RED_STYLE));
 
     public static final RedstoneMode[] VALUES = RedstoneMode.values();
-    public static final StreamCodec<ByteBuf, RedstoneMode> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : VALUES[i], face -> face == null ? -1 : (byte) face.ordinal());
+    public static final StringRepresentable.EnumCodec<RedstoneMode> CODEC = StringRepresentable.fromEnum(() -> VALUES);
+    public static final StreamCodec<ByteBuf, RedstoneMode> STREAM_CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : VALUES[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
      * The text of the redstone level state.
@@ -137,5 +138,9 @@ public enum RedstoneMode implements StringRepresentable {
      */
     public void writePacket(@NotNull FriendlyByteBuf buf) {
         buf.writeByte(this.ordinal());
+    }
+
+    public static RedstoneMode byName(String name) {
+        return CODEC.byName(name, IGNORE);
     }
 }

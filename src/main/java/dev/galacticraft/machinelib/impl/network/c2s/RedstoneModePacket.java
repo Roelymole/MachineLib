@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 public record RedstoneModePacket(RedstoneMode mode) implements CustomPacketPayload {
     public static final Type<RedstoneModePacket> TYPE = new Type<>(Constant.id("redstone_mode"));
-    public static final StreamCodec<ByteBuf, RedstoneModePacket> CODEC = RedstoneMode.CODEC.map(RedstoneModePacket::new, RedstoneModePacket::mode);
+    public static final StreamCodec<ByteBuf, RedstoneModePacket> CODEC = RedstoneMode.STREAM_CODEC.map(RedstoneModePacket::new, RedstoneModePacket::mode);
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

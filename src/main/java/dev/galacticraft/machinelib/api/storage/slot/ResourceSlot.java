@@ -44,7 +44,7 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
 
     long getAmount();
 
-    @Nullable DataComponentPatch getTag();
+    @Nullable DataComponentPatch getComponents();
 
     long getCapacity();
 

@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.api.storage;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,9 +38,7 @@ public interface SlottedStorageAccess<Resource, Slot extends StorageAccess<Resou
 
     long getAmount(int slot);
 
-    @Nullable CompoundTag getTag(int slot);
-
-    @Nullable CompoundTag copyTag(int slot);
+    @Nullable DataComponentPatch getComponents(int slot);
 
     long getCapacity(int slot);
 
@@ -54,47 +52,47 @@ public interface SlottedStorageAccess<Resource, Slot extends StorageAccess<Resou
 
     boolean canInsert(int slot, @NotNull Resource resource);
 
-    boolean canInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean canInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canInsert(int slot, @NotNull Resource resource, long amount);
 
-    boolean canInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryInsert(int slot, @NotNull Resource resource, long amount);
 
-    long tryInsert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryInsert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long insert(int slot, @NotNull Resource resource, long amount);
 
-    long insert(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long insert(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     boolean contains(int slot, @NotNull Resource resource);
 
-    boolean contains(int slot, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean contains(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canExtract(int slot, long amount);
 
     boolean canExtract(int slot, @NotNull Resource resource, long amount);
 
-    boolean canExtract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canExtract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryExtract(int slot, long amount);
 
     long tryExtract(int slot, @NotNull Resource resource, long amount);
 
-    long tryExtract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryExtract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     @Nullable Resource extractOne(int slot);
 
     boolean extractOne(int slot, @NotNull Resource resource);
 
-    boolean extractOne(int slot, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean extractOne(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     long extract(int slot, long amount);
 
     long extract(int slot, @NotNull Resource resource, long amount);
 
-    long extract(int slot, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long extract(int slot, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     // END SLOT METHODS
 
@@ -105,43 +103,43 @@ public interface SlottedStorageAccess<Resource, Slot extends StorageAccess<Resou
 
     boolean canInsert(int start, int len, @NotNull Resource resource);
 
-    boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canInsert(int start, int len, @NotNull Resource resource, long amount);
 
-    boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryInsert(int start, int len, @NotNull Resource resource, long amount);
 
-    long tryInsert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryInsert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long insert(int start, int len, @NotNull Resource resource, long amount);
 
-    long insert(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long insert(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long insertMatching(int start, int len, @NotNull Resource resource, long amount);
 
-    long insertMatching(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long insertMatching(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     boolean contains(int start, int len, @NotNull Resource resource);
 
-    boolean contains(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean contains(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     boolean canExtract(int start, int len, @NotNull Resource resource, long amount);
 
-    boolean canExtract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    boolean canExtract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     long tryExtract(int start, int len, @NotNull Resource resource, long amount);
 
-    long tryExtract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long tryExtract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     boolean extractOne(int start, int len, @NotNull Resource resource);
 
-    boolean extractOne(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag);
+    boolean extractOne(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components);
 
     long extract(int start, int len, @NotNull Resource resource, long amount);
 
-    long extract(int start, int len, @NotNull Resource resource, @Nullable CompoundTag tag, long amount);
+    long extract(int start, int len, @NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 
     // END RANGE METHODS
 }

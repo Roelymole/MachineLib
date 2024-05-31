@@ -29,6 +29,7 @@ import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.menu.sync.SecuritySettingsSyncHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.ApiStatus;
@@ -228,7 +229,7 @@ public class SecuritySettingsImpl implements SecuritySettings {
     }
 
     @Override
-    public void writePacket(@NotNull FriendlyByteBuf buf) {
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         buf.writeByte(this.accessLevel.ordinal());
         byte bits = 0b0000;
         if (this.owner != null) bits |= 0b0001;
@@ -248,7 +249,7 @@ public class SecuritySettingsImpl implements SecuritySettings {
     }
 
     @Override
-    public void readPacket(@NotNull FriendlyByteBuf buf) {
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
         this.accessLevel = AccessLevel.getByOrdinal(buf.readByte());
         byte bits = buf.readByte();
 

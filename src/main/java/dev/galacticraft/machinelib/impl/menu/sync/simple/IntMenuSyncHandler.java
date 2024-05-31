@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.menu.sync.simple;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.IntConsumer;
@@ -45,13 +45,13 @@ public final class IntMenuSyncHandler implements MenuSyncHandler {
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         this.value = this.supplier.getAsInt();
         buf.writeInt(this.value);
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         this.value = buf.readInt();
         this.consumer.accept(this.value);
     }

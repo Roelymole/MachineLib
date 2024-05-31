@@ -26,7 +26,7 @@ import dev.galacticraft.machinelib.impl.menu.sync.simple.BooleansMenuSyncHandler
 import dev.galacticraft.machinelib.impl.menu.sync.simple.EnumMenuSyncHandler;
 import dev.galacticraft.machinelib.impl.menu.sync.simple.IntMenuSyncHandler;
 import dev.galacticraft.machinelib.impl.menu.sync.simple.LongMenuSyncHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -104,12 +104,12 @@ public interface MenuSyncHandler {
      *
      * @param buf The buffer to write to.
      */
-    void sync(@NotNull FriendlyByteBuf buf);
+    void sync(@NotNull RegistryFriendlyByteBuf buf);
 
     /**
      * Deserializes the contents of the storage from the given buffer. Called on the client.
      *
      * @param buf The buffer to read from.
      */
-    void read(@NotNull FriendlyByteBuf buf);
+    void read(@NotNull RegistryFriendlyByteBuf buf);
 }

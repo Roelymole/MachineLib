@@ -13,8 +13,7 @@ import net.minecraft.network.codec.StreamEncoder;
 public class MachineUpdatePacket {
     public static final StreamCodec<RegistryFriendlyByteBuf, MachineUpdatePacket> CODEC = StreamCodec.of((buf, packet) -> {
         buf.writeBlockPos(packet.pos);
-        packet.configuration.writePacket(buf);
-        MachineConfiguration.CODEC.encode(buf, packet.configuration);
+        packet.configuration.networkCodec().encode(buf, packet.configuration);
         MachineState.CODEC.encode(buf, packet.state);
         MachineEnergyStorage.CODEC.encode(buf, packet.energy);
         MachineItemStorage.CODEC.encode(buf, packet.items);

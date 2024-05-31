@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.compat.transfer;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +35,7 @@ public class ExposedFluidSlotImpl extends ExposedSlotImpl<Fluid, FluidVariant> {
     }
 
     @Override
-    protected @NotNull FluidVariant createVariant(@Nullable Fluid fluid, @Nullable CompoundTag tag) {
-        return fluid != null ? FluidVariant.of(fluid, tag) : FluidVariant.blank();
+    protected @NotNull FluidVariant createVariant(@Nullable Fluid fluid, @Nullable DataComponentPatch components) {
+        return fluid != null ? FluidVariant.of(fluid, components) : FluidVariant.blank();
     }
 }

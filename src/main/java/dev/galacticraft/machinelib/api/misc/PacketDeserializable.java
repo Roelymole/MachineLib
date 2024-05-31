@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -35,7 +35,7 @@ public interface PacketDeserializable extends PacketSerializable {
      * Deserializes this object's state from a buffer.
      *
      * @param buf the buffer to read from.
-     * @see PacketSerializable#writePacket(FriendlyByteBuf)
+     * @see PacketSerializable#writePacket(RegistryFriendlyByteBuf)
      */
-    void readPacket(@NotNull FriendlyByteBuf buf);
+    void readPacket(@NotNull RegistryFriendlyByteBuf buf);
 }

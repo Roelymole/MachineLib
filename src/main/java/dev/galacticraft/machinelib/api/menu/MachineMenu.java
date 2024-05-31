@@ -41,7 +41,6 @@ import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.client.api.screen.Tank;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
@@ -51,14 +50,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import lol.bai.badpackets.api.PacketSender;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,7 +62,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.*;
 
 import java.util.ArrayList;
@@ -410,7 +401,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
             long insert = stack1.getCount();
             for (StorageSlot slot1 : this.machineSlots) {
                 if (slot1.getSlot().inputType().playerInsertion() && slot1.getSlot().contains(stack1.getItem(), stack1.getComponentsPatch())) {
-                    insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getTag(), insert);
+                    insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getComponentsPatch(), insert);
                     if (insert == 0) break;
                 }
             }
@@ -421,7 +412,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
             } else {
                 for (StorageSlot slot1 : this.machineSlots) {
                     if (slot1.mayPlace(stack1)) {
-                        insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getTag(), insert);
+                        insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getComponentsPatch(), insert);
                         if (insert == 0) break;
                     }
                 }
@@ -597,7 +588,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
     /**
      * Synchronizes this menu's state from the server to the client.
      *
-     * @see #receiveState(FriendlyByteBuf)
+     * @see #receiveState(RegistryFriendlyByteBuf)
      */
     @ApiStatus.Internal
     private void synchronizeState() {
@@ -631,7 +622,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * @see #synchronizeState()
      */
     @ApiStatus.Internal
-    public void receiveState(@NotNull FriendlyByteBuf buf) {
+    public void receiveState(@NotNull RegistryFriendlyByteBuf buf) {
         int sync = buf.readVarInt();
         for (int i = 0; i < sync; i++) {
             MenuSyncHandler handler = this.syncHandlers.get(buf.readVarInt());

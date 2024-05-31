@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.menu.sync;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 public class ResourceStorageSyncHandler<Resource, Slot extends ResourceSlot<Resource>> implements MenuSyncHandler {
@@ -46,7 +46,7 @@ public class ResourceStorageSyncHandler<Resource, Slot extends ResourceSlot<Reso
     }
 
     @Override
-    public void sync(@NotNull FriendlyByteBuf buf) {
+    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
         int total = 0;
         for (int i = 0; i < this.slots.length; i++) {
             if (this.slots[i].getModifications() != this.modifications[i]) total++;
@@ -63,7 +63,7 @@ public class ResourceStorageSyncHandler<Resource, Slot extends ResourceSlot<Reso
     }
 
     @Override
-    public void read(@NotNull FriendlyByteBuf buf) {
+    public void read(@NotNull RegistryFriendlyByteBuf buf) {
         int total = buf.readVarInt();
         for (int i = 0; i < total; i++) {
             int j = buf.readVarInt();

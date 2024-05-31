@@ -26,9 +26,7 @@ import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.MachineItemStorageImpl;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.Contract;
@@ -70,11 +68,11 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
 
     boolean consumeOne(@NotNull Item resource);
 
-    boolean consumeOne(@NotNull Item resource, @Nullable CompoundTag tag);
+    boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components);
 
     long consume(@NotNull Item resource, long amount);
 
-    long consume(@NotNull Item resource, @Nullable CompoundTag tag, long amount);
+    long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
     // SLOT METHODS
 
@@ -82,23 +80,23 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
 
     boolean consumeOne(int slot, @NotNull Item resource);
 
-    boolean consumeOne(int slot, @NotNull Item resource, @Nullable CompoundTag tag);
+    boolean consumeOne(int slot, @NotNull Item resource, @Nullable DataComponentPatch components);
 
     long consume(int slot, long amount);
 
     long consume(int slot, @NotNull Item resource, long amount);
 
-    long consume(int slot, @NotNull Item resource, @Nullable CompoundTag tag, long amount);
+    long consume(int slot, @NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
     // RANGE METHODS
 
     boolean consumeOne(int start, int len, @NotNull Item resource);
 
-    boolean consumeOne(int start, int len, @NotNull Item resource, @Nullable CompoundTag tag);
+    boolean consumeOne(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components);
 
     long consume(int start, int len, @NotNull Item resource, long amount);
 
-    long consume(int start, int len, @NotNull Item resource, @Nullable CompoundTag tag, long amount);
+    long consume(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
     final class Builder implements Supplier<MachineItemStorage> {
         private final List<ItemResourceSlot.Builder> slots = new ArrayList<>();

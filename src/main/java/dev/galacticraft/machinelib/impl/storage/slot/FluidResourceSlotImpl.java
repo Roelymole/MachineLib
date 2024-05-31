@@ -111,8 +111,8 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
             this.setEmpty();
         } else {
             Fluid resource = BuiltInRegistries.FLUID.get(new ResourceLocation(buf.readUtf()));
-            CompoundTag tag = buf.readNbt();
-            this.set(resource, tag, amount);
+            DataComponentPatch components = DataComponentPatch.STREAM_CODEC.decode(buf);
+            this.set(resource, components, amount);
         }
     }
 
