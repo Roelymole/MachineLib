@@ -22,23 +22,22 @@
 
 package dev.galacticraft.machinelib.test;
 
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 public class Utils {
-    public static final CompoundTag EMPTY_NBT = new CompoundTag();
-
     private static long counter = 0;
-    public static CompoundTag generateNbt() {
+    public static DataComponentPatch generateComponents() {
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putLong("UniqueId", counter++);
-        return compoundTag;
+        return DataComponentPatch.builder().set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag)).build();
     }
 
-    public static ItemStack itemStack(Item item, CompoundTag tag, int amount) {
-        ItemStack itemStack = new ItemStack(item, amount);
-        itemStack.setTag(tag);
-        return itemStack;
+    public static ItemStack itemStack(Item item, DataComponentPatch components, int amount) {
+        return new ItemStack(item.builtInRegistryHolder(), amount, components);
     }
 }

@@ -31,7 +31,7 @@ import dev.galacticraft.machinelib.test.JUnitTest;
 import dev.galacticraft.machinelib.test.Utils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,11 +56,11 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
     public static final class TransactionCancelledTests extends FluidResourceSlotTransactionTests {
         @Test
         public void extraction() {
-            CompoundTag tag = Utils.generateNbt();
-            this.slot.set(Fluids.WATER, tag, FluidConstants.BUCKET * 8);
+            DataComponentPatch components = Utils.generateComponents();
+            this.slot.set(Fluids.WATER, components, FluidConstants.BUCKET * 8);
 
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 8, this.slot.extract(Fluids.WATER, tag, FluidConstants.BUCKET * 8, transaction));
+                assertEquals(FluidConstants.BUCKET * 8, this.slot.extract(Fluids.WATER, components, FluidConstants.BUCKET * 8, transaction));
 
                 assertTrue(this.slot.isEmpty());
                 assertNull(this.slot.getResource());
@@ -73,12 +73,12 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
         @Test
         public void insertion() {
-            CompoundTag tag = Utils.generateNbt();
+            DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getComponents());
+                assertEquals(components, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
             }
 
@@ -90,12 +90,12 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
         @Test
         public void exchange() {
-            CompoundTag tag = Utils.generateNbt();
+            DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getComponents());
+                assertEquals(components, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
             }
 
@@ -109,11 +109,11 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
     public static final class TransactionCommittedTests extends FluidResourceSlotTransactionTests {
         @Test
         public void extraction() {
-            CompoundTag tag = Utils.generateNbt();
-            this.slot.set(Fluids.WATER, tag, FluidConstants.BUCKET * 8);
+            DataComponentPatch components = Utils.generateComponents();
+            this.slot.set(Fluids.WATER, components, FluidConstants.BUCKET * 8);
 
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 8, this.slot.extract(Fluids.WATER, tag, FluidConstants.BUCKET * 8, transaction));
+                assertEquals(FluidConstants.BUCKET * 8, this.slot.extract(Fluids.WATER, components, FluidConstants.BUCKET * 8, transaction));
 
                 assertTrue(this.slot.isEmpty());
                 assertNull(this.slot.getResource());
@@ -128,12 +128,12 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
         @Test
         public void insertion() {
-            CompoundTag tag = Utils.generateNbt();
+            DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getComponents());
+                assertEquals(components, this.slot.getComponents());
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
 
                 transaction.commit();
@@ -144,12 +144,12 @@ public sealed class FluidResourceSlotTransactionTests implements JUnitTest {
 
         @Test
         public void exchange() {
-            CompoundTag tag = Utils.generateNbt();
+            DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(FluidConstants.BUCKET * 5, this.slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
 
                 assertEquals(Fluids.WATER, this.slot.getResource());
-                assertEquals(tag, this.slot.getComponents());
+                assertEquals(components, this.slot.getComponents());
 
                 assertEquals(FluidConstants.BUCKET * 5, this.slot.getAmount());
                 transaction.commit();

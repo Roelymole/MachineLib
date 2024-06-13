@@ -31,6 +31,7 @@ import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
 import dev.galacticraft.machinelib.test.JUnitTest;
 import dev.galacticraft.machinelib.test.Utils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.AfterEach;
@@ -78,16 +79,16 @@ public sealed class FluidStorageInsertionTests implements JUnitTest {
         public void insertTag() {
             this.group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
+            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
 
             assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
         }
 
         @Test
         public void containedTag() {
-            this.group.getSlot(0).set(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET);
+            this.group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
             assertFalse(this.group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
             assertEquals(0, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
@@ -98,11 +99,11 @@ public sealed class FluidStorageInsertionTests implements JUnitTest {
 
         @Test
         public void mismatchedTag() {
-            this.group.getSlot(0).set(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET);
+            this.group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateNbt(), FluidConstants.BUCKET));
+            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
 
             assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
         }
@@ -147,11 +148,11 @@ public sealed class FluidStorageInsertionTests implements JUnitTest {
 
         @Test
         public void preFill_tag() {
-            CompoundTag tag = Utils.generateNbt();
-            this.group.getSlot(0).set(Fluids.WATER, tag, FluidConstants.BUCKET);
-            assertTrue(this.group.canInsert(Fluids.WATER, tag, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.tryInsert(Fluids.WATER, tag, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 6));
+            DataComponentPatch components = Utils.generateComponents();
+            this.group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            assertTrue(this.group.canInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, this.group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, this.group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
 
             assertEquals(FluidConstants.BUCKET * 7, this.group.getAmount(0));
         }
@@ -167,10 +168,10 @@ public sealed class FluidStorageInsertionTests implements JUnitTest {
 
         @Test
         public void preFill_overCapacity_tag() {
-            CompoundTag tag = Utils.generateNbt();
-            this.group.getSlot(0).set(Fluids.WATER, tag, FluidConstants.BUCKET * 12);
-            assertEquals(FluidConstants.BUCKET * 4, this.group.tryInsert(Fluids.WATER, tag, FluidConstants.BUCKET * 7));
-            assertEquals(FluidConstants.BUCKET * 4, this.group.insert(Fluids.WATER, tag, FluidConstants.BUCKET * 7));
+            DataComponentPatch components = Utils.generateComponents();
+            this.group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET * 12);
+            assertEquals(FluidConstants.BUCKET * 4, this.group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
+            assertEquals(FluidConstants.BUCKET * 4, this.group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
 
             assertEquals(CAPACITY, this.group.getAmount(0));
         }
