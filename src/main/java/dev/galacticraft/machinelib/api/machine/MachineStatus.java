@@ -28,7 +28,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,10 +36,6 @@ import org.jetbrains.annotations.Nullable;
  * Represents the status of a machine.
  */
 public interface MachineStatus {
-    StreamCodec<RegistryFriendlyByteBuf, MachineStatus> STREAM_CODEC = StreamCodec.composite(
-
-    );
-
     /**
      * Creates a new machine status.
      *

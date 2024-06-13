@@ -2,7 +2,7 @@ package dev.galacticraft.machinelib.impl.network.s2c;
 
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.impl.Constant;
-import lol.bai.badpackets.api.play.ClientPlayContext;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,8 +17,8 @@ public record MenuSyncPacket(RegistryFriendlyByteBuf buf) implements CustomPacke
         return TYPE;
     }
 
-    public void apply(ClientPlayContext context) {
-        LocalPlayer player = context.client().player;
+    public void apply(ClientPlayNetworking.Context context) {
+        LocalPlayer player = context.player();
         if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
             menu.receiveState(buf);
             menu.machine.setChanged();

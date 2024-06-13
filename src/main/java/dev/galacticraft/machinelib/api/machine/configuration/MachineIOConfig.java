@@ -24,11 +24,9 @@ package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.misc.Deserializable;
-import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.impl.machine.MachineIOConfigImpl;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Stores the configuration of a machine's I/O for all six faces.
  */
-public interface MachineIOConfig extends Deserializable<ListTag>/*, Serializable<MachineIOConfig>*/, MenuSynchronizable, MachineRenderData {
+public interface MachineIOConfig extends Deserializable<ListTag>, MenuSynchronizable, MachineRenderData {
     /**
      * Constructs a new machine i/o configuration.
      *

@@ -41,9 +41,8 @@ public class ItemStackUtil {
     public static @NotNull ItemStack copy(ResourceSlot<Item> slot) {
         if (slot.isEmpty()) return ItemStack.EMPTY;
         assert slot.getResource() != null && slot.getAmount() < Integer.MAX_VALUE;
-        ItemStack stack = new ItemStack(slot.getResource(), (int) slot.getAmount());
-        stack.setTag(slot.copyTag());
-        return stack;
+        DataComponentPatch comoponents = slot.getComponents();
+        return new ItemStack(slot.getResource().builtInRegistryHolder(), (int) slot.getAmount(), comoponents == null ? DataComponentPatch.EMPTY : comoponents);
     }
 
     public static ItemStack of(@Nullable Item resource, DataComponentPatch components, int amount) {

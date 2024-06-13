@@ -102,8 +102,6 @@ public abstract class SimpleGameTest implements FabricGameTest {
                 ticks,
                 setupTicks,
                 true,
-                1,
-                1,
                 test
         );
     }

@@ -25,7 +25,6 @@ package dev.galacticraft.machinelib.api.machine;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.misc.Deserializable;
-import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.impl.machine.MachineStateImpl;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -36,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Stores the state of a machine.
  */
-public interface MachineState extends MenuSynchronizable, Deserializable<CompoundTag>/*, Serializable<MachineState>*/ {
+public interface MachineState extends MenuSynchronizable, Deserializable<CompoundTag> {
     /**
      * Creates a new state instance of the specified type.
      *

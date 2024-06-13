@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.impl.machine;
 
-import com.mojang.serialization.Codec;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
@@ -30,7 +29,6 @@ import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.impl.menu.sync.MachineIOConfigSyncHandler;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -90,15 +88,5 @@ public final class MachineIOConfigImpl implements MachineIOConfig {
     @Override
     public @NotNull MenuSyncHandler createSyncHandler() {
         return new MachineIOConfigSyncHandler(this);
-    }
-
-    @Override
-    public StreamCodec<RegistryFriendlyByteBuf, MachineIOConfig> networkCodec() {
-        return null;
-    }
-
-    @Override
-    public @NotNull Codec<MachineIOConfig> codec() {
-        return null;
     }
 }

@@ -198,7 +198,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (this.amount > 0) {
             buf.writeInt((int) this.amount);
             buf.writeUtf(BuiltInRegistries.ITEM.getKey(this.resource).toString());
-            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components == null ? DataComponentPatch.EMPTY : this.components);
         } else {
             buf.writeInt(0);
         }

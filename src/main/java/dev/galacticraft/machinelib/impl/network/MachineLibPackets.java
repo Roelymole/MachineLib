@@ -6,7 +6,8 @@ import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPacket
 import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPacket;
 import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPacket;
 import dev.galacticraft.machinelib.impl.network.s2c.SideConfigurationUpdatePacket;
-import lol.bai.badpackets.api.play.PlayPackets;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public class MachineLibPackets {
@@ -18,19 +19,19 @@ public class MachineLibPackets {
     }
 
     public static void registerClient() {
-        PlayPackets.registerClientReceiver(SideConfigurationUpdatePacket.TYPE, (context, payload) -> payload.apply(context));
-        PlayPackets.registerClientReceiver(MenuSyncPacket.TYPE, (context, payload) -> payload.apply(context));
+        ClientPlayNetworking.registerGlobalReceiver(SideConfigurationUpdatePacket.TYPE, SideConfigurationUpdatePacket::apply);
+        ClientPlayNetworking.registerGlobalReceiver(MenuSyncPacket.TYPE, MenuSyncPacket::apply);
     }
 
     public static void registerChannels() {
         // c2s
-        PlayPackets.registerServerChannel(AccessLevelPacket.TYPE, AccessLevelPacket.CODEC);
-        PlayPackets.registerServerChannel(RedstoneModePacket.TYPE, RedstoneModePacket.CODEC);
-        PlayPackets.registerServerChannel(SideConfigurationClickPacket.TYPE, SideConfigurationClickPacket.CODEC);
-        PlayPackets.registerServerChannel(TankInteractionPacket.TYPE, TankInteractionPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(AccessLevelPacket.TYPE, AccessLevelPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(RedstoneModePacket.TYPE, RedstoneModePacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(SideConfigurationClickPacket.TYPE, SideConfigurationClickPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(TankInteractionPacket.TYPE, TankInteractionPacket.CODEC);
 
         // s2c
-        PlayPackets.registerClientChannel(SideConfigurationUpdatePacket.TYPE, SideConfigurationUpdatePacket.CODEC);
-        PlayPackets.registerClientChannel(MenuSyncPacket.TYPE, MenuSyncPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(SideConfigurationUpdatePacket.TYPE, SideConfigurationUpdatePacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(MenuSyncPacket.TYPE, MenuSyncPacket.CODEC);
     }
 }

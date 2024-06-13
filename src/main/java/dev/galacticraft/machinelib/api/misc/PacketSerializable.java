@@ -23,7 +23,6 @@
 package dev.galacticraft.machinelib.api.misc;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -31,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @see PacketDeserializable
  */
-public interface PacketSerializable/*<T>*/ {
+public interface PacketSerializable {
     /**
      * Serializes this object into a buffer.
      *
@@ -39,6 +38,4 @@ public interface PacketSerializable/*<T>*/ {
      * @see PacketDeserializable#readPacket(RegistryFriendlyByteBuf)
      */
     void writePacket(@NotNull RegistryFriendlyByteBuf buf);
-
-//    StreamCodec<RegistryFriendlyByteBuf, T> networkCodec();
 }

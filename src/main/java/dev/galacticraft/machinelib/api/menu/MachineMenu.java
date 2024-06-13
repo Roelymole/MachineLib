@@ -42,13 +42,13 @@ import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.client.api.screen.Tank;
-import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
+import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPacket;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import lol.bai.badpackets.api.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -610,7 +610,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
                         handler.sync(buf);
                     }
                 }
-                PacketSender.s2c(this.player).send(Constant.id("storage_sync"), buf);
+                ServerPlayNetworking.getSender(this.player).sendPacket(new MenuSyncPacket(buf));
             }
         }
     }

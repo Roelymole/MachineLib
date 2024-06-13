@@ -36,6 +36,6 @@ public class ExposedFullFluidSlotImpl extends ExposedFullSlotImpl<Fluid, FluidVa
 
     @Override
     protected @NotNull FluidVariant createVariant(@Nullable Fluid fluid, @Nullable DataComponentPatch components) {
-        return fluid != null ? FluidVariant.of(fluid, components) : FluidVariant.blank();
+        return (fluid != null && components != null) ? FluidVariant.of(fluid, components) : FluidVariant.blank();
     }
 }

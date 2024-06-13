@@ -24,7 +24,6 @@ package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.misc.Deserializable;
-import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.impl.machine.SecuritySettingsImpl;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +38,7 @@ import java.util.UUID;
 /**
  * Represents a security setting of a machine.
  */
-public interface SecuritySettings extends Deserializable<CompoundTag>/*,Serializable<SecuritySettings>*/, MenuSynchronizable {
+public interface SecuritySettings extends Deserializable<CompoundTag>, MenuSynchronizable {
     /**
      * Constructs a new security settings storage with no owner attached.
      *

@@ -230,7 +230,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
             if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {
                 CompoundTag confTag = beTag.getCompound(Constant.Nbt.CONFIGURATION);
                 if (confTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {
-                    config.readTag(confTag.getCompound(Constant.Nbt.CONFIGURATION));
+                    config.readTag(confTag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
                 }
             }
         }

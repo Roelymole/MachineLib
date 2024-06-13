@@ -74,7 +74,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.FLUID.getKey(this.resource).toString());
         tag.putLong(AMOUNT_KEY, this.amount);
-        if (this.components != null && !this.components.isEmpty()) {
+        if (this.components != DataComponentPatch.EMPTY && !this.components.isEmpty()) {
             tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encode(this.components, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
         }
         return tag;

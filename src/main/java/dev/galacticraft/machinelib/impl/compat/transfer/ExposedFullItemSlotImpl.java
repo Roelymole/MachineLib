@@ -36,6 +36,6 @@ public class ExposedFullItemSlotImpl extends ExposedFullSlotImpl<Item, ItemVaria
 
     @Override
     protected @NotNull ItemVariant createVariant(@Nullable Item item, @Nullable DataComponentPatch components) {
-        return item != null ? ItemVariant.of(item, components) : ItemVariant.blank();
+        return (item != null && components != null) ? ItemVariant.of(item, components) : ItemVariant.blank();
     }
 }

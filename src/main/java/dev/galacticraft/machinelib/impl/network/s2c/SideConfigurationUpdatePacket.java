@@ -6,7 +6,7 @@ import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
-import lol.bai.badpackets.api.play.ClientPlayContext;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -25,7 +25,7 @@ public record SideConfigurationUpdatePacket(BlockFace face, ResourceType resourc
         return TYPE;
     }
 
-    public void apply(ClientPlayContext context) {
+    public void apply(ClientPlayNetworking.Context context) {
         LocalPlayer player = context.client().player;
         if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
             menu.configuration.getIOConfiguration().get(face).setOption(resource, flow);

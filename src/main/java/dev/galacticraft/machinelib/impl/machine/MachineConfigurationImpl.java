@@ -22,18 +22,21 @@
 
 package dev.galacticraft.machinelib.impl.machine;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
+import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.menu.sync.MachineConfigurationSyncHandler;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 @ApiStatus.Internal
 public final class MachineConfigurationImpl implements MachineConfiguration {
@@ -72,22 +75,36 @@ public final class MachineConfigurationImpl implements MachineConfiguration {
     }
 
     @Override
-    public @NotNull Codec<MachineConfiguration> codec() {
-        return RecordCodecBuilder.create(instance -> instance.group(
-                this.security.codec().fieldOf("security").forGetter(MachineConfiguration::getSecurity),
-                this.configuration.codec().fieldOf("configuration").forGetter(MachineConfiguration::getIOConfiguration),
-                RedstoneMode.CODEC.lenientOptionalFieldOf("redstone", RedstoneMode.IGNORE).forGetter(MachineConfiguration::getRedstoneMode)
-        ).apply(instance, MachineConfigurationImpl::new));
+    public @NotNull CompoundTag createTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.put(Constant.Nbt.SECURITY, this.security.createTag());
+        tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
+        tag.put(Constant.Nbt.REDSTONE_MODE, this.redstone.createTag());
+        return tag;
     }
 
     @Override
-    public StreamCodec<RegistryFriendlyByteBuf, MachineConfiguration> networkCodec() {
-        return StreamCodec.composite(
-                this.security.networkCodec(), MachineConfiguration::getSecurity,
-                this.configuration.networkCodec(), MachineConfiguration::getIOConfiguration,
-                RedstoneMode.STREAM_CODEC, MachineConfiguration::getRedstoneMode,
-                MachineConfigurationImpl::new
-        );
+    public void readTag(@NotNull CompoundTag tag) {
+        this.security.readTag(tag.getCompound(Constant.Nbt.SECURITY));
+        this.configuration.readTag(tag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
+
+        if (tag.contains(Constant.Nbt.REDSTONE_MODE)) {
+            this.redstone = RedstoneMode.readTag(Objects.requireNonNull((ByteTag) tag.get(Constant.Nbt.REDSTONE_MODE)));
+        }
+    }
+
+    @Override
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
+        this.security.writePacket(buf);
+        this.configuration.writePacket(buf);
+        this.redstone.writePacket(buf);
+    }
+
+    @Override
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
+        this.security.readPacket(buf);
+        this.configuration.readPacket(buf);
+        this.redstone = RedstoneMode.readPacket(buf);
     }
 
     @Override

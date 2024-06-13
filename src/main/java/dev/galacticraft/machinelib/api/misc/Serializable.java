@@ -32,14 +32,11 @@ import org.jetbrains.annotations.NotNull;
  * @param <T> The type of tag that represents the serialized object.
  * @see Deserializable
  */
-public interface Serializable<T extends Tag> extends PacketSerializable/*<T>*/ {
+public interface Serializable<T extends Tag> extends PacketSerializable {
     /**
      * Serializes this object as a tag.
      *
      * @return the created tag
      */
     @NotNull T createTag();
-
-
-//    @NotNull Codec<T> codec();
 }

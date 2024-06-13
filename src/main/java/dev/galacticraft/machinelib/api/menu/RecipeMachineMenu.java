@@ -133,7 +133,7 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static <C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> @NotNull MenuType<RecipeMachineMenu<C, R, Machine>> createType(@NotNull Supplier<MachineType<Machine, ? extends RecipeMachineMenu<C, R, Machine>>> selfReference, int invX, int invY) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new RecipeMachineMenu<>(syncId, inventory, buf, invX, invY, selfReference.get()));
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new RecipeMachineMenu<>(syncId, inventory, buf, invX, invY, selfReference.get()), MachineMenu.BUF_IDENTITY_CODEC);
     }
 
     @Override
