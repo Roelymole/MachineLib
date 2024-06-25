@@ -22,12 +22,11 @@
 
 package dev.galacticraft.machinelib.impl.storage;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.LongTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.reborn.energy.api.EnergyStorage;
@@ -152,20 +151,24 @@ public class EmptyMachineEnergyStorage implements MachineEnergyStorage {
     }
 
     @Override
-    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
-    }
-
-    @Override
-    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
-    }
-
-    @Override
-    public @Nullable MenuSyncHandler createSyncHandler() {
-        return null;
-    }
-
-    @Override
     public long getModifications() {
         return -1;
+    }
+
+    @Override
+    public boolean hasChanged(long[] previous) {
+        return false;
+    }
+
+    @Override
+    public void copyInto(long[] other) {
+    }
+
+    @Override
+    public void readPacket(@NotNull ByteBuf buf) {
+    }
+
+    @Override
+    public void writePacket(@NotNull ByteBuf buf) {
     }
 }

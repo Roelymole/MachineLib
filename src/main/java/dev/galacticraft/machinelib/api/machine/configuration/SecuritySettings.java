@@ -22,31 +22,46 @@
 
 package dev.galacticraft.machinelib.api.machine.configuration;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
-import dev.galacticraft.machinelib.impl.machine.SecuritySettingsImpl;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Represents a security setting of a machine.
  */
-public interface SecuritySettings extends Deserializable<CompoundTag>, MenuSynchronizable {
+public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketSerializable<FriendlyByteBuf, SecuritySettings> {
+    StreamCodec<FriendlyByteBuf, SecuritySettings> CODEC = PacketSerializable.createCodec(SecuritySettings::new);
+
     /**
-     * Constructs a new security settings storage with no owner attached.
-     *
-     * @return a new security settings storage.
+     * The profile of the player who owns the linked machine.
      */
-    @Contract(" -> new")
-    static @NotNull SecuritySettings create() {
-        return new SecuritySettingsImpl();
+    protected @Nullable UUID owner = null;
+    protected @Nullable String username = null;
+
+    /**
+     * The access level of the linked machine.
+     */
+    protected @NotNull AccessLevel accessLevel = AccessLevel.PUBLIC;
+
+    public void tryUpdate(@NotNull Player player) {
+        if (this.owner == null) {
+            this.owner = player.getUUID();
+        }
+
+        if (player.getUUID() == this.owner) {
+            this.username = player.getGameProfile().getName();
+        }
     }
 
     /**
@@ -56,113 +71,177 @@ public interface SecuritySettings extends Deserializable<CompoundTag>, MenuSynch
      * @return Whether the player is the owner of the linked machine.
      */
     @Contract(pure = true)
-    boolean isOwner(@NotNull Player player);
+    public boolean isOwner(@NotNull Player player) {
+        boolean b = player.getUUID() == this.owner;
+        if (b) {
+            this.username = player.getGameProfile().getName();
+        }
+        return b;
+    }
 
-    /**
-     * Returns whether the game profile is the owner of the linked machine.
-     *
-     * @param uuid The uuid to check.
-     * @return Whether the game profile is the owner of the linked machine.
-     */
-    @Contract(pure = true)
-    boolean isOwner(@Nullable UUID uuid);
+    public @Nullable String getUsername() {
+        return this.username;
+    }
 
-    /**
-     * Returns the username of the owner or {@code null} if it has not been cached.
-     *
-     * @return the username of the owner.
-     */
-    @Contract(pure = true)
-    @Nullable String getUsername();
-
-    /**
-     * Sets the username of the owner.
-     *
-     * @param username the username to set as the owner.
-     */
-    void setUsername(@Nullable String username);
-
-    /**
-     * Returns the name of the team or {@code null} if it has not been cached.
-     *
-     * @return the name of the team.
-     */
-    @Contract(pure = true)
-    @ApiStatus.Experimental
-    @Nullable String getTeamName();
-
-    /**
-     * Returns whether the player is allowed to access the linked machine.
-     *
-     * @param player The player to check.
-     * @return whether the player is allowed to access the linked machine.
-     */
-    @Contract(pure = true)
-    boolean hasAccess(@NotNull Player player);
-
-    /**
-     * Returns whether the player with the given UUID is allowed to access the linked machine.
-     *
-     * @param uuid the uuid to test.
-     * @return whether the player with the given UUID is allowed to access the linked machine.
-     */
-    @Contract(pure = true)
-    boolean hasAccess(@NotNull UUID uuid);
+    public boolean hasAccess(@NotNull Player player) {
+        return switch (this.accessLevel) {
+            case PUBLIC -> true;
+            case TEAM -> this.isOwner(player); // todo: teams
+            case PRIVATE -> this.isOwner(player);
+        };
+    }
 
     /**
      * Returns the access level of the linked machine.
      *
      * @return The access level of the linked machine.
      */
-    @Contract(pure = true)
-    @NotNull AccessLevel getAccessLevel();
+    public @NotNull AccessLevel getAccessLevel() {
+        return this.accessLevel;
+    }
 
     /**
      * Sets the access level of the linked machine.
      *
      * @param accessLevel The access level to set.
      */
-    @Contract(mutates = "this")
-    void setAccessLevel(@NotNull AccessLevel accessLevel);
+    public void setAccessLevel(@NotNull AccessLevel accessLevel) {
+        this.accessLevel = accessLevel;
+    }
 
     /**
-     * Returns the game profile of the owner of the linked machine.
+     * Returns the uuid of the player that owns the linked machine.
      *
-     * @return The game profile of the owner of the linked machine.
+     * @return the uuid of the player that owns the linked machine.
      */
-    @Contract(pure = true)
-    @Nullable UUID getOwner();
+    public @Nullable UUID getOwner() {
+        return this.owner;
+    }
 
-    /**
-     * Sets the game profile of the owner of the linked machine.
-     *
-     * @param owner The uuid of the owner.
-     * @param name  The text of the owner.
-     */
-    @Contract(mutates = "this")
-    void setOwner(@Nullable UUID owner, String name);
+    @Override
+    public @NotNull CompoundTag createTag() {
+        CompoundTag nbt = new CompoundTag();
+        if (this.owner != null) {
+            nbt.putUUID(Constant.Nbt.OWNER, this.owner);
+            if (this.username!= null) {
+                nbt.putString(Constant.Nbt.USERNAME, this.username);
+            }
+        }
+        nbt.putString(Constant.Nbt.ACCESS_LEVEL, this.accessLevel.getSerializedName());
+        return nbt;
+    }
 
-    /**
-     * Returns the team of the owner of the linked machine.
-     *
-     * @return The team of the owner of the linked machine.
-     */
-    @Nullable ResourceLocation getTeam();
+    @Override
+    public void readTag(@NotNull CompoundTag tag) {
+        if (tag.contains(Constant.Nbt.OWNER)) {
+            this.owner = tag.getUUID(Constant.Nbt.OWNER);
+        }
+        if (tag.contains(Constant.Nbt.USERNAME)) {
+            this.username = tag.getString(Constant.Nbt.USERNAME);
+        }
 
-    /**
-     * Sets the team linked to these security settings
-     *
-     * @param team the team to be granted access to the linked machine can be {@code null}.
-     * @param name the name of the team to be granted access to the linked machine.
-     */
-    @ApiStatus.Experimental
-    @Contract(mutates = "this", value = "null, !null -> fail")
-    void setTeam(@Nullable ResourceLocation team, @Nullable String name);
+        if (tag.contains(Constant.Nbt.ACCESS_LEVEL)) {
+            this.accessLevel = AccessLevel.fromString(tag.getString(Constant.Nbt.ACCESS_LEVEL));
+        }
+    }
 
-    /**
-     * Checks if the machine has an owner.
-     *
-     * @return true if the machine has an owner, false otherwise.
-     */
-    boolean hasOwner();
+    @Override
+    public void writePacket(@NotNull FriendlyByteBuf buf) {
+        buf.writeByte(this.accessLevel.ordinal());
+        byte bits = 0b0000;
+        if (this.owner != null) bits |= 0b0001;
+        if (this.username != null) bits |= 0b0010;
+
+        if (this.owner == null) {
+            buf.writeByte(0b0000);
+        } else {
+            buf.writeByte(bits);
+            buf.writeUUID(this.owner);
+            if (this.username != null) buf.writeUtf(this.username);
+        }
+    }
+
+    @Override
+    public void readPacket(@NotNull FriendlyByteBuf buf) {
+        this.accessLevel = AccessLevel.getByOrdinal(buf.readByte());
+        byte bits = buf.readByte();
+
+        if (bits == 0b0000) {
+            this.owner = null;
+            this.username = null;
+        } else {
+            this.owner = buf.readUUID();
+            if ((bits & 0b0010) != 0) this.username = buf.readUtf();
+        }
+    }
+
+    @Override
+    public void writeDeltaPacket(@NotNull FriendlyByteBuf buf, SecuritySettings previous) {
+        byte ref = 0b00000;
+        byte nullRef = 0b00000;
+        if (!Objects.equals(previous.owner, this.owner)) {
+            ref |= 0b00001;
+            if (this.username == null) nullRef |= 0b00001;
+        }
+        if (!Objects.equals(previous.username, this.username)) {
+            ref |= 0b00010;
+            if (this.username == null) nullRef |= 0b00010;
+        }
+        if (previous.accessLevel != this.accessLevel) {
+            ref |= 0b01000;
+        }
+
+        buf.writeByte(ref);
+        buf.writeByte(nullRef);
+
+        if (!Objects.equals(previous.owner, this.owner)) {
+            previous.owner = this.owner;
+            if (previous.owner != null) {
+                buf.writeUUID(previous.owner);
+            }
+        }
+        if (!Objects.equals(previous.username, this.username)) {
+            previous.username = this.username;
+            if (previous.username != null) {
+                buf.writeUtf(previous.username);
+            }
+        }
+        if (previous.accessLevel != this.accessLevel) {
+            previous.accessLevel = this.accessLevel;
+            buf.writeByte(previous.accessLevel.ordinal());
+        }
+    }
+
+    @Override
+    public void readDeltaPacket(@NotNull FriendlyByteBuf buf) {
+        byte ref = buf.readByte();
+        byte nullRef = buf.readByte();
+        ref ^= nullRef;
+
+        if ((ref & 0b00001) != 0) {
+            this.owner = buf.readUUID();
+        } else if ((nullRef & 0b00001) != 0) {
+            this.owner = null;
+        }
+        if ((ref & 0b00010) != 0) {
+            this.username = buf.readUtf();
+        } else if ((nullRef & 0b00010) != 0) {
+            this.username = null;
+        }
+        if ((ref & 0b01000) != 0) {
+            this.accessLevel = AccessLevel.getByOrdinal(buf.readByte());
+        }
+    }
+
+    @Override
+    public boolean hasChanged(SecuritySettings previous) {
+        return !Objects.equals(previous.owner, this.owner) || !Objects.equals(previous.username, this.username) || previous.accessLevel != this.accessLevel;
+    }
+
+    @Override
+    public void copyInto(SecuritySettings other) {
+        other.owner = this.owner;
+        other.username = this.username;
+        other.accessLevel = this.accessLevel;
+    }
 }

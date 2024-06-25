@@ -182,10 +182,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         super.setPlacedBy(level, pos, state, placer, itemStack);
         if (!level.isClientSide && placer instanceof ServerPlayer player) {
             if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
-                SecuritySettings security = machine.getSecurity();
-                if (!security.hasOwner()) {
-                    security.setOwner(player.getUUID(), player.getGameProfile().getName());
-                }
+                machine.getSecurity().tryUpdate(player);
             }
         }
     }
@@ -264,9 +261,8 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
             BlockEntity entity = world.getBlockEntity(pos);
             if (entity instanceof MachineBlockEntity machine) {
                 SecuritySettings security = machine.getSecurity();
-                if (!security.hasOwner()) {
-                    security.setOwner(player.getUUID(), player.getGameProfile().getName()); //todo: teams
-                }
+
+                security.tryUpdate(player);
                 if (security.hasAccess(player)) {
                     player.openMenu(machine);
                     return InteractionResult.CONSUME;
@@ -314,7 +310,9 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         BlockEntity blockEntity = reader.getBlockEntity(pos);
         if (blockEntity instanceof MachineBlockEntity machine) {
             CompoundTag config = new CompoundTag();
-            config.put(Constant.Nbt.CONFIGURATION, machine.getConfiguration().createTag());
+            config.put(Constant.Nbt.CONFIGURATION, machine.getIOConfig().createTag());
+            config.put(Constant.Nbt.SECURITY, machine.getSecurity().createTag());
+            config.put(Constant.Nbt.REDSTONE_MODE, machine.getRedstoneMode().createTag());
             BlockItem.setBlockEntityData(stack, blockEntity.getType(), config);
         }
 

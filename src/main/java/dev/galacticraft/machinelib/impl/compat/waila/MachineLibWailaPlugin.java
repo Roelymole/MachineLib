@@ -24,24 +24,31 @@ package dev.galacticraft.machinelib.impl.compat.waila;
 
 import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
+import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
+import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.impl.Constant;
 import mcp.mobius.waila.api.*;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.chat.Component;
 
 public class MachineLibWailaPlugin implements IWailaPlugin {
     @Override
     public void register(IRegistrar registrar) {
-        registrar.addBlockData((IDataProvider<MachineBlockEntity>) (data, accessor, config) -> data.raw().put("config", accessor.getTarget().getConfiguration().createTag()), MachineBlock.class);
+        registrar.addBlockData((IDataProvider<MachineBlockEntity>) (data, accessor, config) -> {
+            data.raw().put("security", accessor.getTarget().getSecurity().createTag());
+            data.raw().put("redstone", accessor.getTarget().getRedstoneMode().createTag());
+        }, MachineBlock.class);
+
         registrar.addComponent(new IBlockComponentProvider() {
             @Override
             public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
-                MachineConfiguration configuration = MachineConfiguration.create();
-                configuration.readTag(accessor.getData().raw().getCompound("config"));
-                tooltip.addLine(Component.translatable("ui.machinelib.machine.redstone_mode.tooltip", configuration.getRedstoneMode().getName()).setStyle(Constant.Text.RED_STYLE));
-                if (configuration.getSecurity().getOwner() != null && configuration.getSecurity().getUsername() != null) {
-                    String username = configuration.getSecurity().getUsername();
-                    tooltip.addLine(Component.translatable("ui.machinelib.machine.security.owner", Component.literal(username).setStyle(Constant.Text.WHITE_STYLE)).setStyle(Constant.Text.AQUA_STYLE));
+                SecuritySettings security = new SecuritySettings();
+                RedstoneMode redstone = RedstoneMode.readTag(accessor.getData().raw().get("redstone"));
+                security.readTag(accessor.getData().raw().getCompound("security"));
+
+                tooltip.addLine(Component.translatable("ui.machinelib.machine.redstone_mode.tooltip", redstone.getName()).setStyle(Constant.Text.RED_STYLE));
+                if (security.getOwner() != null && security.getUsername() != null) {
+                    tooltip.addLine(Component.translatable("ui.machinelib.machine.security.owner", Component.literal(security.getUsername()).setStyle(Constant.Text.WHITE_STYLE)).setStyle(Constant.Text.AQUA_STYLE));
                 }
             }
         }, TooltipPosition.BODY, MachineBlock.class);

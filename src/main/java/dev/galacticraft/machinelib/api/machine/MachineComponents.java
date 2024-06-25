@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
 public class MachineComponents {
 
     private static <T> DataComponentType<T> register(String id, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
-        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Constant.id(id), ((DataComponentType.Builder)builderOperator.apply(DataComponentType.builder())).build());
+        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Constant.id(id), builderOperator.apply(DataComponentType.builder()).build());
     }
 
     public static void register() {}

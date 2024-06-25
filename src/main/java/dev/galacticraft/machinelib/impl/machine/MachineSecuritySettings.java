@@ -20,39 +20,30 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.menu.sync.simple;
+package dev.galacticraft.machinelib.impl.machine;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
+import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
+/**
+ * Represents a security setting of a machine.
+ */
+@ApiStatus.Internal
+public class MachineSecuritySettings extends SecuritySettings {
+    private final MachineBlockEntity machine;
 
-public final class IntMenuSyncHandler implements MenuSyncHandler {
-    private final IntSupplier supplier;
-    private final IntConsumer consumer;
-    private int value;
-
-    public IntMenuSyncHandler(IntSupplier supplier, IntConsumer consumer) {
-        this.supplier = supplier;
-        this.consumer = consumer;
+    public MachineSecuritySettings(MachineBlockEntity machine) {
+        this.machine = machine;
     }
 
     @Override
-    public boolean needsSyncing() {
-        return this.value != this.supplier.getAsInt();
-    }
-
-    @Override
-    public void sync(@NotNull RegistryFriendlyByteBuf buf) {
-        this.value = this.supplier.getAsInt();
-        buf.writeInt(this.value);
-    }
-
-    @Override
-    public void read(@NotNull RegistryFriendlyByteBuf buf) {
-        this.value = buf.readInt();
-        this.consumer.accept(this.value);
+    public void setAccessLevel(@NotNull AccessLevel accessLevel) {
+        if (this.accessLevel != accessLevel) {
+            this.accessLevel = accessLevel;
+            this.machine.setChanged();
+        }
     }
 }

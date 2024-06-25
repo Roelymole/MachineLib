@@ -23,12 +23,14 @@
 package dev.galacticraft.machinelib.api.storage;
 
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedEnergyStorage;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.misc.Modifiable;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.impl.storage.EmptyMachineEnergyStorage;
 import dev.galacticraft.machinelib.impl.storage.MachineEnergyStorageImpl;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.LongTag;
@@ -44,7 +46,7 @@ import team.reborn.energy.api.EnergyStorage;
  * @see ExposedEnergyStorage
  * @see team.reborn.energy.api.EnergyStorage
  */
-public interface MachineEnergyStorage extends EnergyStorage, Deserializable<LongTag>, MenuSynchronizable, Modifiable {
+public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTag>, PacketSerializable<ByteBuf>, DeltaPacketSerializable<ByteBuf, long[]>, Modifiable {
 
     @Contract(pure = true)
     static @NotNull MachineEnergyStorage empty() {

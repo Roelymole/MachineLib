@@ -57,7 +57,7 @@ public record SideConfigurationClickPacket(BlockFace face, Action action) implem
         if (context.player().containerMenu instanceof MachineMenu<?> menu) {
             MachineBlockEntity machine = menu.machine;
             menu.cycleFaceConfig(this.face, this.action == Action.PREVIOUS, this.action == Action.RESET);
-            MachineIOFace ioFace = machine.getConfiguration().getIOConfiguration().get(this.face);
+            MachineIOFace ioFace = machine.getIOConfig().get(this.face);
             PacketSender.s2c(context.player()).send(new SideConfigurationUpdatePacket(this.face, ioFace.getType(), ioFace.getFlow()));
         }
     }

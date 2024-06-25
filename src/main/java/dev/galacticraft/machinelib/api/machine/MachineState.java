@@ -23,26 +23,32 @@
 package dev.galacticraft.machinelib.api.machine;
 
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
-import dev.galacticraft.machinelib.impl.machine.MachineStateImpl;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
+import dev.galacticraft.machinelib.impl.Constant;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * Stores the state of a machine.
  */
-public interface MachineState extends MenuSynchronizable, Deserializable<CompoundTag> {
-    /**
-     * Creates a new state instance of the specified type.
-     *
-     * @return a new MachineState instance
-     */
-    static @NotNull MachineState create() {
-        return new MachineStateImpl();
+public class MachineState implements Serializable<CompoundTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, MachineState> {
+    protected @Nullable MachineStatus status = null;
+    protected boolean powered;
+
+    public MachineState() {
+        this(false);
+    }
+
+    public MachineState(boolean powered) {
+        this.powered = powered;
     }
 
     /**
@@ -50,35 +56,79 @@ public interface MachineState extends MenuSynchronizable, Deserializable<Compoun
      *
      * @return the current status of the machine.
      */
-    @Nullable MachineStatus getStatus();
+    public @Nullable MachineStatus getStatus() {
+        return this.status;
+    }
+
+    @Override
+    public @NotNull CompoundTag createTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean(Constant.Nbt.POWERED, this.powered);
+        return tag;
+    }
+
+    @Override
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
+        MachineStatus.writePacket(this.status, buf);
+        buf.writeBoolean(this.powered);
+    }
+
+    @Override
+    public boolean hasChanged(MachineState previous) {
+        return !Objects.equals(previous.status, this.status) || previous.powered != this.powered;
+    }
+
+    @Override
+    public void copyInto(MachineState other) {
+        other.status = this.status;
+        other.powered = this.powered;
+    }
+
+    public void readTag(@NotNull CompoundTag tag) {
+        this.powered = tag.getBoolean(Constant.Nbt.POWERED);
+    }
+
+    @Override
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
+        this.status = MachineStatus.readPacket(buf);
+        this.powered = buf.readBoolean();
+    }
 
     /**
      * Returns the name of the current status of the machine or 'disabled' if the machine is currently disabled.
      *
      * @return the current status of the machine.
      */
-    @NotNull Component getStatusText(@NotNull RedstoneMode activation);
+    public @NotNull Component getStatusText(@NotNull RedstoneMode activation) {
+        return activation.isActive(this.powered) ? this.status != null ? this.status.getText() : Component.translatable(Constant.TranslationKey.UNKNOWN_STATUS).withStyle(ChatFormatting.GRAY) : Component.translatable(Constant.TranslationKey.DISABLED).withStyle(ChatFormatting.RED);
+    }
 
     /**
      * Sets the status of the machine.
      *
      * @param status the status to set for the machine.
      */
-    void setStatus(@Nullable MachineStatus status);
+    public void setStatus(@Nullable MachineStatus status) {
+        this.status = status;
+    }
 
     /**
      * Checks if the machine is currently active (status-wise).
      *
      * @return true if the machine is active, false otherwise.
      */
-    boolean isActive();
+    public boolean isActive() {
+        return this.status != null && this.status.getType().isActive();
+    }
 
     /**
      * Checks if the machine is currently receiving redstone signal.
      *
      * @return true if the machine is receiving redstone signal, false otherwise.
      */
-    boolean isPowered();
+    public boolean isPowered() {
+        return this.powered;
+    }
 
     /**
      * Sets the redstone power state.
@@ -86,5 +136,7 @@ public interface MachineState extends MenuSynchronizable, Deserializable<Compoun
      * @param powered the new redstone power state
      */
     @ApiStatus.Internal
-    void setPowered(boolean powered);
+    public void setPowered(boolean powered) {
+        this.powered = powered;
+    }
 }

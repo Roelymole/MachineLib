@@ -31,7 +31,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
@@ -74,7 +73,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.FLUID.getKey(this.resource).toString());
         tag.putLong(AMOUNT_KEY, this.amount);
-        if (this.components != DataComponentPatch.EMPTY && !this.components.isEmpty()) {
+        if (this.components != null && !this.components.isEmpty()) {
             tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encode(this.components, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
         }
         return tag;

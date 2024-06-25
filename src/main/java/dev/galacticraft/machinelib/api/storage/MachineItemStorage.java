@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.api.storage;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.MachineItemStorageImpl;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSlot>, MenuSynchronizable, Container {
+public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSlot>, Container {
     static @NotNull MachineItemStorage create(ItemResourceSlot @NotNull ... slots) {
         if (slots.length == 0) return empty();
         return new MachineItemStorageImpl(slots);

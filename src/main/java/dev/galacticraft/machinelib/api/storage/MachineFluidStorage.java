@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.api.storage;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.impl.storage.MachineFluidStorageImpl;
 import net.minecraft.world.level.material.Fluid;
@@ -31,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
-public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourceSlot>, MenuSynchronizable {
+public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourceSlot> {
     static @NotNull MachineFluidStorage create(FluidResourceSlot @NotNull ... slots) {
         if (slots.length == 0) return empty();
         return new MachineFluidStorageImpl(slots);

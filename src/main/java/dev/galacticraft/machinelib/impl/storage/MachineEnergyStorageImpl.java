@@ -23,14 +23,12 @@
 package dev.galacticraft.machinelib.impl.storage;
 
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedEnergyStorage;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
-import dev.galacticraft.machinelib.impl.menu.sync.MachineEnergyStorageSyncHandler;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.LongTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -252,12 +250,12 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
+    public void writePacket(@NotNull ByteBuf buf) {
         buf.writeLong(this.amount);
     }
 
     @Override
-    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
+    public void readPacket(@NotNull ByteBuf buf) {
         this.amount = buf.readLong();
     }
 
@@ -268,16 +266,31 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public @NotNull MenuSyncHandler createSyncHandler() {
-        return new MachineEnergyStorageSyncHandler(this);
-    }
-
-    @Override
     public long getModifications() {
         return this.amount;
     }
 
     private void markModified() {
         if (this.listener != null) this.listener.run();
+    }
+
+    @Override
+    public void readDeltaPacket(@NotNull ByteBuf buf) {
+        this.amount = buf.readLong();
+    }
+
+    @Override
+    public void writeDeltaPacket(@NotNull ByteBuf buf, long[] previous) {
+        buf.writeLong(this.amount);
+    }
+
+    @Override
+    public boolean hasChanged(long[] previous) {
+        return previous[0] != this.amount;
+    }
+
+    @Override
+    public void copyInto(long[] other) {
+        other[0] = this.amount;
     }
 }

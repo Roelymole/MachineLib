@@ -36,14 +36,14 @@ import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
-import dev.galacticraft.machinelib.impl.machine.MachineIOConfigImpl;
-import dev.galacticraft.machinelib.impl.machine.MachineStateImpl;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -65,6 +65,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Block;
@@ -78,6 +79,7 @@ import org.jetbrains.annotations.*;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
+import javax.crypto.Mac;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,14 +104,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     private final MachineType<? extends MachineBlockEntity, ? extends MachineMenu<? extends MachineBlockEntity>> type;
 
-    /**
-     * The configuration for this machine.
-     * This is used to store the {@link #getRedstoneMode() redstone mode}, {@link #getIOConfig() I/O configuration},
-     * and {@link #getSecurity() security} settings for this machine.
-     *
-     * @see MachineConfiguration
-     */
-    private final MachineConfiguration configuration;
+    private final MachineIOConfig configuration;
+    private final SecuritySettings security;
+    private @NotNull RedstoneMode redstone = RedstoneMode.IGNORE;
 
     /**
      * The {@link MachineState state} of this machine.
@@ -207,7 +204,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         this.type = type;
         this.name = name;
 
-        this.configuration = MachineConfiguration.create();
+        MachineIOFace[] faces = new MachineIOFace[6];
+        for (int i = 0; i < faces.length; i++) {
+            faces[i] = new InternalMachineIoFace();
+        }
+        this.configuration = new MachineIOConfig(faces);
+        this.security = new InternalSecuritySettings();
 
         this.state = new InternalMachineState();
 
@@ -283,14 +285,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     /**
-     * Sets the redstone level level of this machine.
+     * Sets the redstone mode of this machine.
      *
      * @param redstone the redstone level level to use.
      * @see #getRedstoneMode()
      */
     @Contract(mutates = "this")
     public void setRedstoneMode(@NotNull RedstoneMode redstone) {
-        this.configuration.setRedstoneMode(redstone);
+        this.redstone = redstone;
         this.setChanged();
     }
 
@@ -336,7 +338,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @Contract(pure = true)
     public final @NotNull SecuritySettings getSecurity() {
-        return this.configuration.getSecurity();
+        return this.security;
     }
 
     /**
@@ -349,7 +351,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @Contract(pure = true)
     public final @NotNull RedstoneMode getRedstoneMode() {
-        return this.configuration.getRedstoneMode();
+        return this.redstone;
     }
 
     /**
@@ -359,15 +361,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @Contract(pure = true)
     public final @NotNull MachineIOConfig getIOConfig() {
-        return this.configuration.getIOConfiguration();
-    }
-
-    /**
-     * Returns the configuration of this machine.
-     *
-     * @return the configuration of this machine.
-     */
-    public @NotNull MachineConfiguration getConfiguration() {
         return this.configuration;
     }
 
@@ -627,6 +620,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         tag.put(Constant.Nbt.ITEM_STORAGE, this.itemStorage.createTag());
         tag.put(Constant.Nbt.FLUID_STORAGE, this.fluidStorage.createTag());
         tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
+        tag.put(Constant.Nbt.SECURITY, this.security.createTag());
+        tag.put(Constant.Nbt.REDSTONE_MODE, this.redstone.createTag());
         tag.put(Constant.Nbt.STATE, this.state.createTag());
         tag.putBoolean(Constant.Nbt.DISABLE_DROPS, this.disableDrops);
     }
@@ -640,9 +635,13 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
         super.loadAdditional(tag, lookup);
         if (tag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND))
-            this.configuration.readTag(tag.getCompound(Constant.Nbt.CONFIGURATION));
+            this.configuration.readTag(tag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
+        if (tag.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND))
+            this.security.readTag(tag.getCompound(Constant.Nbt.SECURITY));
+        if (tag.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE))
+            this.redstone = RedstoneMode.readTag((ByteTag) tag.get(Constant.Nbt.REDSTONE_MODE));
         if (tag.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
-            this.state.readTag(tag.getCompound(Constant.Nbt.CONFIGURATION));
+            this.state.readTag(tag.getCompound(Constant.Nbt.STATE));
         if (tag.contains(Constant.Nbt.ENERGY_STORAGE, Tag.TAG_LONG))
             this.energyStorage.readTag(Objects.requireNonNull(((LongTag) tag.get(Constant.Nbt.ENERGY_STORAGE))));
         if (tag.contains(Constant.Nbt.ITEM_STORAGE, Tag.TAG_LIST))
@@ -651,8 +650,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
             this.fluidStorage.readTag(Objects.requireNonNull(tag.getList(Constant.Nbt.FLUID_STORAGE, Tag.TAG_COMPOUND)));
         this.disableDrops = tag.getBoolean(Constant.Nbt.DISABLE_DROPS);
 
-        if (level != null && level.isClientSide()) {
-            level.sendBlockUpdated(worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
+        if (this.level != null && this.level.isClientSide()) {
+            this.level.sendBlockUpdated(worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
         }
     }
 
@@ -829,7 +828,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         }
     }
 
-    private class InternalMachineState extends MachineStateImpl {
+    private class InternalMachineState extends MachineState {
         @Override
         public void setStatus(@Nullable MachineStatus status) {
             if (this.status != status) {
@@ -844,6 +843,107 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
                 this.powered = powered;
                 MachineBlockEntity.this.setChanged();
             }
+        }
+    }
+
+    private class InternalSecuritySettings extends SecuritySettings {
+        @Override
+        public void tryUpdate(@NotNull Player player) {
+            if (this.owner == null) {
+                this.owner = player.getUUID();
+                MachineBlockEntity.this.setChanged();
+            }
+
+            if (player.getUUID() == this.owner) {
+                this.username = player.getGameProfile().getName();
+                MachineBlockEntity.this.setChanged();
+            }
+        }
+
+        @Override
+        public void setAccessLevel(@NotNull AccessLevel accessLevel) {
+            if (this.accessLevel != accessLevel) {
+                this.accessLevel = accessLevel;
+                MachineBlockEntity.this.setChanged();
+            }
+        }
+    }
+
+    private class InternalMachineIoFace extends MachineIOFace {
+        private @Nullable ExposedStorage<Item, ItemVariant> cachedItemStorage = null;
+        private @Nullable ExposedStorage<Fluid, FluidVariant> cachedFluidStorage = null;
+        private @Nullable EnergyStorage cachedEnergyStorage = null;
+
+        public InternalMachineIoFace() {
+            super(ResourceType.NONE, ResourceFlow.BOTH);
+        }
+
+        @Override
+        public void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
+            this.type = type;
+            this.flow = flow;
+
+            MachineBlockEntity.this.setChanged();
+
+            this.cachedItemStorage = null;
+            this.cachedFluidStorage = null;
+            this.cachedEnergyStorage = null;
+        }
+
+        @Override
+        public @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull StorageProvider<Item, ItemVariant> provider) {
+            if (this.type.willAcceptResource(ResourceType.ITEM)) {
+                if (this.cachedItemStorage == null) {
+                    this.cachedItemStorage = provider.createExposedStorage(this.flow);
+                }
+                return this.cachedItemStorage;
+            } else {
+                assert this.cachedItemStorage == null;
+            }
+            return null;
+        }
+
+        @Override
+        public @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull StorageProvider<Fluid, FluidVariant> provider) {
+            if (this.type.willAcceptResource(ResourceType.FLUID)) {
+                if (this.cachedFluidStorage == null) {
+                    this.cachedFluidStorage = provider.createExposedStorage(this.flow);
+                }
+                return this.cachedFluidStorage;
+            } else {
+                assert this.cachedFluidStorage == null;
+            }
+            return null;
+        }
+
+        @Override
+        public @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage) {
+            if (this.type.willAcceptResource(ResourceType.ENERGY)) {
+                if (this.cachedEnergyStorage == null) {
+                    this.cachedEnergyStorage = storage.getExposedStorage(this.flow);
+                }
+                return this.cachedEnergyStorage;
+            }
+            return null;
+        }
+
+        @Override
+        public void readTag(@NotNull CompoundTag tag) {
+            this.cachedItemStorage = null;
+            this.cachedFluidStorage = null;
+            this.cachedEnergyStorage = null;
+
+            super.readTag(tag);
+        }
+
+
+        @Override
+        public void readPacket(@NotNull ByteBuf buf) {
+            this.cachedItemStorage = null;
+            this.cachedFluidStorage = null;
+            this.cachedEnergyStorage = null;
+
+            super.readPacket(buf);
         }
     }
 }

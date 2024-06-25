@@ -44,10 +44,10 @@ val wthit = project.property("wthit.version").toString()
 plugins {
     java
     `maven-publish`
-    id("fabric-loom") version("1.6-SNAPSHOT")
+    id("fabric-loom") version("1.7-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
     id("org.ajoberstar.grgit") version("5.2.2")
-    id("dev.galacticraft.mojarn") version("0.1.2")
+    id("dev.galacticraft.mojarn") version("0.3.0+8")
 }
 
 group = "dev.galacticraft"
@@ -188,7 +188,7 @@ dependencies {
     "testmodImplementation"(sourceSets.main.get().output)
     "modTestmodImplementation"("net.fabricmc.fabric-api:fabric-api:$fabric")
 
-    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:$rei")
+//    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:$rei")
     modRuntimeOnly("mcp.mobius.waila:wthit:fabric-$wthit")
 }
 

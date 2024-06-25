@@ -22,20 +22,45 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Supplier;
+
 /**
- * Represents objects that can be serialized to a packet.
- *
- * @see PacketDeserializable
+ * Represents an object that can be (de)serialized from a packet.
  */
-public interface PacketSerializable {
+public interface PacketSerializable<B extends ByteBuf> {
+    static <B extends ByteBuf, T extends PacketSerializable<B>> StreamCodec<B, T> createCodec(@NotNull Supplier<@NotNull T> constructor) {
+        return new StreamCodec<>() {
+            @Override
+            public @NotNull T decode(B buf) {
+                T output = constructor.get();
+                output.readPacket(buf);
+                return output;
+            }
+
+            @Override
+            public void encode(B buf, T input) {
+                input.writePacket(buf);
+            }
+        };
+    }
+
     /**
-     * Serializes this object into a buffer.
+     * Deserializes this object's state from a buffer.
+     *
+     * @param buf the buffer to read from.
+     * @see PacketSerializable#writePacket(B)
+     */
+    void readPacket(@NotNull B buf);
+
+    /**
+     * Serializes this object's state into a buffer.
      *
      * @param buf the buffer to write into
-     * @see PacketDeserializable#readPacket(RegistryFriendlyByteBuf)
+     * @see PacketSerializable#readPacket(B)
      */
-    void writePacket(@NotNull RegistryFriendlyByteBuf buf);
+    void writePacket(@NotNull B buf);
 }

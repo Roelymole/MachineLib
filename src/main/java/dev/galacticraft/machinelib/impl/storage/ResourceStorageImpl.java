@@ -24,10 +24,8 @@ package dev.galacticraft.machinelib.impl.storage;
 
 import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import dev.galacticraft.machinelib.impl.menu.sync.ResourceStorageSyncHandler;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -155,7 +153,46 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     }
 
     @Override
-    public @Nullable MenuSyncHandler createSyncHandler() {
-        return new ResourceStorageSyncHandler<>(this);
+    public void copyInto(long @NotNull [] other) {
+        assert this.slots.length == other.length;
+
+        for (int i = 0; i < this.slots.length; i++) {
+            other[i] = this.slots[i].getModifications();
+        }
+    }
+
+    @Override
+    public void writeDeltaPacket(@NotNull RegistryFriendlyByteBuf buf, long @NotNull [] previous) {
+        int n = 0;
+        for (int i = 0; i < this.slots.length; i++) {
+            if (this.slots[i].getModifications() != previous[i]) {
+                n++;
+            }
+        }
+        buf.writeByte(n);
+        for (int i = 0; i < this.slots.length; i++) {
+            if (this.slots[i].getModifications() != previous[i]) {
+                buf.writeByte(i);
+                this.slots[i].writePacket(buf);
+            }
+        }
+    }
+
+    @Override
+    public void readDeltaPacket(@NotNull RegistryFriendlyByteBuf buf) {
+        int n = buf.readByte();
+        for (int i = 0; i < n; i++) {
+            this.slots[buf.readByte()].readPacket(buf);
+        }
+    }
+
+    @Override
+    public boolean hasChanged(long @NotNull [] previous) {
+        for (int i = 0; i < this.slots.length; i++) {
+            if (this.slots[i].getModifications() != previous[i]) {
+                return true;
+            }
+        }
+        return false;
     }
 }

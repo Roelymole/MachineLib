@@ -22,8 +22,8 @@
 
 package dev.galacticraft.machinelib.test.misc;
 
-import dev.galacticraft.machinelib.impl.machine.MachineIOConfigImpl;
-import dev.galacticraft.machinelib.impl.machine.SecuritySettingsImpl;
+import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import org.junit.jupiter.api.Assertions;
@@ -32,13 +32,13 @@ import org.junit.jupiter.api.Test;
 public class EmptyDeserializationTests {
     @Test
     public void securitySettings() {
-        SecuritySettingsImpl securitySettings = new SecuritySettingsImpl();
+        SecuritySettings securitySettings = new SecuritySettings();
         Assertions.assertDoesNotThrow(() -> securitySettings.readTag(new CompoundTag()));
     }
 
     @Test
     public void ioConfiguration() {
-        MachineIOConfigImpl ioConfig = new MachineIOConfigImpl();
+        MachineIOConfig ioConfig = new MachineIOConfig();
         Assertions.assertDoesNotThrow(() -> ioConfig.readTag(new ListTag()));
     }
 }

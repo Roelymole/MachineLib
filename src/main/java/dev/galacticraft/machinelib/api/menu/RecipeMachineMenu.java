@@ -24,7 +24,6 @@ package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,7 +35,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -137,14 +135,14 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
     }
 
     @Override
-    public void registerSyncHandlers(Consumer<MenuSyncHandler> consumer) {
-        super.registerSyncHandlers(consumer);
+    public void registerData(MachineData data) {
+        super.registerData(data);
 
-        consumer.accept(MenuSyncHandler.simple(this.machine::getProgress, this::setProgress));
-        consumer.accept(MenuSyncHandler.simple(() -> {
+        data.registerInt(this::getProgress, this::setProgress);
+        data.registerInt(() -> {
             RecipeHolder<R> recipe = this.machine.getActiveRecipe();
             return recipe != null ? this.machine.getProcessingTime(recipe) : 0;
-        }, this::setMaxProgress));
+        }, this::setMaxProgress);
     }
 
     /**

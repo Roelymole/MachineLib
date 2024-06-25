@@ -25,9 +25,10 @@ package dev.galacticraft.machinelib.api.menu;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
+import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSyncHandler;
+import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
+import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
@@ -42,13 +43,11 @@ import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.client.api.screen.Tank;
-import dev.galacticraft.machinelib.impl.MachineLib;
+import dev.galacticraft.machinelib.client.impl.menu.sync.MachineDataClient;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
-import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPacket;
+import dev.galacticraft.machinelib.impl.menu.sync.MachineDataImpl;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -68,7 +67,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -114,7 +112,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * The player interacting with this menu.
      * Always null on the logical client, never null on the logical server.
      */
-    public final @Nullable ServerPlayer player;
+    public final @NotNull Player player;
 
     /**
      * The inventory of the player opening this menu
@@ -125,10 +123,10 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     public final @NotNull UUID playerUUID;
 
-    /**
-     * The configuration of the machine associated with this menu
-     */
-    public final @NotNull MachineConfiguration configuration;
+    public final @NotNull MachineIOConfig configuration;
+    public final @NotNull SecuritySettings security;
+    public @NotNull RedstoneMode redstoneMode;
+
     /**
      * The state of the machine associated with this menu
      */
@@ -154,10 +152,8 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * The tanks contained in this menu.
      */
     public final List<Tank> tanks = new ArrayList<>();
-    /**
-     * The storage sync handlers for this menu.
-     */
-    private final List<MenuSyncHandler> syncHandlers = new ArrayList<>(4);
+
+    private final MachineData data;
 
     /**
      * Constructs a new menu for a machine.
@@ -172,12 +168,17 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         assert !Objects.requireNonNull(machine.getLevel()).isClientSide;
         this.type = machine.getMachineType();
         this.machine = machine;
+        this.data = new MachineDataImpl(player);
         this.server = true;
+
         this.player = player;
         this.playerInventory = player.getInventory();
         this.playerUUID = player.getUUID();
 
-        this.configuration = machine.getConfiguration();
+        this.configuration = machine.getIOConfig();
+        this.security = machine.getSecurity();
+        this.redstoneMode = machine.getRedstoneMode();
+
         this.state = machine.getState();
         this.energyStorage = machine.energyStorage();
         this.itemStorage = machine.itemStorage();
@@ -212,12 +213,8 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         }
 
         this.addPlayerInventorySlots(player.getInventory(), 0, 0); // it's the server
-        this.registerSyncHandlers(this::addSyncHandler);
-    }
-
-    @Override
-    public void removed(Player player) {
-        super.removed(player);
+        this.registerData(this.data);
+        this.data.synchronizeFull();
     }
 
     /**
@@ -225,7 +222,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * Called on the logical client
      *
      * @param syncId    The sync id for this menu.
-     * @param buf       The synchronization buffer from the server. Should contain exactly one block pos.
+     * @param buf       The synchronization buffer from the server.
      * @param inventory The inventory of the player interacting with this menu.
      * @param type      The type of menu this is.
      */
@@ -233,17 +230,22 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         super(type.getMenuType(), syncId);
 
         this.type = type;
-        this.player = null;
         this.server = false;
+        this.data = new MachineDataClient();
+        this.player = inventory.player;
         this.playerInventory = inventory;
         this.playerUUID = inventory.player.getUUID();
 
         BlockPos blockPos = buf.readBlockPos();
         this.machine = (Machine) inventory.player.level().getBlockEntity(blockPos); //todo: actually stop using the BE on the client side
         this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), blockPos);
-        this.configuration = MachineConfiguration.create();
+        this.configuration = new MachineIOConfig();
         this.configuration.readPacket(buf);
-        this.state = MachineState.create();
+        this.security = new SecuritySettings();
+        this.security.readPacket(buf);
+        this.redstoneMode = RedstoneMode.readPacket(buf);
+
+        this.state = new MachineState();
         this.state.readPacket(buf);
         this.energyStorage = type.createEnergyStorage();
         this.energyStorage.readPacket(buf);
@@ -279,7 +281,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         }
 
         this.addPlayerInventorySlots(inventory, invX, invY);
-        this.registerSyncHandlers(this::addSyncHandler);
+        this.registerData(this.data);
     }
 
     /**
@@ -350,27 +352,16 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
     /**
      * Registers the sync handlers for the menu.
-     *
-     * @param consumer The consumer to accept the menu sync handlers.
      */
     @MustBeInvokedByOverriders
-    public void registerSyncHandlers(Consumer<MenuSyncHandler> consumer) {
-        consumer.accept(this.configuration.createSyncHandler());
-        consumer.accept(this.state.createSyncHandler());
-        consumer.accept(this.itemStorage.createSyncHandler()); //todo: probably synced by vanilla - is this necessary?
-        consumer.accept(this.fluidStorage.createSyncHandler());
-        consumer.accept(this.energyStorage.createSyncHandler());
-    }
-
-    /**
-     * Adds a sync handler to the menu.
-     *
-     * @param syncHandler The sync handler to add. Ignored if null.
-     */
-    private void addSyncHandler(@Nullable MenuSyncHandler syncHandler) {
-        if (syncHandler != null) {
-            this.syncHandlers.add(syncHandler);
-        }
+    public void registerData(MachineData data) {
+        data.register(this.itemStorage, new long[this.itemStorage.size()]); //todo: probably synced by vanilla - is this necessary?
+        data.register(this.fluidStorage, new long[this.fluidStorage.size()]);
+        data.register(this.energyStorage, new long[1]);
+        data.register(this.configuration, new MachineIOConfig());
+        data.register(this.security, new SecuritySettings());
+        data.registerEnum(RedstoneMode.values(), () -> this.redstoneMode, mode -> this.redstoneMode = mode);
+        data.register(this.state, new MachineState());
     }
 
     /**
@@ -381,6 +372,11 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     public boolean isFaceLocked(@NotNull BlockFace face) {
         return false;
+    }
+
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
     }
 
     @Override
@@ -489,18 +485,18 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
     @Override
     public boolean stillValid(Player player) {
-        return this.configuration.getSecurity().hasAccess(player) && stillValid(this.levelAccess, player, this.type.getBlock());
+        return this.security.hasAccess(player) && stillValid(this.levelAccess, player, this.type.getBlock());
     }
 
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        this.synchronizeState();
+        this.data.synchronize();
     }
 
     @ApiStatus.Internal
     public void cycleFaceConfig(BlockFace face, boolean reverse, boolean reset) {
-        MachineIOFace option = this.configuration.getIOConfiguration().get(face);
+        MachineIOFace option = this.configuration.get(face);
 
         short bits = calculateIoBitmask();
         if (bits != 0b1_000_000_000_000 && !reset && !isFaceLocked(face)) {
@@ -586,49 +582,13 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
     }
 
     /**
-     * Synchronizes this menu's state from the server to the client.
-     *
-     * @see #receiveState(RegistryFriendlyByteBuf)
-     */
-    @ApiStatus.Internal
-    private void synchronizeState() {
-        if (this.player != null) {
-            int sync = 0;
-            for (MenuSyncHandler syncHandler : this.syncHandlers) {
-                if (syncHandler.needsSyncing()) sync++;
-            }
-
-            if (sync > 0) {
-                RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), this.player.registryAccess());
-                buf.writeByte(this.containerId);
-                buf.writeVarInt(sync);
-                for (int i = 0; i < this.syncHandlers.size(); i++) {
-                    MenuSyncHandler handler = this.syncHandlers.get(i);
-                    if (handler.needsSyncing()) {
-                        buf.writeVarInt(i);
-                        MachineLib.LOGGER.trace("Writing sync handler {} at {}", handler, buf.writerIndex());
-                        handler.sync(buf);
-                    }
-                }
-                ServerPlayNetworking.getSender(this.player).sendPacket(new MenuSyncPacket(buf));
-            }
-        }
-    }
-
-    /**
      * Receives and deserializes sync packets from the server (called on the client).
      *
      * @param buf The packet buffer.
-     * @see #synchronizeState()
      */
     @ApiStatus.Internal
     public void receiveState(@NotNull RegistryFriendlyByteBuf buf) {
-        int sync = buf.readVarInt();
-        for (int i = 0; i < sync; i++) {
-            MenuSyncHandler handler = this.syncHandlers.get(buf.readVarInt());
-            MachineLib.LOGGER.trace("Reading sync handler {} at {}", handler, buf.readerIndex());
-            handler.read(buf);
-        }
+        this.data.handle(buf);
     }
 
     /**

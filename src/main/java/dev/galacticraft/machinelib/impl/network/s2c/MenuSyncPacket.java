@@ -43,7 +43,6 @@ public record MenuSyncPacket(RegistryFriendlyByteBuf buf) implements CustomPacke
         LocalPlayer player = context.player();
         if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
             menu.receiveState(buf);
-            menu.machine.setChanged();
         }
     }
 }

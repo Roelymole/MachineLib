@@ -197,7 +197,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
 
     private @Nullable MachineBakedModel model;
 
-    private @NotNull MachineRenderData renderData;
+    protected @NotNull MachineRenderData renderData;
 
     /**
      * Creates a new screen from the given screen handler.
@@ -210,9 +210,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         super(menu, menu.playerInventory, title);
 
         this.texture = texture;
-        this.renderData = menu.configuration.getIOConfiguration();
+        this.renderData = menu.configuration;
 
-        MachineScreen.this.ownerSkin = Minecraft.getInstance().getSkinManager().lookupInsecure(new GameProfile(this.menu.configuration.getSecurity().getOwner(), this.menu.configuration.getSecurity().getUsername()));
+        MachineScreen.this.ownerSkin = Minecraft.getInstance().getSkinManager().lookupInsecure(new GameProfile(this.menu.security.getOwner(), this.menu.security.getUsername()));
     }
 
     /**
@@ -243,7 +243,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param lines The list to append to.
      */
     public void appendEnergyTooltip(List<Component> lines) {
-        lines.add(Component.translatable(Constant.TranslationKey.STATUS).setStyle(Constant.Text.GRAY_STYLE).append(this.menu.state.getStatusText(this.menu.configuration.getRedstoneMode())));
+        lines.add(Component.translatable(Constant.TranslationKey.STATUS).setStyle(Constant.Text.GRAY_STYLE).append(this.menu.state.getStatusText(this.menu.redstoneMode)));
         lines.add(DisplayUtil.createEnergyTooltip(this.menu.energyStorage.getAmount(), this.menu.energyStorage.getCapacity()));
     }
 
@@ -275,9 +275,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         if (Tab.REDSTONE.isOpen()) {
             poseStack.pushPose();
             poseStack.translate(-PANEL_WIDTH, SPACING, 0);
-            this.drawButton(graphics, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.configuration.getRedstoneMode() == RedstoneMode.IGNORE);
-            this.drawButton(graphics, REDSTONE_LOW_X, REDSTONE_LOW_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.configuration.getRedstoneMode() == RedstoneMode.LOW);
-            this.drawButton(graphics, REDSTONE_HIGH_X, REDSTONE_HIGH_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.configuration.getRedstoneMode() == RedstoneMode.HIGH);
+            this.drawButton(graphics, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.IGNORE);
+            this.drawButton(graphics, REDSTONE_LOW_X, REDSTONE_LOW_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.LOW);
+            this.drawButton(graphics, REDSTONE_HIGH_X, REDSTONE_HIGH_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.HIGH);
             graphics.renderFakeItem(REDSTONE, PANEL_ICON_X, PANEL_ICON_Y);
             graphics.renderFakeItem(GUNPOWDER, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y);
             graphics.renderFakeItem(UNLIT_TORCH, REDSTONE_LOW_X, REDSTONE_LOW_Y - 2);
@@ -286,9 +286,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_MODE)
                     .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_STATE,
-                    menu.configuration.getRedstoneMode().getName()).setStyle(Constant.Text.GRAY_STYLE), REDSTONE_STATE_TEXT_X, REDSTONE_STATE_TEXT_Y, 0xFFFFFFFF);
+                    menu.redstoneMode.getName()).setStyle(Constant.Text.GRAY_STYLE), REDSTONE_STATE_TEXT_X, REDSTONE_STATE_TEXT_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_STATUS,
-                            this.menu.configuration.getRedstoneMode().isActive(this.menu.state.isPowered()) ?
+                            this.menu.redstoneMode.isActive(this.menu.state.isPowered()) ?
                                     Component.translatable(Constant.TranslationKey.REDSTONE_ACTIVE).setStyle(Constant.Text.GREEN_STYLE)
                                     : Component.translatable(Constant.TranslationKey.REDSTONE_DISABLED).setStyle(Constant.Text.DARK_RED_STYLE))
                     .setStyle(Constant.Text.GRAY_STYLE), REDSTONE_STATUS_TEXT_X, REDSTONE_STATUS_TEXT_Y + this.font.lineHeight, 0xFFFFFFFF);
@@ -332,9 +332,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             poseStack.translate(this.imageWidth, TAB_HEIGHT + SPACING + SPACING, 0);
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, PANEL_ICON_X, PANEL_ICON_Y, ICON_LOCK_PRIVATE_U, ICON_LOCK_PRIVATE_V, ICON_WIDTH, ICON_HEIGHT);
 
-            this.drawButton(graphics, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.configuration.getSecurity().getAccessLevel() == AccessLevel.PUBLIC || !this.menu.configuration.getSecurity().isOwner(this.menu.playerUUID));
-            this.drawButton(graphics, SECURITY_TEAM_X, SECURITY_TEAM_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.configuration.getSecurity().getAccessLevel() == AccessLevel.TEAM || !this.menu.configuration.getSecurity().isOwner(this.menu.playerUUID));
-            this.drawButton(graphics, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.configuration.getSecurity().getAccessLevel() == AccessLevel.PRIVATE || !this.menu.configuration.getSecurity().isOwner(this.menu.playerUUID));
+            this.drawButton(graphics, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PUBLIC || !this.menu.security.isOwner(this.menu.player));
+            this.drawButton(graphics, SECURITY_TEAM_X, SECURITY_TEAM_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.TEAM || !this.menu.security.isOwner(this.menu.player));
+            this.drawButton(graphics, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PRIVATE || !this.menu.security.isOwner(this.menu.player));
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, ICON_LOCK_PRIVATE_U, ICON_LOCK_PRIVATE_V, ICON_WIDTH, ICON_HEIGHT);
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_TEAM_X, SECURITY_TEAM_Y, ICON_LOCK_PARTY_U, ICON_LOCK_PARTY_V, ICON_WIDTH, ICON_HEIGHT);
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, ICON_LOCK_PUBLIC_U, ICON_LOCK_PUBLIC_V, ICON_WIDTH, ICON_HEIGHT);
@@ -342,7 +342,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.SECURITY)
                     .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.ACCESS_LEVEL,
-                    this.menu.configuration.getSecurity().getAccessLevel().getName()).setStyle(Constant.Text.GRAY_STYLE), SECURITY_STATE_TEXT_X, SECURITY_STATE_TEXT_Y, 0xFFFFFFFF);
+                    this.menu.security.getAccessLevel().getName()).setStyle(Constant.Text.GRAY_STYLE), SECURITY_STATE_TEXT_X, SECURITY_STATE_TEXT_Y, 0xFFFFFFFF);
 
             poseStack.popPose();
         }
@@ -370,7 +370,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param face     the face to draw
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull MachineRenderData data, @NotNull BlockFace face) {
-        MachineIOFace machineFace = menu.configuration.getIOConfiguration().get(face);
+        MachineIOFace machineFace = menu.configuration.get(face);
         if (this.model != null) {
             graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, model.getSprite(face, data, machineFace.getType(), machineFace.getFlow()));
         }
@@ -514,7 +514,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
                 return true;
             }
 
-            if (this.menu.configuration.getSecurity().isOwner(this.menu.playerUUID)) {
+            if (this.menu.security.isOwner(this.menu.player)) {
                 if (mouseIn(mouseX, mouseY, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
                     this.setAccessibility(AccessLevel.PRIVATE);
                     this.playButtonSound();
@@ -550,7 +550,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param accessLevel The accessibility to set.
      */
     protected void setAccessibility(@NotNull AccessLevel accessLevel) {
-        this.menu.configuration.getSecurity().setAccessLevel(accessLevel);
+        this.menu.security.setAccessLevel(accessLevel);
         PacketSender.c2s().send(new AccessLevelPacket(accessLevel));
     }
 
@@ -560,7 +560,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param redstone The redstone level to set.
      */
     protected void setRedstone(@NotNull RedstoneMode redstone) {
-        this.menu.configuration.setRedstoneMode(redstone);
+        this.menu.redstoneMode = redstone;
         PacketSender.c2s().send(new RedstoneModePacket(redstone));
     }
 
@@ -633,10 +633,10 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseX -= this.imageWidth;
         mouseY -= SPACING;
         if (Tab.STATS.isOpen()) {
-            if (this.menu.configuration.getSecurity().getUsername() != null) {
+            if (this.menu.security.getUsername() != null) {
                 if (mouseIn(mouseX, mouseY, OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE, OWNER_FACE_SIZE)) {
-                    assert this.menu.configuration.getSecurity().getOwner() != null;
-                    graphics.renderTooltip(this.font, Component.literal(this.menu.configuration.getSecurity().getUsername()), mX, mY);
+                    assert this.menu.security.getOwner() != null;
+                    graphics.renderTooltip(this.font, Component.literal(this.menu.security.getUsername()), mX, mY);
                 }
             }
         } else {
@@ -650,7 +650,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseX -= this.imageWidth;
             mouseY -= TAB_HEIGHT + SPACING + SPACING;
 
-            if (this.menu.configuration.getSecurity().isOwner(this.menu.playerUUID)) {
+            if (this.menu.security.isOwner(this.menu.player)) {
                 if (mouseIn(mouseX, mouseY, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
                     graphics.renderTooltip(this.font, AccessLevel.PRIVATE.getName(), mX, mY);
                 }
@@ -690,7 +690,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void renderFaceTooltip(GuiGraphics graphics, @NotNull BlockFace face, int mouseX, int mouseY) {
         TOOLTIP_ARRAY.add(face.getName());
-        MachineIOFace configuredFace = this.menu.configuration.getIOConfiguration().get(face);
+        MachineIOFace configuredFace = this.menu.configuration.get(face);
         if (configuredFace.getType() != ResourceType.NONE) {
             TOOLTIP_ARRAY.add(configuredFace.getType().getName().copy().append(" ").append(configuredFace.getFlow().getName()));
         }
@@ -815,17 +815,17 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseY -= (this.topPos + (TAB_HEIGHT + SPACING + SPACING));
             MachineIOFace config = null;
             if (mouseIn(mouseX, mouseY, TOP_FACE_X, TOP_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.TOP);
+                config = this.menu.configuration.get(BlockFace.TOP);
             } else if (mouseIn(mouseX, mouseY, LEFT_FACE_X, LEFT_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.LEFT);
+                config = this.menu.configuration.get(BlockFace.LEFT);
             } else if (mouseIn(mouseX, mouseY, FRONT_FACE_X, FRONT_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.FRONT);
+                config = this.menu.configuration.get(BlockFace.FRONT);
             } else if (mouseIn(mouseX, mouseY, RIGHT_FACE_X, RIGHT_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.RIGHT);
+                config = this.menu.configuration.get(BlockFace.RIGHT);
             } else if (mouseIn(mouseX, mouseY, BACK_FACE_X, BACK_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.BACK);
+                config = this.menu.configuration.get(BlockFace.BACK);
             } else if (mouseIn(mouseX, mouseY, BOTTOM_FACE_X, BOTTOM_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
-                config = this.menu.configuration.getIOConfiguration().get(BlockFace.BOTTOM);
+                config = this.menu.configuration.get(BlockFace.BOTTOM);
             }
             if (config != null) {
                 ResourceType resource = config.getType();

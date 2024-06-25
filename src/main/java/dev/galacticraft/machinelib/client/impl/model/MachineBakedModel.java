@@ -118,7 +118,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     private boolean transform(MachineRenderData renderData, @NotNull BlockState state, @NotNull MutableQuadView quad) {
         BlockFace face = BlockFace.toFace(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
-        MachineIOFace machineFace = renderData == null ? MachineIOFace.blank() : renderData.getIOConfig().get(face);
+        MachineIOFace machineFace = renderData == null ? new MachineIOFace() : renderData.getIOConfig().get(face);
         assert face != null;
         quad.spriteBake(getSprite(face,
                         renderData,
@@ -224,7 +224,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         assert ((BlockItem) stack.getItem()).getBlock() instanceof MachineBlock;
         CustomData customData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
 
-        MachineIOConfig config = MachineIOConfig.create();
+        MachineIOConfig config = new MachineIOConfig();
         if (!customData.isEmpty()) {
             CompoundTag beTag = customData.getUnsafe();
             if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {

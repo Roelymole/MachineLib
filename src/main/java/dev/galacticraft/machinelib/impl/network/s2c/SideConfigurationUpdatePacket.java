@@ -50,7 +50,7 @@ public record SideConfigurationUpdatePacket(BlockFace face, ResourceType resourc
     public void apply(ClientPlayNetworking.Context context) {
         LocalPlayer player = context.client().player;
         if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
-            menu.configuration.getIOConfiguration().get(face).setOption(resource, flow);
+            menu.configuration.get(face).setOption(resource, flow);
             menu.machine.setChanged();
         }
     }

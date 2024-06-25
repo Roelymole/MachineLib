@@ -22,23 +22,23 @@
 
 package dev.galacticraft.machinelib.api.machine.configuration;
 
-import com.google.common.base.Preconditions;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
+import dev.galacticraft.machinelib.api.misc.Equivalent;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
-import dev.galacticraft.machinelib.impl.block.face.DirectionlessMachineIOFaceImpl;
-import dev.galacticraft.machinelib.impl.block.face.MachineIOFaceImpl;
+import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.reborn.energy.api.EnergyStorage;
@@ -47,95 +47,92 @@ import team.reborn.energy.api.EnergyStorage;
  * Represents a face of a {@link MachineBlockEntity} that has been configured to
  * accept certain types of resources.
  */
-public interface MachineIOFace extends Deserializable<CompoundTag>, MenuSynchronizable {
+public class MachineIOFace implements Serializable<CompoundTag>, PacketSerializable<ByteBuf>, Equivalent<MachineIOFace> {
+    public static final StreamCodec<ByteBuf, MachineIOFace> CODEC = PacketSerializable.createCodec(MachineIOFace::new);
+
     /**
-     * Creates a new, blank {@link MachineIOFace}.
-     *
-     * @return A new, blank {@link MachineIOFace}.
-     * @see #of(ResourceType, ResourceFlow)
+     * The type of resource that this face is configured to accept.
      */
-    @Contract(value = " -> new", pure = true)
-    static @NotNull MachineIOFace blank() {
-        return of(ResourceType.NONE, ResourceFlow.BOTH);
+    protected @NotNull ResourceType type;
+    /**
+     * The flow direction of this face.
+     */
+    protected @NotNull ResourceFlow flow;
+
+    public MachineIOFace() {
+        this(ResourceType.NONE, ResourceFlow.BOTH);
     }
 
-    /**
-     * Creates a new {@link MachineIOFace}.
-     *
-     * @param type The type of resource to accept.
-     * @param flow The flow direction of the resource.
-     * @return A new {@link MachineIOFace}.
-     * @see MachineIOFaceImpl the default implementation
-     */
-    @Contract(value = "_, _ -> new", pure = true)
-    static @NotNull MachineIOFace of(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
-        Preconditions.checkNotNull(type);
-        Preconditions.checkNotNull(flow);
-
-        return new MachineIOFaceImpl(type, flow);
+    public MachineIOFace(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
+        this.type = type;
+        this.flow = flow;
     }
 
-    /**
-     * Returns a new machine face to be used when there is directionless access/
-     * @return a new machine face.
-     */
-    @Contract(value = " -> new", pure = true)
-    static @NotNull MachineIOFace directionless() {
-        return new DirectionlessMachineIOFaceImpl();
+    public @NotNull ResourceType getType() {
+        return this.type;
     }
 
-    /**
-     * Configures this face to accept the given resource type and flow.
-     *
-     * @param type The type of resource to accept.
-     * @param flow The flow direction of the resource.
-     */
-    @Contract(mutates = "this")
-    void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow);
+    public @NotNull ResourceFlow getFlow() {
+        return this.flow;
+    }
 
-    /**
-     * Returns the type of resource that this face is configured to accept.
-     *
-     * @return The type of resource that this face is configured to accept.
-     */
-    @Contract(pure = true)
-    @NotNull ResourceType getType();
+    public void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
+        this.type = type;
+        this.flow = flow;
+    }
 
-    /**
-     * Returns the flow direction of this face.
-     *
-     * @return The flow direction of this face.
-     */
-    @Contract(pure = true)
-    @NotNull ResourceFlow getFlow();
+    public @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull StorageProvider<Item, ItemVariant> provider) {
+        return null;
+    }
 
-    /**
-     * Returns the exposed item storage associated with the given resource storage.
-     *
-     * @param provider The source of the storage.
-     * @return The exposed item storage, or null if access is denied.
-     */
-    @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull StorageProvider<Item, ItemVariant> provider);
+    public @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull StorageProvider<Fluid, FluidVariant> provider) {
+        return null;
+    }
 
-    /**
-     * Returns the exposed fluid storage associated with the given resource storage.
-     *
-     * @param provider The source of the storage.
-     * @return The exposed fluid storage, or null if access is denied.
-     */
-    @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull StorageProvider<Fluid, FluidVariant> provider);
+    public @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage) {
+        return null;
+    }
 
-    /**
-     * Returns the exposed energy storage of this face.
-     * If the type of storage is not an energy storage, this method will return {@code null}.
-     *
-     * @param storage The storage to use.
-     * @return The exposed energy storage of this face.
-     */
-    @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage);
+    @Override
+    public @NotNull CompoundTag createTag() {
+        CompoundTag tag = new CompoundTag();
+        tag.putByte(Constant.Nbt.FLOW, (byte) this.flow.ordinal());
+        tag.putByte(Constant.Nbt.RESOURCE, (byte) this.type.ordinal());
+
+        return tag;
+    }
+
+    @Override
+    public void readTag(@NotNull CompoundTag tag) {
+        this.type = ResourceType.getFromOrdinal(tag.getByte(Constant.Nbt.RESOURCE));
+        this.flow = ResourceFlow.getFromOrdinal(tag.getByte(Constant.Nbt.FLOW));
+    }
+
+    @Override
+    public void writePacket(@NotNull ByteBuf buf) {
+        buf.writeByte(this.type.ordinal()).writeByte(this.flow.ordinal());
+    }
+
+    @Override
+    public void readPacket(@NotNull ByteBuf buf) {
+        this.type = ResourceType.getFromOrdinal(buf.readByte());
+        this.flow = ResourceFlow.getFromOrdinal(buf.readByte());
+    }
+
+    @Override
+    public boolean hasChanged(@NotNull MachineIOFace previous) {
+        return previous.type != this.type
+                || previous.flow != this.flow;
+    }
+
+    @Override
+    public void copyInto(@NotNull MachineIOFace other) {
+        other.type = this.type;
+        other.flow = this.flow;
+    }
 
     @FunctionalInterface
-    interface StorageProvider<Resource, Variant extends TransferVariant<Resource>> {
+    public interface StorageProvider<Resource, Variant extends TransferVariant<Resource>> {
         ExposedStorage<Resource, Variant> createExposedStorage(@NotNull ResourceFlow flow);
     }
 }

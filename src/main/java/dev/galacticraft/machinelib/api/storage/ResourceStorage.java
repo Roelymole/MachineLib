@@ -23,14 +23,16 @@
 package dev.galacticraft.machinelib.api.storage;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
-public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> extends Iterable<Slot>, MutableModifiable, SlottedStorageAccess<Resource, Slot>, Deserializable<ListTag>, MenuSynchronizable {
+public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> extends Iterable<Slot>, MutableModifiable, SlottedStorageAccess<Resource, Slot>, Serializable<ListTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, long[]>, PacketSerializable<RegistryFriendlyByteBuf> {
     void setListener(Runnable listener);
 
     Slot[] getSlots();

@@ -22,21 +22,56 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Supplier;
+
 /**
- * Represents objects that can be serialized to NBT or a packet.
+ * Represents an object that can be deserialized from a specific tag or a packet.
  *
- * @param <T> The type of tag that represents the serialized object.
- * @see Deserializable
+ * @param <T> the type of tag used for deserialization
+ * @see Serializable
  */
-public interface Serializable<T extends Tag> extends PacketSerializable {
+public interface Serializable<T extends Tag> {
+    static <T extends Tag, S extends Serializable<T>> Codec<S> createCodec(@NotNull Supplier<S> factory) {
+        return new Codec<>() {
+            @Override
+            public <O> DataResult<Pair<S, O>> decode(DynamicOps<O> ops, O input) {
+                Tag tag = ops.convertTo(NbtOps.INSTANCE, input);
+                S s = factory.get();
+                try {
+                    s.readTag((T) tag);
+                } catch (ClassCastException ignore) {
+                    return DataResult.error(() -> "Invalid tag type: " + tag.getClass().getName());
+                }
+                return DataResult.success(Pair.of(s, input));
+            }
+
+            @Override
+            public <O> DataResult<O> encode(S input, DynamicOps<O> ops, O prefix) {
+                return DataResult.success(NbtOps.INSTANCE.convertTo(ops, input.createTag()));
+            }
+        };
+    }
+
     /**
      * Serializes this object as a tag.
      *
      * @return the created tag
      */
     @NotNull T createTag();
+
+    /**
+     * Deserializes this object's state from a tag.
+     *
+     * @param tag the tag to be read.
+     * @see #createTag()
+     */
+    void readTag(@NotNull T tag);
 }

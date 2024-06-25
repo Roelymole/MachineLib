@@ -22,16 +22,6 @@
 
 package dev.galacticraft.machinelib.api.network;
 
-import dev.galacticraft.machinelib.api.machine.MachineState;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineConfiguration;
-import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
-import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
-import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.codec.StreamEncoder;
-
 public class MachineUpdatePacket {
 //    public static final StreamCodec<RegistryFriendlyByteBuf, MachineUpdatePacket> CODEC = StreamCodec.ofMember((buf, packet) -> {
 //        buf.writeBlockPos(packet.pos);

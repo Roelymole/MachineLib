@@ -247,7 +247,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
                 @Override
                 public ItemVariant getResource() {
-                    return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
+                    return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components == null ? DataComponentPatch.EMPTY : ItemResourceSlotImpl.this.components);
                 }
 
                 @Override
@@ -271,7 +271,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
     @Override
     public ItemVariant getItemVariant() {
-        return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
+        return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components == null ? DataComponentPatch.EMPTY : ItemResourceSlotImpl.this.components);
     }
 
     @Override

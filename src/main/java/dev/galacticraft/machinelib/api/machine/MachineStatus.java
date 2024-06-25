@@ -76,7 +76,7 @@ public interface MachineStatus {
     @NotNull MachineStatus.Type getType();
 
     /**
-     * Serializes this machine status to a packet, based on the machine type
+     * Serializes this machine status to a packet
      * @param buf the buffer to write to
      */
     static void writePacket(@Nullable MachineStatus status, @NotNull RegistryFriendlyByteBuf buf) {

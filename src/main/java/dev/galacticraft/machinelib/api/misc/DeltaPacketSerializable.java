@@ -22,21 +22,30 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
-import net.minecraft.nbt.Tag;
+import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents an object that can be deserialized from a specific tag or a packet.
- *
- * @param <T> the type of tag used for deserialization
- * @see Serializable
+ * Represents an object that can be (de)serialized from a packet.
  */
-public interface Deserializable<T extends Tag> extends Serializable<T>, PacketDeserializable {
+public interface DeltaPacketSerializable<B extends ByteBuf, T> extends Equivalent<T>, PacketSerializable<B> {
     /**
-     * Deserializes this object's state from a tag.
+     * Deserializes this object's state from a buffer.
      *
-     * @param tag the tag to be read.
-     * @see #createTag()
+     * @param buf the buffer to read from.
+     * @see DeltaPacketSerializable#writeDeltaPacket(B, T)
      */
-    void readTag(@NotNull T tag);
+    default void readDeltaPacket(@NotNull B buf) {
+        this.readPacket(buf);
+    }
+
+    /**
+     * Serializes this object's state into a buffer.
+     *
+     * @param buf the buffer to write into
+     * @see DeltaPacketSerializable#readDeltaPacket(ByteBuf)
+     */
+    default void writeDeltaPacket(@NotNull B buf, T previous) {
+        this.writePacket(buf);
+    }
 }

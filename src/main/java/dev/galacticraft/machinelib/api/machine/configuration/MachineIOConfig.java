@@ -22,29 +22,35 @@
 
 package dev.galacticraft.machinelib.api.machine.configuration;
 
-import dev.galacticraft.machinelib.api.menu.sync.MenuSynchronizable;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
-import dev.galacticraft.machinelib.impl.machine.MachineIOConfigImpl;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Stores the configuration of a machine's I/O for all six faces.
  */
-public interface MachineIOConfig extends Deserializable<ListTag>, MenuSynchronizable, MachineRenderData {
-    /**
-     * Constructs a new machine i/o configuration.
-     *
-     * @return a new {@link MachineIOConfig}
-     * @see MachineIOConfigImpl the default implementation
-     */
-    @Contract(" -> new")
-    static @NotNull MachineIOConfig create() {
-        return new MachineIOConfigImpl();
+public class MachineIOConfig implements Serializable<ListTag>, PacketSerializable<ByteBuf>, MachineRenderData, DeltaPacketSerializable<ByteBuf, MachineIOConfig> {
+    public static final StreamCodec<ByteBuf, MachineIOConfig> CODEC = PacketSerializable.createCodec(MachineIOConfig::new);
+
+    private final MachineIOFace[] faces;
+
+    public MachineIOConfig() {
+        this.faces = new MachineIOFace[6];
+
+        for (int i = 0; i < this.faces.length; i++) {
+            this.faces[i] = new MachineIOFace();
+        }
+    }
+
+    public MachineIOConfig(MachineIOFace[] faces) {
+        this.faces = faces;
     }
 
     /**
@@ -53,10 +59,85 @@ public interface MachineIOConfig extends Deserializable<ListTag>, MenuSynchroniz
      * @param face the block face to pull the option from
      * @return the I/O configuration for the given face.
      */
-    @NotNull MachineIOFace get(@Nullable BlockFace face);
+    @NotNull
+    public MachineIOFace get(@NotNull BlockFace face) {
+        return this.faces[face.ordinal()];
+    }
 
     @Override
-    default MachineIOConfig getIOConfig() {
+    public @NotNull ListTag createTag() {
+        ListTag nbt = new ListTag();
+        for (MachineIOFace face : this.faces) {
+            nbt.add(face.createTag());
+        }
+        return nbt;
+    }
+
+    @Override
+    public void readTag(@NotNull ListTag tag) {
+        for (int i = 0; i < tag.size(); i++) {
+            this.faces[i].readTag(tag.getCompound(i));
+        }
+    }
+
+    @Override
+    public void writePacket(@NotNull ByteBuf buf) {
+        for (MachineIOFace face : this.faces) {
+            face.writePacket(buf);
+        }
+    }
+
+    @Override
+    public void readPacket(@NotNull ByteBuf buf) {
+        for (MachineIOFace face : this.faces) {
+            face.readPacket(buf);
+        }
+    }
+
+    @Override
+    public MachineIOConfig getIOConfig() {
         return this;
+    }
+
+    @Override
+    public boolean hasChanged(@NotNull MachineIOConfig previous) {
+        for (int i = 0; i < this.faces.length; i++) {
+            if (this.faces[i].hasChanged(previous.faces[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void readDeltaPacket(@NotNull ByteBuf buf) {
+        byte n = buf.readByte();
+        for (int i = 0; i < n; i++) {
+            this.faces[buf.readByte()].readPacket(buf);
+        }
+    }
+
+    @Override
+    public void writeDeltaPacket(@NotNull ByteBuf buf, @NotNull MachineIOConfig previous) {
+        byte n = 0;
+        for (int i = 0; i < this.faces.length; i++) {
+            if (this.faces[i].hasChanged(previous.faces[i])) {
+                n++;
+            }
+        }
+        buf.writeByte(n);
+        for (int i = 0; i < this.faces.length; i++) {
+            if (this.faces[i].hasChanged(previous.faces[i])) {
+                buf.writeByte(i);
+                this.faces[i].writePacket(buf);
+            }
+        }
+    }
+
+    @Override
+    public void copyInto(@NotNull MachineIOConfig other) {
+        for (int i = 0; i < this.faces.length; i++) {
+            this.faces[i].copyInto(other.faces[i]);
+        }
     }
 }

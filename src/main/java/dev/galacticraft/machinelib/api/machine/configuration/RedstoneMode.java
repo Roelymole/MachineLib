@@ -25,6 +25,7 @@ package dev.galacticraft.machinelib.api.machine.configuration;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -87,9 +88,9 @@ public enum RedstoneMode implements StringRepresentable {
      * @return the redstone level.
      * @see #createTag()
      */
-    public static @NotNull RedstoneMode readTag(@Nullable ByteTag tag) {
-        if (tag == null || tag.getAsByte() < 0 || tag.getAsByte() >= VALUES.length) return IGNORE;
-        return VALUES[tag.getAsByte()];
+    public static @NotNull RedstoneMode readTag(@Nullable Tag tag) {
+        if (!(tag instanceof ByteTag t) || t.getAsByte() < 0 || t.getAsByte() >= VALUES.length) return IGNORE;
+        return VALUES[t.getAsByte()];
     }
 
     /**

@@ -23,12 +23,14 @@
 package dev.galacticraft.machinelib.api.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
-import dev.galacticraft.machinelib.api.misc.Deserializable;
+import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +39,7 @@ import org.jetbrains.annotations.Nullable;
 // NO I/O CONSTRAINTS
 // Resource must be comparable by identity
 // FILTER DOES NOT INCLUDE NULL/EMPTY
-public interface ResourceSlot<Resource> extends StorageAccess<Resource>, MutableModifiable, Deserializable<CompoundTag> {
+public interface ResourceSlot<Resource> extends StorageAccess<Resource>, MutableModifiable, Serializable<CompoundTag>, PacketSerializable<RegistryFriendlyByteBuf> {
     InputType inputType();
 
     @Nullable Resource getResource();
