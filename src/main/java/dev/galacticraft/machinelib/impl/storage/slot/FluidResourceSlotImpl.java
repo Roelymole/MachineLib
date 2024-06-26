@@ -97,7 +97,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.amount > 0) {
             buf.writeLong(this.amount);
             buf.writeUtf(BuiltInRegistries.FLUID.getKey(this.resource).toString());
-            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components == null ? DataComponentPatch.EMPTY : this.components);
         } else {
             buf.writeLong(0);
         }

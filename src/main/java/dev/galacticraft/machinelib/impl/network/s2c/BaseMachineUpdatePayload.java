@@ -20,24 +20,27 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.network.c2s;
+package dev.galacticraft.machinelib.impl.network.s2c;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.minecraft.network.codec.ByteBufCodecs;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record TankInteractionPacket(int id, int tank) implements CustomPacketPayload {
-    public static final Type<TankInteractionPacket> TYPE = new Type<>(Constant.id("tank_click"));
-    public static final StreamCodec<ByteBuf, TankInteractionPacket> CODEC = StreamCodec.composite(
-            ByteBufCodecs.INT, TankInteractionPacket::id,
-            ByteBufCodecs.INT, TankInteractionPacket::tank,
-            TankInteractionPacket::new
+public record BaseMachineUpdatePayload(BlockPos pos, MachineIOConfig config) implements CustomPacketPayload {
+    public static final Type<BaseMachineUpdatePayload> TYPE = new Type<>(Constant.id("machine_update"));
+    public static final StreamCodec<ByteBuf, BaseMachineUpdatePayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC,
+            BaseMachineUpdatePayload::pos,
+            MachineIOConfig.CODEC,
+            BaseMachineUpdatePayload::config,
+            BaseMachineUpdatePayload::new
     );
 
     @Override
@@ -45,12 +48,12 @@ public record TankInteractionPacket(int id, int tank) implements CustomPacketPay
         return TYPE;
     }
 
-    public void apply(ServerPlayNetworking.Context context) {
-        if (context.player().containerMenu instanceof MachineMenu<?> menu && menu.containerId == this.id) {
-            if (menu.tanks.size() > this.tank) {
-                // todo: re-sync on failure
-                menu.tanks.get(this.tank).acceptStack(ContainerItemContext.ofPlayerCursor(context.player(), menu));
-            }
+    public void apply(ClientPlayNetworking.Context context) {
+        ClientLevel level = context.client().level;
+        if (level != null && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
+            this.config.copyInto(machine.getIOConfig());
+            machine.setChanged();
+            machine.markForRerender();
         }
     }
 }

@@ -92,7 +92,7 @@ public final class TankImpl implements Tank {
 
     @Override
     public FluidVariant createVariant() {
-        return this.getFluid() == null ? FluidVariant.blank() : FluidVariant.of(this.getFluid(), this.getComponents());
+        return this.getFluid() == null ? FluidVariant.blank() : FluidVariant.of(this.getFluid(), this.getComponents() == null ? DataComponentPatch.EMPTY : this.getComponents());
     }
 
     @Override

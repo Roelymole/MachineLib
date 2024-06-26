@@ -34,7 +34,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -125,7 +124,8 @@ public final class DisplayUtil {
             return;
         }
 
-        tooltip.add(Component.translatable(Constant.TranslationKey.TANK_CONTENTS).setStyle(Constant.Text.GRAY_STYLE).append(FluidVariantAttributes.getName(FluidVariant.of(fluid, components))));
+        assert fluid != null;
+        tooltip.add(Component.translatable(Constant.TranslationKey.TANK_CONTENTS).setStyle(Constant.Text.GRAY_STYLE).append(FluidVariantAttributes.getName(FluidVariant.of(fluid, components == null ? DataComponentPatch.EMPTY : components))));
         tooltip.add(Component.translatable(Constant.TranslationKey.TANK_AMOUNT).setStyle(Constant.Text.GRAY_STYLE).append(DisplayUtil.formatFluid(amount, Screen.hasShiftDown()).setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE))));
 
         if (capacity != -1) {

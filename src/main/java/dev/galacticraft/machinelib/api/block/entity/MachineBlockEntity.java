@@ -43,9 +43,12 @@ import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.MachineLib;
+import dev.galacticraft.machinelib.impl.network.s2c.BaseMachineUpdatePayload;
+import dev.galacticraft.machinelib.impl.network.s2c.SideConfigurationUpdatePayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -55,12 +58,16 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.LongTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -68,6 +75,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -75,11 +83,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
-import javax.crypto.Mac;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -206,7 +216,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
 
         MachineIOFace[] faces = new MachineIOFace[6];
         for (int i = 0; i < faces.length; i++) {
-            faces[i] = new InternalMachineIoFace();
+            faces[i] = new InternalMachineIoFace(i);
         }
         this.configuration = new MachineIOConfig(faces);
         this.security = new InternalSecuritySettings();
@@ -334,7 +344,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * Used to determine who can interact with this machine.
      *
      * @return the security settings of this machine.
-     * @see MachineConfiguration
      */
     @Contract(pure = true)
     public final @NotNull SecuritySettings getSecurity() {
@@ -782,6 +791,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
 
         buf.writeBlockPos(this.getBlockPos());
         this.configuration.writePacket(buf);
+        this.security.writePacket(buf);
+        this.redstone.writePacket(buf);
         this.state.writePacket(buf);
         this.energyStorage.writePacket(buf);
         this.itemStorage.writePacket(buf);
@@ -802,7 +813,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
 
     @Override
     public @NotNull MachineRenderData getRenderData() {
-        return this.getIOConfig();
+        return this.configuration;
     }
 
     @Override
@@ -815,7 +826,26 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+        // safe cast because the ClientCommonPacketListener is a superclass of ClientGamePacketListener
+        // noinspection unchecked, rawtypes
+        return (Packet) new ClientboundCustomPayloadPacket(new BaseMachineUpdatePayload(this.worldPosition, this.configuration));
+    }
+
+    @Override
+    public void setChanged() {
+        super.setChanged();
+    }
+
+    protected void broadcastUpdate(CustomPacketPayload payload) {
+        if (this.level != null && !this.level.isClientSide) {
+            for (ServerPlayer player : ((ServerLevel) MachineBlockEntity.this.level).getChunkSource().chunkMap.getPlayers(new ChunkPos(MachineBlockEntity.this.worldPosition), false)) {
+                ServerPlayNetworking.getSender(player).sendPacket(payload);
+            }
+        }
+    }
+
+    public void markForRerender() {
+        this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 0);
     }
 
     public void awardUsedRecipes(@NotNull ServerPlayer player, @NotNull Set<ResourceLocation> recipes) {
@@ -870,24 +900,33 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     private class InternalMachineIoFace extends MachineIOFace {
+        private final BlockFace face;
         private @Nullable ExposedStorage<Item, ItemVariant> cachedItemStorage = null;
         private @Nullable ExposedStorage<Fluid, FluidVariant> cachedFluidStorage = null;
         private @Nullable EnergyStorage cachedEnergyStorage = null;
 
-        public InternalMachineIoFace() {
+        public InternalMachineIoFace(int i) {
             super(ResourceType.NONE, ResourceFlow.BOTH);
+            this.face = BlockFace.values()[i];
         }
 
         @Override
         public void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
-            this.type = type;
-            this.flow = flow;
+            if (this.type != type || this.flow != flow) {
+                this.type = type;
+                this.flow = flow;
 
-            MachineBlockEntity.this.setChanged();
+                MachineBlockEntity.this.setChanged();
+                if (MachineBlockEntity.this.level.isClientSide) {
+                    MachineBlockEntity.this.markForRerender();
+                } else {
+                    MachineBlockEntity.this.broadcastUpdate(new SideConfigurationUpdatePayload(MachineBlockEntity.this.worldPosition, this.face, type, flow));
+                }
 
-            this.cachedItemStorage = null;
-            this.cachedFluidStorage = null;
-            this.cachedEnergyStorage = null;
+                this.cachedItemStorage = null;
+                this.cachedFluidStorage = null;
+                this.cachedEnergyStorage = null;
+            }
         }
 
         @Override

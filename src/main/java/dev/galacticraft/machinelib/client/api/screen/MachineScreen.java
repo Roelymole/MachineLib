@@ -25,7 +25,6 @@ package dev.galacticraft.machinelib.client.api.screen;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
@@ -33,10 +32,7 @@ import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
 import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
-import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
-import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
-import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
@@ -45,19 +41,15 @@ import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
-import dev.galacticraft.machinelib.impl.network.c2s.AccessLevelPacket;
-import dev.galacticraft.machinelib.impl.network.c2s.RedstoneModePacket;
-import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPacket;
-import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPacket;
-import io.netty.buffer.ByteBufAllocator;
+import dev.galacticraft.machinelib.impl.network.c2s.AccessLevelPayload;
+import dev.galacticraft.machinelib.impl.network.c2s.RedstoneModePayload;
+import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPayload;
+import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPayload;
 import lol.bai.badpackets.api.PacketSender;
-import lol.bai.badpackets.api.play.PlayPackets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
-import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
-import net.fabricmc.fabric.impl.transfer.context.PlayerContainerItemContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
@@ -67,7 +59,6 @@ import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -551,7 +542,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void setAccessibility(@NotNull AccessLevel accessLevel) {
         this.menu.security.setAccessLevel(accessLevel);
-        PacketSender.c2s().send(new AccessLevelPacket(accessLevel));
+        PacketSender.c2s().send(new AccessLevelPayload(accessLevel));
     }
 
     /**
@@ -561,7 +552,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void setRedstone(@NotNull RedstoneMode redstone) {
         this.menu.redstoneMode = redstone;
-        PacketSender.c2s().send(new RedstoneModePacket(redstone));
+        PacketSender.c2s().send(new RedstoneModePayload(redstone));
     }
 
     /**
@@ -859,7 +850,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.hoveredTank != null && button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if (this.hoveredTank.acceptStack(ContainerItemContext.ofPlayerCursor(this.menu.playerInventory.player, this.menu))) {
-                PacketSender.c2s().send(new TankInteractionPacket(this.menu.containerId, this.hoveredTank.getIndex()));
+                PacketSender.c2s().send(new TankInteractionPayload(this.menu.containerId, this.hoveredTank.getIndex()));
             }
             return true;
         }
@@ -928,7 +919,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private void modifyFace(int button, BlockFace face) {
         if (this.menu.isFaceLocked(face)) return;
         if (button == 0) {
-            ClientPlayNetworking.send(new SideConfigurationClickPacket(face, Screen.hasShiftDown(), Screen.hasControlDown()));
+            ClientPlayNetworking.send(new SideConfigurationClickPayload(face, Screen.hasShiftDown(), Screen.hasControlDown()));
             this.menu.cycleFaceConfig(face, Screen.hasShiftDown(), Screen.hasControlDown());
         }
         this.playButtonSound();

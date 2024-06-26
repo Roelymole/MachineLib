@@ -20,33 +20,29 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.network.c2s;
+package dev.galacticraft.machinelib.impl.network;
 
-import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
-import dev.galacticraft.machinelib.impl.Constant;
-import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.CommonPacketTypes;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
-public record AccessLevelPacket(AccessLevel level) implements CustomPacketPayload {
-    public static final Type<AccessLevelPacket> TYPE = new Type<>(Constant.id("access_level"));
-    public static final StreamCodec<ByteBuf, AccessLevelPacket> CODEC = AccessLevel.CODEC.map(AccessLevelPacket::new, AccessLevelPacket::level);
-
+/**
+ * Alternative to {@link ClientboundCustomPayloadPacket} for {@link BlockEntity#getUpdatePacket()} (generics).
+ * @param payload
+ */
+public record FakeCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ClientGamePacketListener> {
     @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public @NotNull PacketType<? extends Packet<ClientGamePacketListener>> type() {
+        return (PacketType<? extends Packet<ClientGamePacketListener>>) (Object)CommonPacketTypes.CLIENTBOUND_CUSTOM_PAYLOAD;
     }
 
-    public void apply(ServerPlayNetworking.Context context) {
-        if (context.player().containerMenu instanceof MachineMenu<?> menu) {
-            MachineBlockEntity machine = menu.machine;
-            if (machine.getSecurity().isOwner(context.player())) {
-                machine.getSecurity().setAccessLevel(level);
-            }
-        }
+    @Override
+    public void handle(ClientGamePacketListener listener) {
+        listener.handleCustomPayload(new ClientboundCustomPayloadPacket(this.payload));
     }
 }

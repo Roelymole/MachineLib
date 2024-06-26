@@ -20,31 +20,29 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.network.c2s;
+package dev.galacticraft.machinelib.impl.network.s2c;
 
-import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.impl.Constant;
-import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import org.jetbrains.annotations.NotNull;
 
-public record RedstoneModePacket(RedstoneMode mode) implements CustomPacketPayload {
-    public static final Type<RedstoneModePacket> TYPE = new Type<>(Constant.id("redstone_mode"));
-    public static final StreamCodec<ByteBuf, RedstoneModePacket> CODEC = RedstoneMode.STREAM_CODEC.map(RedstoneModePacket::new, RedstoneModePacket::mode);
+public record MenuSyncPayload(RegistryFriendlyByteBuf buf) implements CustomPacketPayload {
+    public static final Type<MenuSyncPayload> TYPE = new Type<>(Constant.id("menu_sync"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MenuSyncPayload> CODEC = MachineMenu.BUF_IDENTITY_CODEC.map(MenuSyncPayload::new, MenuSyncPayload::buf);
 
     @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
+    public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public void apply(ServerPlayNetworking.Context context) {
-        if (context.player().containerMenu instanceof MachineMenu<?> menu) {
-            MachineBlockEntity machine = menu.machine;
-            machine.setRedstoneMode(mode);
+    public void apply(ClientPlayNetworking.Context context) {
+        LocalPlayer player = context.player();
+        if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
+            menu.receiveState(buf);
         }
     }
 }

@@ -61,7 +61,10 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,14 +81,14 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
     public static final StreamCodec<RegistryFriendlyByteBuf, RegistryFriendlyByteBuf> BUF_IDENTITY_CODEC = new StreamCodec<>() {
         @Override
         public void encode(RegistryFriendlyByteBuf src, RegistryFriendlyByteBuf dst) {
-            dst.writeBytes(src);
+            src.writeBytes(dst);
         }
 
         @Override
         public RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
             RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(src.capacity()), src.registryAccess());
             buf.writeBytes(src);
-            return src;
+            return buf;
         }
     };
 

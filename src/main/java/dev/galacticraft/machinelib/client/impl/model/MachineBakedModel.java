@@ -118,8 +118,9 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     private boolean transform(MachineRenderData renderData, @NotNull BlockState state, @NotNull MutableQuadView quad) {
         BlockFace face = BlockFace.toFace(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
-        MachineIOFace machineFace = renderData == null ? new MachineIOFace() : renderData.getIOConfig().get(face);
         assert face != null;
+
+        MachineIOFace machineFace = renderData == null ? new MachineIOFace() : renderData.getIOConfig().get(face);
         quad.spriteBake(getSprite(face,
                         renderData,
                         machineFace.getType(), machineFace.getFlow()),

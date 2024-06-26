@@ -22,38 +22,41 @@
 
 package dev.galacticraft.machinelib.impl.network;
 
-import dev.galacticraft.machinelib.impl.network.c2s.AccessLevelPacket;
-import dev.galacticraft.machinelib.impl.network.c2s.RedstoneModePacket;
-import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPacket;
-import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPacket;
-import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPacket;
-import dev.galacticraft.machinelib.impl.network.s2c.SideConfigurationUpdatePacket;
+import dev.galacticraft.machinelib.impl.network.c2s.AccessLevelPayload;
+import dev.galacticraft.machinelib.impl.network.c2s.RedstoneModePayload;
+import dev.galacticraft.machinelib.impl.network.c2s.SideConfigurationClickPayload;
+import dev.galacticraft.machinelib.impl.network.c2s.TankInteractionPayload;
+import dev.galacticraft.machinelib.impl.network.s2c.BaseMachineUpdatePayload;
+import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPayload;
+import dev.galacticraft.machinelib.impl.network.s2c.SideConfigurationUpdatePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public class MachineLibPackets {
     public static void registerServer() {
-        ServerPlayNetworking.registerGlobalReceiver(AccessLevelPacket.TYPE, AccessLevelPacket::apply);
-        ServerPlayNetworking.registerGlobalReceiver(RedstoneModePacket.TYPE, RedstoneModePacket::apply);
-        ServerPlayNetworking.registerGlobalReceiver(SideConfigurationClickPacket.TYPE, SideConfigurationClickPacket::apply);
-        ServerPlayNetworking.registerGlobalReceiver(TankInteractionPacket.TYPE, TankInteractionPacket::apply);
+        ServerPlayNetworking.registerGlobalReceiver(AccessLevelPayload.TYPE, AccessLevelPayload::apply);
+        ServerPlayNetworking.registerGlobalReceiver(RedstoneModePayload.TYPE, RedstoneModePayload::apply);
+        ServerPlayNetworking.registerGlobalReceiver(SideConfigurationClickPayload.TYPE, SideConfigurationClickPayload::apply);
+        ServerPlayNetworking.registerGlobalReceiver(TankInteractionPayload.TYPE, TankInteractionPayload::apply);
     }
 
     public static void registerClient() {
-        ClientPlayNetworking.registerGlobalReceiver(SideConfigurationUpdatePacket.TYPE, SideConfigurationUpdatePacket::apply);
-        ClientPlayNetworking.registerGlobalReceiver(MenuSyncPacket.TYPE, MenuSyncPacket::apply);
+        ClientPlayNetworking.registerGlobalReceiver(BaseMachineUpdatePayload.TYPE, BaseMachineUpdatePayload::apply);
+        ClientPlayNetworking.registerGlobalReceiver(SideConfigurationUpdatePayload.TYPE, SideConfigurationUpdatePayload::apply);
+        ClientPlayNetworking.registerGlobalReceiver(MenuSyncPayload.TYPE, MenuSyncPayload::apply);
     }
 
     public static void registerChannels() {
         // c2s
-        PayloadTypeRegistry.playC2S().register(AccessLevelPacket.TYPE, AccessLevelPacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(RedstoneModePacket.TYPE, RedstoneModePacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(SideConfigurationClickPacket.TYPE, SideConfigurationClickPacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(TankInteractionPacket.TYPE, TankInteractionPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(AccessLevelPayload.TYPE, AccessLevelPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(RedstoneModePayload.TYPE, RedstoneModePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SideConfigurationClickPayload.TYPE, SideConfigurationClickPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(TankInteractionPayload.TYPE, TankInteractionPayload.CODEC);
 
         // s2c
-        PayloadTypeRegistry.playS2C().register(SideConfigurationUpdatePacket.TYPE, SideConfigurationUpdatePacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(MenuSyncPacket.TYPE, MenuSyncPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(BaseMachineUpdatePayload.TYPE, BaseMachineUpdatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(SideConfigurationUpdatePayload.TYPE, SideConfigurationUpdatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(MenuSyncPayload.TYPE, MenuSyncPayload.CODEC);
     }
 }

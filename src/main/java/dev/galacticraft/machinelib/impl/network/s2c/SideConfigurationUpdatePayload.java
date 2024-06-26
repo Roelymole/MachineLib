@@ -22,17 +22,26 @@
 
 package dev.galacticraft.machinelib.impl.network.s2c;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.impl.Constant;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record MenuSyncPacket(RegistryFriendlyByteBuf buf) implements CustomPacketPayload {
-    public static final Type<MenuSyncPacket> TYPE = new Type<>(Constant.id("menu_sync"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, MenuSyncPacket> CODEC = MachineMenu.BUF_IDENTITY_CODEC.map(MenuSyncPacket::new, MenuSyncPacket::buf);
+public record SideConfigurationUpdatePayload(BlockPos pos, BlockFace face, ResourceType resource, ResourceFlow flow) implements CustomPacketPayload {
+    public static final Type<SideConfigurationUpdatePayload> TYPE = new Type<>(Constant.id("io_update"));
+    public static final StreamCodec<ByteBuf, SideConfigurationUpdatePayload> CODEC = StreamCodec.composite(
+            BlockPos.STREAM_CODEC, p -> p.pos,
+            BlockFace.CODEC, p -> p.face,
+            ResourceType.STREAM_CODEC, p -> p.resource,
+            ResourceFlow.STREAM_CODEC, p -> p.flow,
+            SideConfigurationUpdatePayload::new
+    );
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -40,9 +49,9 @@ public record MenuSyncPacket(RegistryFriendlyByteBuf buf) implements CustomPacke
     }
 
     public void apply(ClientPlayNetworking.Context context) {
-        LocalPlayer player = context.player();
-        if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
-            menu.receiveState(buf);
+        if (context.client().level.getBlockEntity(this.pos) instanceof MachineBlockEntity machine) {
+            machine.getIOConfig().get(this.face).setOption(this.resource, this.flow);
+            machine.setChanged();
         }
     }
 }

@@ -22,30 +22,22 @@
 
 package dev.galacticraft.machinelib.impl.network.c2s;
 
-import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
-import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.impl.Constant;
-import dev.galacticraft.machinelib.impl.network.s2c.SideConfigurationUpdatePacket;
 import io.netty.buffer.ByteBuf;
-import lol.bai.badpackets.api.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record SideConfigurationClickPacket(BlockFace face, Action action) implements CustomPacketPayload {
-    public SideConfigurationClickPacket(BlockFace face, boolean reverse, boolean reset) {
-        this(face, reset ? Action.RESET : reverse ? Action.PREVIOUS : Action.NEXT);
-    }
-
-    public static final CustomPacketPayload.Type<SideConfigurationClickPacket> TYPE = new CustomPacketPayload.Type<>(Constant.id("io_click"));
-    public static final StreamCodec<ByteBuf, SideConfigurationClickPacket> CODEC = StreamCodec.composite(
-            BlockFace.CODEC, p -> p.face,
-            Action.CODEC, p -> p.action,
-            SideConfigurationClickPacket::new
+public record TankInteractionPayload(int id, int tank) implements CustomPacketPayload {
+    public static final Type<TankInteractionPayload> TYPE = new Type<>(Constant.id("tank_click"));
+    public static final StreamCodec<ByteBuf, TankInteractionPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, TankInteractionPayload::id,
+            ByteBufCodecs.INT, TankInteractionPayload::tank,
+            TankInteractionPayload::new
     );
 
     @Override
@@ -54,19 +46,11 @@ public record SideConfigurationClickPacket(BlockFace face, Action action) implem
     }
 
     public void apply(ServerPlayNetworking.Context context) {
-        if (context.player().containerMenu instanceof MachineMenu<?> menu) {
-            MachineBlockEntity machine = menu.machine;
-            menu.cycleFaceConfig(this.face, this.action == Action.PREVIOUS, this.action == Action.RESET);
-            MachineIOFace ioFace = machine.getIOConfig().get(this.face);
-            PacketSender.s2c(context.player()).send(new SideConfigurationUpdatePacket(this.face, ioFace.getType(), ioFace.getFlow()));
+        if (context.player().containerMenu instanceof MachineMenu<?> menu && menu.containerId == this.id) {
+            if (menu.tanks.size() > this.tank) {
+                // todo: re-sync on failure
+                menu.tanks.get(this.tank).acceptStack(ContainerItemContext.ofPlayerCursor(context.player(), menu));
+            }
         }
-    }
-
-    public enum Action {
-        NEXT,
-        PREVIOUS,
-        RESET;
-
-        public static final StreamCodec<ByteBuf, Action> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
     }
 }
