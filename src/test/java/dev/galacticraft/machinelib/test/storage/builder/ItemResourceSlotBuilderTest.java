@@ -26,7 +26,7 @@ import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
-import dev.galacticraft.machinelib.test.JUnitTest;
+import dev.galacticraft.machinelib.test.MinecraftTest;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ItemResourceSlotBuilderTest implements JUnitTest {
+public class ItemResourceSlotBuilderTest implements MinecraftTest {
     private ItemResourceSlot.Builder builder;
     
     @BeforeEach

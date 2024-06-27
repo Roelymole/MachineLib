@@ -28,7 +28,7 @@ import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
-import dev.galacticraft.machinelib.test.JUnitTest;
+import dev.galacticraft.machinelib.test.MinecraftTest;
 import dev.galacticraft.machinelib.test.Utils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.component.DataComponentPatch;
@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FluidStorageExtractionTest implements JUnitTest {
+public class FluidStorageExtractionTest implements MinecraftTest {
     protected MachineFluidStorage storage;
 
     @BeforeEach

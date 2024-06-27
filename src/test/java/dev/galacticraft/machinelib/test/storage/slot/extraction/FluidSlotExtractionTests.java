@@ -20,25 +20,22 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.misc;
+package dev.galacticraft.machinelib.test.storage.slot.extraction;
 
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import dev.galacticraft.machinelib.api.filter.ResourceFilters;
+import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
+import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
+import dev.galacticraft.machinelib.api.transfer.InputType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
-public class EmptyDeserializationTests {
-    @Test
-    public void securitySettings() {
-        SecuritySettings securitySettings = new SecuritySettings();
-        Assertions.assertDoesNotThrow(() -> securitySettings.readTag(new CompoundTag()));
+public class FluidSlotExtractionTests extends SlotExtractionTests<Fluid, FluidResourceSlot> {
+    public FluidSlotExtractionTests() {
+        super(Fluids.WATER, Fluids.LAVA);
     }
 
-    @Test
-    public void ioConfiguration() {
-        IoConfig ioConfig = new IoConfig();
-        Assertions.assertDoesNotThrow(() -> ioConfig.readTag(new ListTag()));
+    @Override
+    protected FluidResourceSlot createSlot() {
+        return FluidResourceSlot.create(InputType.STORAGE, TankDisplay.create(0, 0), CAPACITY, ResourceFilters.any());
     }
 }

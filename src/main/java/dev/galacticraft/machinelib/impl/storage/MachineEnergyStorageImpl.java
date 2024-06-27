@@ -75,7 +75,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
 
     @Override
     public boolean canInsert(long amount) {
-        return this.amount <= amount;
+        return this.amount + amount <= this.capacity;
     }
 
     @Override

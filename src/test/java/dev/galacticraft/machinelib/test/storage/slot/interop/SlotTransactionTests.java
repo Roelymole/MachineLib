@@ -20,19 +20,14 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.storage.interop;
+package dev.galacticraft.machinelib.test.storage.slot.interop;
 
-import dev.galacticraft.machinelib.api.filter.ResourceFilters;
-import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
-import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
-import dev.galacticraft.machinelib.test.JUnitTest;
+import dev.galacticraft.machinelib.test.MinecraftTest;
 import dev.galacticraft.machinelib.test.Utils;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -40,14 +35,27 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public final class FluidResourceSlotTransactionTests implements JUnitTest {
-    private static final long CAPACITY = FluidConstants.BUCKET * 16;
-    private FluidResourceSlot slot;
+public abstract class SlotTransactionTests<Resource, Slot extends ResourceSlot<Resource>> implements MinecraftTest {
+    protected static final long CAPACITY = 64;
+    private static final long NORMAL_UNIT = 4;
+    private static final long SMALL_UNIT = 1;
+
+    private final Resource resource0;
+    private final Resource resource1;
+    
+    private Slot slot;
+
+    protected SlotTransactionTests(Resource resource0, Resource resource1) {
+        this.resource0 = resource0;
+        this.resource1 = resource1;
+    }
 
     @BeforeEach
     public void setup() {
-        this.slot = FluidResourceSlot.create(InputType.STORAGE, TankDisplay.create(0, 0), CAPACITY, ResourceFilters.any());
+        this.slot = this.createSlot();
     }
+
+    protected abstract Slot createSlot();
 
     @AfterEach
     public void verify() {
@@ -59,10 +67,10 @@ public final class FluidResourceSlotTransactionTests implements JUnitTest {
         @Test
         public void extraction() {
             DataComponentPatch components = Utils.generateComponents();
-            slot.set(Fluids.WATER, components, FluidConstants.BUCKET * 8);
+            slot.set(resource0, components, NORMAL_UNIT);
 
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 8, slot.extract(Fluids.WATER, components, FluidConstants.BUCKET * 8, transaction));
+                assertEquals(NORMAL_UNIT, slot.extract(resource0, components, NORMAL_UNIT, transaction));
 
                 assertTrue(slot.isEmpty());
                 assertNull(slot.getResource());
@@ -77,11 +85,11 @@ public final class FluidResourceSlotTransactionTests implements JUnitTest {
         public void insertion() {
             DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(NORMAL_UNIT, slot.insert(resource0, components, NORMAL_UNIT, transaction));
 
-                assertEquals(Fluids.WATER, slot.getResource());
+                assertEquals(resource0, slot.getResource());
                 assertEquals(components, slot.getComponents());
-                assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+                assertEquals(NORMAL_UNIT, slot.getAmount());
             }
 
             assertTrue(slot.isEmpty());
@@ -94,11 +102,11 @@ public final class FluidResourceSlotTransactionTests implements JUnitTest {
         public void exchange() {
             DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(NORMAL_UNIT, slot.insert(resource0, components, NORMAL_UNIT, transaction));
 
-                assertEquals(Fluids.WATER, slot.getResource());
+                assertEquals(resource0, slot.getResource());
                 assertEquals(components, slot.getComponents());
-                assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+                assertEquals(NORMAL_UNIT, slot.getAmount());
             }
 
             assertTrue(slot.isEmpty());
@@ -113,10 +121,10 @@ public final class FluidResourceSlotTransactionTests implements JUnitTest {
         @Test
         public void extraction() {
             DataComponentPatch components = Utils.generateComponents();
-            slot.set(Fluids.WATER, components, FluidConstants.BUCKET * 8);
+            slot.set(resource0, components, NORMAL_UNIT);
 
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 8, slot.extract(Fluids.WATER, components, FluidConstants.BUCKET * 8, transaction));
+                assertEquals(NORMAL_UNIT, slot.extract(resource0, components, NORMAL_UNIT, transaction));
 
                 assertTrue(slot.isEmpty());
                 assertNull(slot.getResource());
@@ -133,32 +141,32 @@ public final class FluidResourceSlotTransactionTests implements JUnitTest {
         public void insertion() {
             DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(NORMAL_UNIT, slot.insert(resource0, components, NORMAL_UNIT, transaction));
 
-                assertEquals(Fluids.WATER, slot.getResource());
+                assertEquals(resource0, slot.getResource());
                 assertEquals(components, slot.getComponents());
-                assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+                assertEquals(NORMAL_UNIT, slot.getAmount());
 
                 transaction.commit();
             }
 
-            assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+            assertEquals(NORMAL_UNIT, slot.getAmount());
         }
 
         @Test
         public void exchange() {
             DataComponentPatch components = Utils.generateComponents();
             try (Transaction transaction = Transaction.openOuter()) {
-                assertEquals(FluidConstants.BUCKET * 5, slot.insert(Fluids.WATER, components, FluidConstants.BUCKET * 5, transaction));
+                assertEquals(NORMAL_UNIT, slot.insert(resource0, components, NORMAL_UNIT, transaction));
 
-                assertEquals(Fluids.WATER, slot.getResource());
+                assertEquals(resource0, slot.getResource());
                 assertEquals(components, slot.getComponents());
 
-                assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+                assertEquals(NORMAL_UNIT, slot.getAmount());
                 transaction.commit();
             }
 
-            assertEquals(FluidConstants.BUCKET * 5, slot.getAmount());
+            assertEquals(NORMAL_UNIT, slot.getAmount());
         }
     }
 }

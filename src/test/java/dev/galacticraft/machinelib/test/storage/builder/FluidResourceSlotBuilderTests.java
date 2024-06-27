@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.test.storage.builder;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
-import dev.galacticraft.machinelib.test.JUnitTest;
+import dev.galacticraft.machinelib.test.MinecraftTest;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FluidResourceSlotBuilderTest implements JUnitTest {
+public class FluidResourceSlotBuilderTests implements MinecraftTest {
     private FluidResourceSlot.Builder builder;
     
     @BeforeEach
@@ -54,10 +54,36 @@ public class FluidResourceSlotBuilderTest implements JUnitTest {
     }
 
     @Test
+    public void hidden() {
+        builder.hidden();
+
+        assertThrows(UnsupportedOperationException.class, () -> builder.x(0));
+        assertThrows(UnsupportedOperationException.class, () -> builder.y(0));
+        assertThrows(UnsupportedOperationException.class, () -> builder.width(0));
+        assertThrows(UnsupportedOperationException.class, () -> builder.height(0));
+
+        assertNull(builder.build().getDisplay());
+    }
+
+    @Test
+    public void hiddenPost() {
+        builder.x(10).hidden();
+
+        assertThrows(UnsupportedOperationException.class, () -> builder.build());
+    }
+
+    @Test
     public void height() {
         FluidResourceSlot slot = builder.height(16).build();
 
         assertEquals(16, slot.getDisplay().height());
+    }
+
+    @Test
+    public void invalidHeight() {
+        builder.height(-4);
+
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test

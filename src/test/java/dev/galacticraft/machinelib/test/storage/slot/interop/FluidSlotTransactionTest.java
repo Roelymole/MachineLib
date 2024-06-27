@@ -20,29 +20,22 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.network;
+package dev.galacticraft.machinelib.test.storage.slot.interop;
 
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.CommonPacketTypes;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.NotNull;
+import dev.galacticraft.machinelib.api.filter.ResourceFilters;
+import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
+import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
+import dev.galacticraft.machinelib.api.transfer.InputType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
-/**
- * Alternative to {@link ClientboundCustomPayloadPacket} for {@link BlockEntity#getUpdatePacket()} (generics).
- * @param payload
- */
-public record FakeCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ClientGamePacketListener> {
-    @Override
-    public @NotNull PacketType<? extends Packet<ClientGamePacketListener>> type() {
-        return (PacketType<? extends Packet<ClientGamePacketListener>>) (Object)CommonPacketTypes.CLIENTBOUND_CUSTOM_PAYLOAD;
+public class FluidSlotTransactionTest extends SlotTransactionTests<Fluid, FluidResourceSlot> {
+    protected FluidSlotTransactionTest() {
+        super(Fluids.WATER, Fluids.LAVA);
     }
 
     @Override
-    public void handle(ClientGamePacketListener listener) {
-        listener.handleCustomPayload(new ClientboundCustomPayloadPacket(this.payload));
+    protected FluidResourceSlot createSlot() {
+        return FluidResourceSlot.create(InputType.STORAGE, TankDisplay.create(0, 0), CAPACITY, ResourceFilters.any());
     }
 }

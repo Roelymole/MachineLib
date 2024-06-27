@@ -41,7 +41,7 @@ public class TestModItems {
     public static final Item MELTER = new BlockItem(TestModBlocks.MELTER, new Item.Properties());
 
     public static final Item INFINITE_BATTERY = new Item(new Item.Properties());
-    public static final BatteryItem BASIC_BATTERY = new BatteryItem(new Item.Properties(), 1500);
+    public static final BatteryItem BASIC_BATTERY = new BatteryItem(new Item.Properties(), 15000);
 
     public static void register() {
         Registry.register(BuiltInRegistries.ITEM, Constant.id(Constant.GENERATOR), TestModItems.GENERATOR);

@@ -28,7 +28,7 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
-import dev.galacticraft.machinelib.test.JUnitTest;
+import dev.galacticraft.machinelib.test.MinecraftTest;
 import dev.galacticraft.machinelib.test.Utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Items;
@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ItemStorageInsertionTests implements JUnitTest {
+public class ItemStorageInsertionTests implements MinecraftTest {
     private static final int CAPACITY = 64;
     protected MachineItemStorage storage;
 

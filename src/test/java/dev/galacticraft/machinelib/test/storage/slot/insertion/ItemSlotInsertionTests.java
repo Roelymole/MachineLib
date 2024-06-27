@@ -20,16 +20,22 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test;
+package dev.galacticraft.machinelib.test.storage.slot.insertion;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.server.Bootstrap;
-import org.junit.jupiter.api.BeforeAll;
+import dev.galacticraft.machinelib.api.filter.ResourceFilters;
+import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
+import dev.galacticraft.machinelib.api.transfer.InputType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
-public interface JUnitTest {
-    @BeforeAll
-    static void initializeMinecraft() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+public class ItemSlotInsertionTests extends SlotInsertionTests<Item, ItemResourceSlot> {
+    public ItemSlotInsertionTests() {
+        super(Items.STICK, Items.GLASS);
+    }
+
+    @Override
+    protected ItemResourceSlot createSlot() {
+        return ItemResourceSlot.create(InputType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any(), (int) CAPACITY);
     }
 }
