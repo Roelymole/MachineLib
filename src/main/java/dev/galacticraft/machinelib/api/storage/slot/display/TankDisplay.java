@@ -63,31 +63,23 @@ public interface TankDisplay {
     }
 
     /**
-     * Returns the x-position of the tank.
-     *
-     * @return the x-position of the tank.
+     * {@return the x-position of the tank}
      */
     int x();
 
     /**
-     * Returns the y-position of the tank.
-     *
-     * @return the y-position of the tank.
+     * {@return the y-position of the tank}
      */
     int y();
 
     /**
-     * Returns the width of the tank.
-     *
-     * @return the width of the tank
+     * {@return the width of the tank}
      */
     int width();
 
 
     /**
-     * Returns the height of the tank.
-     *
-     * @return the height of the tank
+     * {@return the height of the tank}
      */
     int height();
 }

@@ -34,11 +34,12 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public sealed class ItemStorageInsertionTests implements JUnitTest {
+public class ItemStorageInsertionTests implements JUnitTest {
     private static final int CAPACITY = 64;
     protected MachineItemStorage storage;
 
@@ -52,126 +53,128 @@ public sealed class ItemStorageInsertionTests implements JUnitTest {
         assertTrue(((ResourceSlotImpl<?>) this.storage.getSlot(0)).isSane());
     }
 
-    public static final class InsertionFailureTests extends ItemStorageInsertionTests {
+    @Nested
+    final class InsertionFailureTests {
         @Test
         public void full() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, CAPACITY);
+            storage.getSlot(0).set(Items.GOLD_INGOT, CAPACITY);
 
-            assertFalse(this.storage.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.insert(Items.GOLD_INGOT, 16));
+            assertFalse(storage.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.insert(Items.GOLD_INGOT, 16));
         }
 
         @Test
         public void incorrectType() {
-            this.storage.getSlot(0).set(Items.IRON_INGOT, 16);
+            storage.getSlot(0).set(Items.IRON_INGOT, 16);
 
-            assertFalse(this.storage.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.insert(Items.GOLD_INGOT, 16));
+            assertFalse(storage.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(this.storage.getAmount(0), 16);
+            assertEquals(storage.getAmount(0), 16);
         }
 
         @Test
         public void insertTag() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, 16);
+            storage.getSlot(0).set(Items.GOLD_INGOT, 16);
 
-            assertFalse(this.storage.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.storage.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.storage.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertFalse(storage.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, storage.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, storage.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
 
-            assertEquals(this.storage.getAmount(0), 16);
+            assertEquals(storage.getAmount(0), 16);
         }
 
         @Test
         public void containedTag() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
+            storage.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
 
-            assertFalse(this.storage.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.storage.insert(Items.GOLD_INGOT, 16));
+            assertFalse(storage.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, storage.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(this.storage.getAmount(0), 16);
+            assertEquals(storage.getAmount(0), 16);
         }
 
         @Test
         public void mismatchedTag() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
+            storage.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
 
-            assertFalse(this.storage.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.storage.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.storage.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertFalse(storage.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, storage.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, storage.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
 
-            assertEquals(this.storage.getAmount(0), 16);
+            assertEquals(storage.getAmount(0), 16);
         }
     }
 
-    public static final class InsertionSuccessTests extends ItemStorageInsertionTests {
+    @Nested
+    final class InsertionSuccessTests {
         @Test
         public void empty() {
-            assertTrue(this.storage.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.storage.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.storage.insert(Items.GOLD_INGOT, 16));
+            assertTrue(storage.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(16, storage.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(16, storage.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(16, this.storage.getAmount(0));
+            assertEquals(16, storage.getAmount(0));
         }
 
         @Test
         public void toCapacity() {
-            assertTrue(this.storage.canInsert(Items.GOLD_INGOT, CAPACITY));
-            assertEquals(CAPACITY, this.storage.tryInsert(Items.GOLD_INGOT, CAPACITY));
-            assertEquals(CAPACITY, this.storage.insert(Items.GOLD_INGOT, CAPACITY));
+            assertTrue(storage.canInsert(Items.GOLD_INGOT, CAPACITY));
+            assertEquals(CAPACITY, storage.tryInsert(Items.GOLD_INGOT, CAPACITY));
+            assertEquals(CAPACITY, storage.insert(Items.GOLD_INGOT, CAPACITY));
 
-            assertEquals(CAPACITY, this.storage.getAmount(0));
+            assertEquals(CAPACITY, storage.getAmount(0));
         }
 
         @Test
         public void overCapacity() {
-            assertEquals(CAPACITY, this.storage.tryInsert(Items.GOLD_INGOT, CAPACITY + 8));
-            assertEquals(CAPACITY, this.storage.insert(Items.GOLD_INGOT, CAPACITY + 8));
+            assertEquals(CAPACITY, storage.tryInsert(Items.GOLD_INGOT, CAPACITY + 8));
+            assertEquals(CAPACITY, storage.insert(Items.GOLD_INGOT, CAPACITY + 8));
 
-            assertEquals(CAPACITY, this.storage.getAmount(0));
+            assertEquals(CAPACITY, storage.getAmount(0));
         }
 
         @Test
         public void preFill() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, 16);
-            assertTrue(this.storage.canInsert(Items.GOLD_INGOT, 48));
-            assertEquals(48, this.storage.tryInsert(Items.GOLD_INGOT, 48));
-            assertEquals(48, this.storage.insert(Items.GOLD_INGOT, 48));
+            storage.getSlot(0).set(Items.GOLD_INGOT, 16);
+            assertTrue(storage.canInsert(Items.GOLD_INGOT, 48));
+            assertEquals(48, storage.tryInsert(Items.GOLD_INGOT, 48));
+            assertEquals(48, storage.insert(Items.GOLD_INGOT, 48));
 
-            assertEquals(16 + 48, this.storage.getAmount(0));
+            assertEquals(16 + 48, storage.getAmount(0));
         }
 
         @Test
         public void preFill_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, components, 16);
-            assertTrue(this.storage.canInsert(Items.GOLD_INGOT, components, 48));
-            assertEquals(48, this.storage.tryInsert(Items.GOLD_INGOT, components, 48));
-            assertEquals(48, this.storage.insert(Items.GOLD_INGOT, components, 48));
+            storage.getSlot(0).set(Items.GOLD_INGOT, components, 16);
+            assertTrue(storage.canInsert(Items.GOLD_INGOT, components, 48));
+            assertEquals(48, storage.tryInsert(Items.GOLD_INGOT, components, 48));
+            assertEquals(48, storage.insert(Items.GOLD_INGOT, components, 48));
 
-            assertEquals(16 + 48, this.storage.getAmount(0));
+            assertEquals(16 + 48, storage.getAmount(0));
         }
 
         @Test
         public void preFill_overCapacity() {
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, 50);
-            assertEquals(14, this.storage.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(14, this.storage.insert(Items.GOLD_INGOT, 16));
+            storage.getSlot(0).set(Items.GOLD_INGOT, 50);
+            assertEquals(14, storage.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(14, storage.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(CAPACITY, this.storage.getAmount(0));
+            assertEquals(CAPACITY, storage.getAmount(0));
         }
 
         @Test
         public void preFill_overCapacity_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.storage.getSlot(0).set(Items.GOLD_INGOT, components, 50);
-            assertEquals(14, this.storage.tryInsert(Items.GOLD_INGOT, components, 16));
-            assertEquals(14, this.storage.insert(Items.GOLD_INGOT, components, 16));
+            storage.getSlot(0).set(Items.GOLD_INGOT, components, 50);
+            assertEquals(14, storage.tryInsert(Items.GOLD_INGOT, components, 16));
+            assertEquals(14, storage.insert(Items.GOLD_INGOT, components, 16));
 
-            assertEquals(CAPACITY, this.storage.getAmount(0));
+            assertEquals(CAPACITY, storage.getAmount(0));
         }
     }
 }

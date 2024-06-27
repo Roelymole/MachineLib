@@ -22,22 +22,36 @@
 
 package dev.galacticraft.machinelib.api.storage;
 
-import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
-import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A storage that can store multiple of multiple instances of one type of resource (e.g., 10 sticks and 3 snowballs).
+ *
+ * @param <Resource> The type of resource (e.g., item or fluid) this storage can store. Must be comparable by identity.
+ * @param <Slot> The type of slot this storage contains.
+ * @see SlottedStorageAccess
+ */
 public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> extends Iterable<Slot>, MutableModifiable, SlottedStorageAccess<Resource, Slot>, Serializable<ListTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, long[]>, PacketSerializable<RegistryFriendlyByteBuf> {
+    /**
+     * Set the listener for this storage. This listener will be called whenever the storage is modified.
+     * @param listener the listener to set.
+     */
     void setListener(Runnable listener);
 
+    /**
+     * {@return the slots in this storage}
+     */
     Slot[] getSlots();
 
+    /**
+     * {@return the slot at the given index}
+     */
     @NotNull Slot getSlot(int slot);
-
-    @NotNull ResourceFilter<Resource> getStrictFilter(int slot);
 }

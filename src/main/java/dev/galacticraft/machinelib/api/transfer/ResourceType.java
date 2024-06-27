@@ -41,23 +41,23 @@ public enum ResourceType implements StringRepresentable {
     /**
      * No resources can be stored/transferred.
      */
-    NONE(Component.translatable(Constant.TranslationKey.NONE).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GRAY))),
+    NONE(0b000, Component.translatable(Constant.TranslationKey.NONE).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GRAY))),
     /**
      * Energy can be stored/transferred.
      */
-    ENERGY(Component.translatable(Constant.TranslationKey.ENERGY).setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE))),
+    ENERGY(0b001, Component.translatable(Constant.TranslationKey.ENERGY).setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE))),
     /**
      * Items can be stored/transferred.
      */
-    ITEM(Component.translatable(Constant.TranslationKey.ITEM).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD))),
+    ITEM(0b010, Component.translatable(Constant.TranslationKey.ITEM).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD))),
     /**
      * Fluids can be stored/transferred.
      */
-    FLUID(Component.translatable(Constant.TranslationKey.FLUID).setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN))),
+    FLUID(0b100, Component.translatable(Constant.TranslationKey.FLUID).setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN))),
     /**
      * All resources can be stored/transferred.
      */
-    ANY(Component.translatable(Constant.TranslationKey.ANY).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
+    ANY(0b111, Component.translatable(Constant.TranslationKey.ANY).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
 
     public static final StringRepresentable.EnumCodec<ResourceType> CODEC = StringRepresentable.fromEnum(ResourceType::values);
     public static final StreamCodec<ByteBuf, ResourceType> STREAM_CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
@@ -66,6 +66,7 @@ public enum ResourceType implements StringRepresentable {
      * The text of the resource type.
      */
     private final @NotNull Component name;
+    private final byte id;
 
     /**
      * Constructs a new resource type.
@@ -73,42 +74,54 @@ public enum ResourceType implements StringRepresentable {
      * @param name the name of the resource.
      */
     @Contract(pure = true)
-    ResourceType(@NotNull Component name) {
+    ResourceType(int id, @NotNull Component name) {
+        this.id = (byte)id;
         this.name = name;
     }
 
     /**
-     * Returns the resource type with the given ID.
+     * {@return the resource type with the given ordinal}
      *
-     * @param id The ID of the resource type.
-     * @return The resource type with the given ID.
+     * @param ordinal The ordinal of the resource type.
      */
     @Contract(pure = true)
-    public static ResourceType getFromOrdinal(byte id) {
-        return switch (id) {
+    public static ResourceType getFromOrdinal(byte ordinal) {
+        return switch (ordinal) {
             case 0 -> NONE;
             case 1 -> ENERGY;
             case 2 -> ITEM;
             case 3 -> FLUID;
             case 4 -> ANY;
-            default -> throw new IllegalStateException("Unexpected id: " + id);
+            default -> throw new IllegalStateException("Unexpected ordinal: " + ordinal);
+        };
+    }
+
+    @Contract(pure = true)
+    public static ResourceType getFromId(byte id) {
+        return switch (id) {
+            case 0b000 -> NONE;
+            case 0b001 -> ENERGY;
+            case 0b010 -> ITEM;
+            case 0b100 -> FLUID;
+            case 0b111 -> ANY;
+            default -> throw new IllegalArgumentException("Invalid id: " + id);
         };
     }
 
     /**
-     * Returns the name of the resource type.
-     *
-     * @return The text of the resource type.
+     * {@return the name of the resource type}
      */
     @Contract(pure = true)
     public @NotNull Component getName() {
         return this.name;
     }
 
+    public byte getId() {
+        return id;
+    }
+
     /**
-     * Returns whether the resource type is associated with slots.
-     *
-     * @return whether the resource type is associated with slots.
+     * {@return whether the resource type is associated with slots}
      */
     @Contract(pure = true)
     public boolean matchesSlots() {
@@ -116,9 +129,7 @@ public enum ResourceType implements StringRepresentable {
     }
 
     /**
-     * Returns whether the resource types can have groups applied to them.
-     *
-     * @return whether the resource types can have groups applied to them.
+     * {@return whether the resource types can have groups applied to them}
      */
     @Contract(pure = true)
     public boolean matchesGroups() {
@@ -126,10 +137,9 @@ public enum ResourceType implements StringRepresentable {
     }
 
     /**
-     * Returns whether the given resource type is compatible with this resource type.
+     * {@return whether the given resource type is compatible with this resource type}
      *
      * @param other The other resource type.
-     * @return Whether the given resource type is compatible with this resource type.
      */
     @Contract(pure = true)
     public boolean willAcceptResource(ResourceType other) {

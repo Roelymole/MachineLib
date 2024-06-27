@@ -27,10 +27,15 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents an object that can be (de)serialized from a packet.
+ *
+ * @param <B> the type of buffer to use
+ * @param <T> the type of object to compare with
+ * @see PacketSerializable
+ * @see Equivalent
  */
 public interface DeltaPacketSerializable<B extends ByteBuf, T> extends Equivalent<T>, PacketSerializable<B> {
     /**
-     * Deserializes this object's state from a buffer.
+     * Deserializes part of this object's state from a buffer.
      *
      * @param buf the buffer to read from.
      * @see DeltaPacketSerializable#writeDeltaPacket(B, T)
@@ -40,9 +45,10 @@ public interface DeltaPacketSerializable<B extends ByteBuf, T> extends Equivalen
     }
 
     /**
-     * Serializes this object's state into a buffer.
+     * Serializes the difference in object's state from the previous state into a buffer.
      *
      * @param buf the buffer to write into
+     * @param previous the previous state of the object
      * @see DeltaPacketSerializable#readDeltaPacket(ByteBuf)
      */
     default void writeDeltaPacket(@NotNull B buf, T previous) {

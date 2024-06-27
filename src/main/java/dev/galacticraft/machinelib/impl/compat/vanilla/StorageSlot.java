@@ -27,6 +27,7 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.impl.Utils;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -72,7 +73,7 @@ public class StorageSlot extends Slot {
     public @NotNull ItemStack getItem() {
         if (this.watchModCount != this.slot.getModifications()) {
             this.watchModCount = this.slot.getModifications();
-            this.watchedStack = ItemStackUtil.copy(this.slot);
+            this.watchedStack = ItemStackUtil.create(this.slot);
         }
         assert this.watchedStack != null;
         return this.watchedStack;
@@ -86,7 +87,7 @@ public class StorageSlot extends Slot {
     @Override
     public void set(ItemStack stack) {
         if (stack.isEmpty()) {
-            this.slot.set(null, null, 0);
+            this.slot.set(null, DataComponentPatch.EMPTY, 0);
         } else {
             this.slot.set(stack.getItem(), stack.getComponentsPatch(), stack.getCount());
         }
@@ -98,7 +99,7 @@ public class StorageSlot extends Slot {
         if (this.watchModCount == this.slot.getModifications()) {
             assert this.watchedStack != null;
             if (this.watchedStack.getCount() != this.slot.getAmount()
-                    || !Utils.componentsEqual(this.watchedStack.getComponentsPatch(), this.slot.getComponents())
+                    || !this.slot.getComponents().equals(this.watchedStack.getComponentsPatch())
                     || !Utils.itemsEqual(this.slot.getResource(), this.watchedStack.getItem())
             ) {
                 if (true) throw new AssertionError();
@@ -122,7 +123,7 @@ public class StorageSlot extends Slot {
     @Override
     public @NotNull ItemStack remove(int amount) {
         if (this.slot.isEmpty()) return ItemStack.EMPTY;
-        ItemStack extract = ItemStackUtil.copy(this.slot);
+        ItemStack extract = ItemStackUtil.create(this.slot);
         extract.setCount((int) this.slot.extract(amount));
         return extract;
     }

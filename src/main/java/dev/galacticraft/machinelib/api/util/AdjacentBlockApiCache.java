@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.api.misc;
+package dev.galacticraft.machinelib.api.util;
 
-import dev.galacticraft.machinelib.impl.misc.AdjacentBlockApiCacheImpl;
+import dev.galacticraft.machinelib.impl.util.AdjacentBlockApiCacheImpl;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,11 +37,21 @@ import org.jetbrains.annotations.Nullable;
  * Caches apis available in adjacent blocks.
  *
  * @param <Api> the api type
+ * @see net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache
  */
 public interface AdjacentBlockApiCache<Api> {
+    /**
+     * Create a new {@link AdjacentBlockApiCache} for the given block position.
+     *
+     * @param lookup the block api lookup
+     * @param level the level
+     * @param pos the position
+     * @param <A> the api type
+     * @return a new {@link AdjacentBlockApiCache}
+     */
     @Contract("_, _, _ -> new")
-    static <A> @NotNull AdjacentBlockApiCache<A> create(@NotNull BlockApiLookup<A, Direction> lookup, @NotNull ServerLevel world, @NotNull BlockPos pos) {
-        return new AdjacentBlockApiCacheImpl<>(lookup, world, pos);
+    static <A> @NotNull AdjacentBlockApiCache<A> create(@NotNull BlockApiLookup<A, Direction> lookup, @NotNull ServerLevel level, @NotNull BlockPos pos) {
+        return new AdjacentBlockApiCacheImpl<>(lookup, level, pos);
     }
 
     /**
@@ -68,13 +78,13 @@ public interface AdjacentBlockApiCache<Api> {
     Api find(@NotNull Direction direction, @Nullable BlockState state);
 
     /**
-     * Returns the block entity in the given direction.
-     * If the cache is invalid it will automatically be updated.
+     * {@return the block entity in the given direction}
+     * If the cache is invalid, it will automatically be updated.
      * <p>
      * This is the most efficient way to query the block entity at the target position repeatedly:
-     * unless the block entity has been loaded or unloaded since the last query, the result will be cached.
+     * unless the block entity has been loaded or unloaded from the last query, the result will be cached.
      *
-     * @return the block entity in the given direction.
+     * @param direction the direction to search in.
      */
     @Contract(mutates = "this")
     @Nullable

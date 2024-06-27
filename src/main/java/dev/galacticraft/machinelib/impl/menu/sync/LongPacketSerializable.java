@@ -20,10 +20,34 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.api.render;
+package dev.galacticraft.machinelib.impl.menu.sync;
 
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import io.netty.buffer.ByteBuf;
+import org.jetbrains.annotations.NotNull;
 
-public interface MachineRenderData {
-    MachineIOConfig getIOConfig();
+import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
+
+public record LongPacketSerializable(LongSupplier getter,
+                                     LongConsumer setter) implements DeltaPacketSerializable<ByteBuf, long[]> {
+    @Override
+    public boolean hasChanged(long[] previous) {
+        return previous[0] != this.getter.getAsLong();
+    }
+
+    @Override
+    public void copyInto(long[] other) {
+        other[0] = this.getter.getAsLong();
+    }
+
+    @Override
+    public void readPacket(@NotNull ByteBuf buf) {
+        this.setter.accept(buf.readLong());
+    }
+
+    @Override
+    public void writePacket(@NotNull ByteBuf buf) {
+        buf.writeLong(this.getter.getAsLong());
+    }
 }

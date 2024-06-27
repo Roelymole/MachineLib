@@ -33,11 +33,12 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public sealed class ItemResourceSlotExtractionTests implements JUnitTest {
+public class ItemResourceSlotExtractionTests implements JUnitTest {
     protected ItemResourceSlot slot;
 
     @BeforeEach
@@ -50,209 +51,211 @@ public sealed class ItemResourceSlotExtractionTests implements JUnitTest {
         assertTrue(((ResourceSlotImpl<?>) this.slot).isSane());
     }
 
-    public static final class ExtractionFailureTests extends ItemResourceSlotExtractionTests {
+    @Nested
+    final class ExtractionFailureTests {
         @Test
         public void empty() {
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
 
-            assertFalse(this.slot.canExtract(1));
-            assertEquals(0, this.slot.tryExtract(1));
-            assertEquals(0, this.slot.extract(1));
+            assertFalse(slot.canExtract(1));
+            assertEquals(0, slot.tryExtract(1));
+            assertEquals(0, slot.extract(1));
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, 1));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, 1));
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
 
-            assertNull(this.slot.extractOne());
+            assertNull(slot.extractOne());
         }
 
         @Test
         public void incorrectType() {
-            this.slot.set(Items.IRON_INGOT, 1);
+            slot.set(Items.IRON_INGOT, 1);
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, 1));
-            assertFalse(this.slot.extractOne(Items.GOLD_INGOT));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, 1));
+            assertFalse(slot.extractOne(Items.GOLD_INGOT));
 
-            assertFalse(this.slot.isEmpty());
+            assertFalse(slot.isEmpty());
         }
 
         @Test
         public void extractionTag() {
-            this.slot.set(Items.GOLD_INGOT, 1);
+            slot.set(Items.GOLD_INGOT, 1);
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertFalse(this.slot.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(slot.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
 
-            assertFalse(this.slot.isEmpty());
+            assertFalse(slot.isEmpty());
         }
 
         @Test
         public void containedTag() {
-            this.slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
+            slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, null, 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, null, 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, null, 1));
-            assertFalse(this.slot.extractOne(Items.GOLD_INGOT, null));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertFalse(slot.extractOne(Items.GOLD_INGOT, DataComponentPatch.EMPTY));
 
-            assertFalse(this.slot.isEmpty());
+            assertFalse(slot.isEmpty());
         }
 
         @Test
         public void mismatchedTag() {
-            this.slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
+            slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
 
-            assertFalse(this.slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, this.slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertFalse(this.slot.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
+            assertFalse(slot.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, slot.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(slot.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
 
-            assertFalse(this.slot.isEmpty());
+            assertFalse(slot.isEmpty());
         }
     }
 
-    public static final class ExtractionSuccessTests extends ItemResourceSlotExtractionTests {
+    @Nested
+    public class ExtractionSuccessTests {
         @Test
         public void exact_any() {
-            this.slot.set(Items.GOLD_INGOT, 1);
+            slot.set(Items.GOLD_INGOT, 1);
 
-            assertTrue(this.slot.canExtract(1));
-            assertEquals(1, this.slot.tryExtract(1));
-            assertEquals(1, this.slot.extract(1));
+            assertTrue(slot.canExtract(1));
+            assertEquals(1, slot.tryExtract(1));
+            assertEquals(1, slot.extract(1));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void exact_typed() {
-            this.slot.set(Items.GOLD_INGOT, 1);
+            slot.set(Items.GOLD_INGOT, 1);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(1, this.slot.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(1, this.slot.extract(Items.GOLD_INGOT, 1));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(1, slot.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(1, slot.extract(Items.GOLD_INGOT, 1));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void exact_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.slot.set(Items.GOLD_INGOT, components, 1);
+            slot.set(Items.GOLD_INGOT, components, 1);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, components, 1));
-            assertEquals(1, this.slot.tryExtract(Items.GOLD_INGOT, components, 1));
-            assertEquals(1, this.slot.extract(Items.GOLD_INGOT, components, 1));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, components, 1));
+            assertEquals(1, slot.tryExtract(Items.GOLD_INGOT, components, 1));
+            assertEquals(1, slot.extract(Items.GOLD_INGOT, components, 1));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void exact_typed_emptyNbt() {
-            this.slot.set(Items.GOLD_INGOT, 1);
+            slot.set(Items.GOLD_INGOT, 1);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(1, this.slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(1, this.slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(1, slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(1, slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void excess_any() {
-            this.slot.set(Items.GOLD_INGOT, 48);
+            slot.set(Items.GOLD_INGOT, 48);
 
-            assertTrue(this.slot.canExtract(16));
-            assertEquals(16, this.slot.tryExtract(16));
-            assertEquals(16, this.slot.extract(16));
+            assertTrue(slot.canExtract(16));
+            assertEquals(16, slot.tryExtract(16));
+            assertEquals(16, slot.extract(16));
 
-            assertEquals(this.slot.getAmount(), 48 - 16);
+            assertEquals(slot.getAmount(), 48 - 16);
         }
 
         @Test
         public void excess_typed() {
-            this.slot.set(Items.GOLD_INGOT, 48);
+            slot.set(Items.GOLD_INGOT, 48);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, 16));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, 16));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, 16));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, 16));
 
-            assertEquals(this.slot.getAmount(), 48 - 16);
+            assertEquals(slot.getAmount(), 48 - 16);
         }
 
         @Test
         public void excess_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.slot.set(Items.GOLD_INGOT, components, 48);
+            slot.set(Items.GOLD_INGOT, components, 48);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, components, 16));
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, components, 16));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, components, 16));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, components, 16));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, components, 16));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, components, 16));
 
-            assertEquals(this.slot.getAmount(), 48 - 16);
+            assertEquals(slot.getAmount(), 48 - 16);
         }
 
         @Test
         public void excess_typed_emptyNbt() {
-            this.slot.set(Items.GOLD_INGOT, 48);
+            slot.set(Items.GOLD_INGOT, 48);
 
-            assertTrue(this.slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertTrue(slot.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
 
-            assertEquals(this.slot.getAmount(), 48 - 16);
+            assertEquals(slot.getAmount(), 48 - 16);
         }
 
         @Test
         public void insufficient_any() {
-            this.slot.set(Items.GOLD_INGOT, 16);
+            slot.set(Items.GOLD_INGOT, 16);
 
-            assertEquals(16, this.slot.tryExtract(64));
-            assertEquals(16, this.slot.extract(64));
+            assertEquals(16, slot.tryExtract(64));
+            assertEquals(16, slot.extract(64));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void insufficient_typed() {
-            this.slot.set(Items.GOLD_INGOT, 16);
+            slot.set(Items.GOLD_INGOT, 16);
 
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, 64));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, 64));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, 64));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, 64));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void insufficient_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.slot.set(Items.GOLD_INGOT, components, 16);
+            slot.set(Items.GOLD_INGOT, components, 16);
 
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, components, 64));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, components, 64));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, components, 64));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, components, 64));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
 
         @Test
         public void insufficient_typed_emptyNbt() {
-            this.slot.set(Items.GOLD_INGOT, 16);
+            slot.set(Items.GOLD_INGOT, 16);
 
-            assertEquals(16, this.slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
-            assertEquals(16, this.slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
+            assertEquals(16, slot.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
+            assertEquals(16, slot.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
 
-            assertTrue(this.slot.isEmpty());
+            assertTrue(slot.isEmpty());
         }
     }
 }

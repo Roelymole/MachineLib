@@ -22,14 +22,17 @@
 
 package dev.galacticraft.machinelib.impl.compat.waila;
 
+import com.mojang.authlib.GameProfile;
 import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.impl.Constant;
 import mcp.mobius.waila.api.*;
-import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
+
+import java.util.Optional;
 
 public class MachineLibWailaPlugin implements IWailaPlugin {
     @Override
@@ -47,8 +50,11 @@ public class MachineLibWailaPlugin implements IWailaPlugin {
                 security.readTag(accessor.getData().raw().getCompound("security"));
 
                 tooltip.addLine(Component.translatable("ui.machinelib.machine.redstone_mode.tooltip", redstone.getName()).setStyle(Constant.Text.RED_STYLE));
-                if (security.getOwner() != null && security.getUsername() != null) {
-                    tooltip.addLine(Component.translatable("ui.machinelib.machine.security.owner", Component.literal(security.getUsername()).setStyle(Constant.Text.WHITE_STYLE)).setStyle(Constant.Text.AQUA_STYLE));
+                if (security.getOwner() != null) {
+                    Optional<GameProfile> profile = SkullBlockEntity.fetchGameProfile(security.getOwner()).getNow(null);
+                    if (profile != null && profile.isPresent()) {
+                        tooltip.addLine(Component.translatable("ui.machinelib.machine.security.owner", Component.literal(profile.get().getName()).setStyle(Constant.Text.WHITE_STYLE)).setStyle(Constant.Text.AQUA_STYLE));
+                    }
                 }
             }
         }, TooltipPosition.BODY, MachineBlock.class);

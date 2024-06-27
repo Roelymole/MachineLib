@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.misc;
+package dev.galacticraft.machinelib.impl.util;
 
-import dev.galacticraft.machinelib.api.misc.AdjacentBlockApiCache;
+import dev.galacticraft.machinelib.api.util.AdjacentBlockApiCache;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.fabricmc.fabric.api.lookup.v1.block.BlockApiLookup;
@@ -39,9 +39,9 @@ import org.jetbrains.annotations.Nullable;
 public final class AdjacentBlockApiCacheImpl<A> implements AdjacentBlockApiCache<A> {
     private final BlockApiCache<A, Direction>[] caches = new BlockApiCache[6];
 
-    public AdjacentBlockApiCacheImpl(BlockApiLookup<A, Direction> lookup, ServerLevel world, BlockPos pos) {
+    public AdjacentBlockApiCacheImpl(BlockApiLookup<A, Direction> lookup, ServerLevel level, BlockPos pos) {
         for (int i = 0; i < 6; i++) {
-            this.caches[i] = BlockApiCache.create(lookup, world, pos.relative(Constant.Cache.DIRECTIONS[i]));
+            this.caches[i] = BlockApiCache.create(lookup, level, pos.relative(Constant.Cache.DIRECTIONS[i]));
         }
     }
 

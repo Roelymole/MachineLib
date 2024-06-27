@@ -24,6 +24,7 @@ package dev.galacticraft.machinelib.api.filter;
 
 import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -41,5 +42,5 @@ public interface ResourceFilter<Resource> {
      * @return {@code true} if the resource and tag meet the specific condition, {@code false} otherwise.
      */
     @Contract(pure = true)
-    boolean test(@Nullable Resource resource, DataComponentPatch components);
+    boolean test(@Nullable Resource resource, @NotNull DataComponentPatch components);
 }

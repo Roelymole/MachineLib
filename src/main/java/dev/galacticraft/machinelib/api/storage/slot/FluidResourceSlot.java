@@ -45,8 +45,14 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
         return new FluidResourceSlotImpl(inputType, display, capacity, filter);
     }
 
+    /**
+     * {@return whether the slot is hidden from the UI}
+     */
     boolean isHidden();
 
+    /**
+     * {@return the display properties of the slot}
+     */
     @Nullable TankDisplay getDisplay();
 
     final class Builder {

@@ -94,7 +94,7 @@ public enum RedstoneMode implements StringRepresentable {
     }
 
     /**
-     * Deserializes an redstone level from a packet.
+     * Deserializes a redstone level from a packet.
      * @param buf the buffer to read from
      * @return the redstone level
      * @see #writePacket(FriendlyByteBuf)
@@ -104,9 +104,7 @@ public enum RedstoneMode implements StringRepresentable {
     }
 
     /**
-     * Returns the name of the redstone level state.
-     *
-     * @return The text of the redstone level state.
+     * {@return the name of the redstone level state}
      */
     @Contract(pure = true)
     public @NotNull Component getName() {
@@ -126,7 +124,7 @@ public enum RedstoneMode implements StringRepresentable {
     /**
      * Serializes this state as a NBT.
      * @return this redstone level as a tag.
-     * @see #readTag(ByteTag)
+     * @see #readTag(Tag)
      */
     public @NotNull ByteTag createTag() {
         return ByteTag.valueOf((byte) this.ordinal());

@@ -25,8 +25,8 @@ package dev.galacticraft.machinelib.api.menu;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
@@ -43,10 +43,10 @@ import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.client.api.screen.Tank;
-import dev.galacticraft.machinelib.client.impl.menu.sync.MachineDataClient;
+import dev.galacticraft.machinelib.client.impl.menu.MachineMenuDataClient;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
-import dev.galacticraft.machinelib.impl.menu.sync.MachineDataImpl;
+import dev.galacticraft.machinelib.impl.menu.MachineMenuDataImpl;
 import io.netty.buffer.ByteBufAllocator;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
@@ -73,11 +73,15 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * Base container menu for machines.
+ * Base menu for machines.
+ * Handles the basic synchronization and slot management of machines.
  *
  * @param <Machine> The type of machine block entity this menu is linked to.
  */
 public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractContainerMenu {
+    /**
+     * A codec that copies the contents of a buffer.
+     */
     public static final StreamCodec<RegistryFriendlyByteBuf, RegistryFriendlyByteBuf> BUF_IDENTITY_CODEC = new StreamCodec<>() {
         @Override
         public void encode(RegistryFriendlyByteBuf src, RegistryFriendlyByteBuf dst) {
@@ -85,7 +89,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         }
 
         @Override
-        public RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
+        public @NotNull RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
             RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(src.capacity()), src.registryAccess());
             buf.writeBytes(src);
             return buf;
@@ -102,6 +106,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @ApiStatus.Internal
     public final @NotNull Machine machine;
+
     /**
      * Whether the menu exists on the logical server.
      */
@@ -111,9 +116,9 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * The level this menu exists in
      */
     public final @NotNull ContainerLevelAccess levelAccess;
+
     /**
      * The player interacting with this menu.
-     * Always null on the logical client, never null on the logical server.
      */
     public final @NotNull Player player;
 
@@ -121,42 +126,65 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * The inventory of the player opening this menu
      */
     public final @NotNull Inventory playerInventory;
+
     /**
      * The UUID of the player interacting with this menu.
      */
     public final @NotNull UUID playerUUID;
 
-    public final @NotNull MachineIOConfig configuration;
+    /**
+     * The I/O configuration of the machine associated with this menu.
+     */
+    public final @NotNull IoConfig configuration;
+
+    /**
+     * The security settings of the machine associated with this menu.
+     */
     public final @NotNull SecuritySettings security;
-    public @NotNull RedstoneMode redstoneMode;
 
     /**
      * The state of the machine associated with this menu
      */
     public final @NotNull MachineState state;
+
     /**
      * The energy storage of the machine associated with this menu
      */
     public final @NotNull MachineEnergyStorage energyStorage;
+
     /**
      * The item storage of the machine associated with this menu
      */
     public final @NotNull MachineItemStorage itemStorage;
+
     /**
      * The fluid storage of the machine associated with this menu
      */
     public final @NotNull MachineFluidStorage fluidStorage;
 
     /**
-     * The machine this menu is for.
+     * The redstone mode of the machine associated with this menu.
+     */
+    public @NotNull RedstoneMode redstoneMode;
+
+    /**
+     * Array of {@link MachineItemStorage item storage}-backed slots.
      */
     public final StorageSlot[] machineSlots;
+
     /**
      * The tanks contained in this menu.
+     *
+     * @see #addTank(Tank)
      */
     public final List<Tank> tanks = new ArrayList<>();
 
-    private final MachineData data;
+    /**
+     * Handles synchronization of data between the logical server and the client.
+     *
+     * @see #registerData(MachineMenuData)
+     */
+    private final MachineMenuData data;
 
     /**
      * Constructs a new menu for a machine.
@@ -171,14 +199,14 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         assert !Objects.requireNonNull(machine.getLevel()).isClientSide;
         this.type = machine.getMachineType();
         this.machine = machine;
-        this.data = new MachineDataImpl(player);
+        this.data = new MachineMenuDataImpl(player);
         this.server = true;
 
         this.player = player;
         this.playerInventory = player.getInventory();
         this.playerUUID = player.getUUID();
 
-        this.configuration = machine.getIOConfig();
+        this.configuration = machine.getIoConfig();
         this.security = machine.getSecurity();
         this.redstoneMode = machine.getRedstoneMode();
 
@@ -215,7 +243,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
             }
         }
 
-        this.addPlayerInventorySlots(player.getInventory(), 0, 0); // it's the server
+        this.addPlayerInventorySlots(player.getInventory(), 0, 0); // never displayed on the server.
         this.registerData(this.data);
         this.data.synchronizeFull();
     }
@@ -234,7 +262,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
         this.type = type;
         this.server = false;
-        this.data = new MachineDataClient();
+        this.data = new MachineMenuDataClient();
         this.player = inventory.player;
         this.playerInventory = inventory;
         this.playerUUID = inventory.player.getUUID();
@@ -242,7 +270,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         BlockPos blockPos = buf.readBlockPos();
         this.machine = (Machine) inventory.player.level().getBlockEntity(blockPos); //todo: actually stop using the BE on the client side
         this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), blockPos);
-        this.configuration = new MachineIOConfig();
+        this.configuration = new IoConfig();
         this.configuration.readPacket(buf);
         this.security = new SecuritySettings();
         this.security.readPacket(buf);
@@ -357,110 +385,117 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      * Registers the sync handlers for the menu.
      */
     @MustBeInvokedByOverriders
-    public void registerData(MachineData data) {
+    public void registerData(MachineMenuData data) {
         data.register(this.itemStorage, new long[this.itemStorage.size()]); //todo: probably synced by vanilla - is this necessary?
         data.register(this.fluidStorage, new long[this.fluidStorage.size()]);
         data.register(this.energyStorage, new long[1]);
-        data.register(this.configuration, new MachineIOConfig());
+        data.register(this.configuration, new IoConfig());
         data.register(this.security, new SecuritySettings());
         data.registerEnum(RedstoneMode.values(), () -> this.redstoneMode, mode -> this.redstoneMode = mode);
         data.register(this.state, new MachineState());
     }
 
     /**
-     * Returns whether the given face can be configured for input or output.
+     * {@return whether the given face can be configured for input or output}
      *
      * @param face the block face to test.
-     * @return whether the given face can be configured for input or output.
      */
     public boolean isFaceLocked(@NotNull BlockFace face) {
         return false;
     }
 
     @Override
-    public void removed(Player player) {
-        super.removed(player);
-    }
-
-    @Override
     public @NotNull ItemStack quickMoveStack(Player player, int slotId) { //return LEFTOVER (in slot)
         Slot slot = this.slots.get(slotId);
-        int size = this.machineSlots.length;
 
-        if (slotId < size) {
+        // move from machine -> player
+        if (slotId < this.machineSlots.length) {
             assert slot instanceof StorageSlot;
             ResourceSlot<Item> slot1 = ((StorageSlot) slot).getSlot();
             this.quickMoveIntoPlayerInventory(slot1);
             return ItemStackUtil.create(slot1);
-        } else {
-            assert !(slot instanceof StorageSlot);
-            ItemStack stack1 = slot.getItem();
-            if (stack1.isEmpty()) return ItemStack.EMPTY;
+        }
 
-            long insert = stack1.getCount();
-            for (StorageSlot slot1 : this.machineSlots) {
-                if (slot1.getSlot().inputType().playerInsertion() && slot1.getSlot().contains(stack1.getItem(), stack1.getComponentsPatch())) {
-                    insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getComponentsPatch(), insert);
-                    if (insert == 0) break;
-                }
-            }
+        // move from player -> machine
+        assert !(slot instanceof StorageSlot);
+        ItemStack stack = slot.getItem();
 
-            if (insert == 0) {
-                slot.set(ItemStack.EMPTY);
-                return ItemStack.EMPTY;
-            } else {
-                for (StorageSlot slot1 : this.machineSlots) {
-                    if (slot1.mayPlace(stack1)) {
-                        insert -= slot1.getSlot().insert(stack1.getItem(), stack1.getComponentsPatch(), insert);
-                        if (insert == 0) break;
-                    }
-                }
+        // if the slot is empty, nothing moves
+        if (stack.isEmpty()) return ItemStack.EMPTY;
 
-                if (insert == 0) {
-                    slot.set(ItemStack.EMPTY);
+        // try to move it into slots that already contain the same item
+        long available = stack.getCount();
+        for (StorageSlot slot1 : this.machineSlots) {
+            if (slot1.getSlot().inputType().playerInsertion() && slot1.getSlot().contains(stack.getItem(), stack.getComponentsPatch())) {
+                available -= slot1.getSlot().insert(stack.getItem(), stack.getComponentsPatch(), available);
+                // if we've moved all the items, we're done
+                if (available == 0) {
+                    slot.setByPlayer(ItemStack.EMPTY);
                     return ItemStack.EMPTY;
-                } else {
-                    assert insert < Integer.MAX_VALUE;
-                    stack1.setCount((int)insert);
-                    slot.set(stack1);
-                    return ItemStack.EMPTY; //fixme: inf loop if we return actual value, although it doesn't seem to be used beyond looping the call so this should be fine
                 }
             }
         }
+
+        // try to move it into empty slots
+        for (StorageSlot slot1 : this.machineSlots) {
+            if (slot1.mayPlace(stack)) {
+                available -= slot1.getSlot().insert(stack.getItem(), stack.getComponentsPatch(), available);
+                if (available == 0) {
+                    slot.setByPlayer(ItemStack.EMPTY);
+                    return ItemStack.EMPTY;
+                }
+            }
+        }
+
+        // if we still have items left, keep them in the player's inventory
+        assert available > 0;
+        stack.setCount((int) available);
+        slot.setChanged();
+        return ItemStack.EMPTY;
     }
 
     /**
      * Quick-moves a stack from the machine's inventory into the player's inventory
-     * @param slot the slot that was shift-clicked
+     * @param fromSlot the slot that was shift-clicked
      */
-    private void quickMoveIntoPlayerInventory(ResourceSlot<Item> slot) {
-        if (slot.isEmpty()) return;
-        ItemStack itemStack = ItemStackUtil.copy(slot);
-        int extracted = itemStack.getCount();
+    private void quickMoveIntoPlayerInventory(ResourceSlot<Item> fromSlot) {
+        // if the slot is empty, nothing moves
+        if (fromSlot.isEmpty()) return;
+
+        ItemStack stack = ItemStackUtil.create(fromSlot);
+
+        int total = stack.getCount();
         int size = this.slots.size() - 1;
-        for (int i = size; i >= this.machineSlots.length; i--) {
-            Slot slot1 = this.slots.get(i);
-            assert !(slot1 instanceof StorageSlot);
-            if (ItemStack.isSameItemSameComponents(itemStack, slot1.getItem())) {
-                itemStack = slot1.safeInsert(itemStack);
-                if (itemStack.isEmpty()) break;
+
+        // try to move it into slots that already contain the same item
+        for (int i = size; i >= this.machineSlots.length; i--) { // reverse order (hot bar first)
+            Slot slot = this.slots.get(i);
+            assert !(slot instanceof StorageSlot);
+            if (ItemStack.isSameItemSameComponents(stack, slot.getItem())) {
+                stack = slot.safeInsert(stack);
+                if (stack.isEmpty()) {
+                    // take items from the machine slot
+                    long extract = fromSlot.extract(total);
+                    assert extract == total;
+                    return;
+                }
             }
         }
 
-        if (itemStack.isEmpty()) {
-            long extract = slot.extract(extracted);
-            assert extract == extracted;
-            return;
-        }
-
+        // try to move it into empty slots
         for (int i = size; i >= this.machineSlots.length; i--) {
             Slot slot1 = this.slots.get(i);
-            itemStack = slot1.safeInsert(itemStack);
-            if (itemStack.isEmpty()) break;
+            stack = slot1.safeInsert(stack);
+            if (stack.isEmpty()) {
+                // take items from the machine slot
+                long extract = fromSlot.extract(total);
+                assert extract == total;
+                return;
+            }
         }
 
-        long extract = slot.extract(extracted - itemStack.getCount());
-        assert extract == extracted - itemStack.getCount();
+        long extract = fromSlot.extract(total - stack.getCount());
+        assert extract == total - stack.getCount();
     }
 
     @Override
@@ -497,9 +532,15 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         this.data.synchronize();
     }
 
+    /**
+     * Cycles the I/O configuration of a machine face.
+     * @param face the face to cycle
+     * @param reverse whether to cycle in reverse
+     * @param reset whether to reset the face to the default configuration
+     */
     @ApiStatus.Internal
     public void cycleFaceConfig(BlockFace face, boolean reverse, boolean reset) {
-        MachineIOFace option = this.configuration.get(face);
+        IoFace option = this.configuration.get(face);
 
         short bits = calculateIoBitmask();
         if (bits != 0b1_000_000_000_000 && !reset && !isFaceLocked(face)) {
@@ -544,6 +585,12 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         this.machine.setChanged();
     }
 
+    /**
+     * Calculates the bitmask for the I/O configuration of the machine.
+     * Format (bits): NONE, any [any][out][in], fluid [any][out][in], item [any][out][in], energy [any][out][in]
+     *
+     * @return the i/o bitmask
+     */
     private short calculateIoBitmask() {
         // Format: NONE, any [any][out][in], fluid [any][out][in], item [any][out][in], energy [any][out][in]
         short bits = 0b0_000_000_000_000;
@@ -596,6 +643,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
     /**
      * Adds a tank to the screen.
+     * Tanks are the fluid equivalent to item slots.
      *
      * @param tank The tank to add.
      */
@@ -623,7 +671,6 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
          */
         Menu create(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, @NotNull MachineType<Machine, Menu> type);
     }
-
 
     /**
      * A factory for creating machine menus (without extra type information).

@@ -42,7 +42,7 @@ public class MachineLibConfig implements Config {
     @Expose
     public boolean enableColoredVanillaFluidNames = true;
     @Expose
-    public FluidDisplayMode fluidDisplayMode = FluidDisplayMode.MILLIBUCKET;
+    public FluidUnits fluidUnits = FluidUnits.MILLIBUCKET;
 
     public MachineLibConfig(@Nullable File file) {
         this.file = file;
@@ -68,19 +68,19 @@ public class MachineLibConfig implements Config {
     }
 
     @Override
-    public FluidDisplayMode fluidDisplayMode() {
-        return this.fluidDisplayMode;
+    public FluidUnits fluidUnits() {
+        return this.fluidUnits;
     }
 
     @Override
-    public void setFluidDisplayMode(FluidDisplayMode value) {
-        this.fluidDisplayMode = value;
+    public void getFluidUnits(FluidUnits units) {
+        this.fluidUnits = units;
     }
 
     @Override
     public void copyFrom(Config config) {
         this.enableColoredVanillaFluidNames = config.enableColoredVanillaFluidNames();
-        this.fluidDisplayMode = config.fluidDisplayMode();
+        this.fluidUnits = config.fluidUnits();
     }
 
     @Override

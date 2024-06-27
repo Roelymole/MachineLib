@@ -47,6 +47,14 @@ import java.util.List;
  * @see ResourceType#FLUID
  */
 public interface Tank {
+    /**
+     * Creates a new tank.
+     * @param slot the slot that this tank is associated with
+     * @param display the display properties of the tank
+     * @param inputType the input type of the tank
+     * @param index the index of the tank in the storage
+     * @return a new tank
+     */
     @Contract(value = "_, _, _, _ -> new", pure = true)
     static @NotNull Tank create(@NotNull ResourceSlot<Fluid> slot, @NotNull TankDisplay display, @NotNull InputType inputType, int index) {
         Preconditions.checkNotNull(slot);
@@ -54,79 +62,96 @@ public interface Tank {
     }
 
     /**
-     * Returns the resource that is currently in this tank.
-     *
-     * @return The resource that is currently in this tank.
+     * {@return the resource that is currently in this tank}
      */
     @Nullable Fluid getFluid();
 
-    @Nullable DataComponentPatch getComponents();
+    /**
+     * {@return the components of the fluid in the tank}
+     */
+    @NotNull DataComponentPatch getComponents();
 
+    /**
+     * {@return the amount of fluid in the tank}
+     */
     long getAmount();
 
+    /**
+     * {@return the capacity of the tank}
+     */
     long getCapacity();
 
+    /**
+     * {@return whether the tank is empty}
+     */
     boolean isEmpty();
 
+    /**
+     * {@return a fluid variant constructed from the fluid and components in the tank}
+     */
     FluidVariant createVariant();
 
     /**
-     * Returns the index of this tank in the storage.
-     *
-     * @return The index of this tank in the storage.
+     * {@return the index of this tank in the storage}
      */
     int getIndex();
 
     /**
-     * Returns the x-position of this tank.
-     *
-     * @return The x-position of this tank.
+     * {@return the x-position of this tank}
      */
     int getX();
 
     /**
-     * Returns the y-position of this tank.
-     *
-     * @return The y-position of this tank.
+     * {@return the y-position of this tank}
      */
     int getY();
 
     /**
-     * Returns the height of this tank.
-     *
-     * @return The height of this tank.
+     * {@return the height of this tank}
      */
     int getHeight();
 
     /**
-     * Returns the width of this tank.
-     * Currently, always returns {@code 16}.
-     *
-     * @return The width of this tank.
+     * {@return the width of this tank} Currently, always returns {@code 16}.
      */
     int getWidth();
 
     /**
-     * Returns the id of this tank (the index of the tank in the screen).
-     *
-     * @return The id of this tank.
+     * {@return the id of this tank (the index of the tank in the screen)}
      */
     int getId();
 
     /**
-     * Sets the id of this tank.
+     * Sets the id of this tank. For internal use only.
      *
      * @param id The id of this tank.
      */
     @ApiStatus.Internal
     void setId(int id);
 
+    /**
+     * Generates a tooltip based on the fluid and capacity of the tank.
+     *
+     * @return tooltip text
+     */
     List<Component> getTooltip();
 
+    /**
+     * Attempts to insert/extract fluid from/into the given item.
+     *
+     * @param context the item interacting with the tank
+     * @return whether the contents of the tank changed
+     */
     boolean acceptStack(@NotNull ContainerItemContext context);
 
+    /**
+     * {@return the slot that this tank is associated with}
+     */
     @ApiStatus.Internal
     ResourceSlot<Fluid> getSlot();
 
+    /**
+     * {@return the input type of this tank}
+     */
     InputType getInputType();
 }

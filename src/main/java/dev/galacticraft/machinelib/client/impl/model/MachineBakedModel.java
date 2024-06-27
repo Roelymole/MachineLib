@@ -24,13 +24,13 @@ package dev.galacticraft.machinelib.client.impl.model;
 
 import com.google.gson.JsonObject;
 import dev.galacticraft.machinelib.api.block.MachineBlock;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
+import dev.galacticraft.machinelib.api.machine.MachineRenderData;
+import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -120,7 +120,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         BlockFace face = BlockFace.toFace(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
         assert face != null;
 
-        MachineIOFace machineFace = renderData == null ? new MachineIOFace() : renderData.getIOConfig().get(face);
+        IoFace machineFace = renderData == null ? new IoFace() : renderData.getIoConfig().get(face);
         quad.spriteBake(getSprite(face,
                         renderData,
                         machineFace.getType(), machineFace.getFlow()),
@@ -129,13 +129,13 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         return true;
     }
 
-    private boolean transformItem(MachineIOConfig config, @NotNull MutableQuadView quad) {
+    private boolean transformItem(IoConfig config, @NotNull MutableQuadView quad) {
         BlockFace face = BlockFace.toFace(Direction.NORTH, quad.nominalFace());
-        MachineIOFace machineIOFace = config.get(face);
+        IoFace IOFace = config.get(face);
         assert face != null;
         quad.spriteBake(getSprite(face,
                         config,
-                        machineIOFace.getType(), machineIOFace.getFlow()),
+                        IOFace.getType(), IOFace.getFlow()),
                 MutableQuadView.BAKE_LOCK_UV);
         quad.color(-1, -1, -1, -1);
         return true;
@@ -225,7 +225,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         assert ((BlockItem) stack.getItem()).getBlock() instanceof MachineBlock;
         CustomData customData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
 
-        MachineIOConfig config = new MachineIOConfig();
+        IoConfig config = new IoConfig();
         if (!customData.isEmpty()) {
             CompoundTag beTag = customData.getUnsafe();
             if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {

@@ -101,7 +101,7 @@ public class RecipeTestContainer implements Container {
 
     @Override
     public @NotNull ItemStack getItem(int i) {
-        return ItemStackUtil.copy(this.slots[i]);
+        return ItemStackUtil.create(this.slots[i]);
     }
 
     @Override
@@ -116,12 +116,10 @@ public class RecipeTestContainer implements Container {
 
     @Override
     public void setItem(int i, ItemStack itemStack) {
-
     }
 
     @Override
     public void setChanged() {
-
     }
 
     @Override

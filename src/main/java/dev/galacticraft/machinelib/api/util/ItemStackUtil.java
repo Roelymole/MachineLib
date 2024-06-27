@@ -24,35 +24,57 @@ package dev.galacticraft.machinelib.api.util;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Utility class for instantiating item stacks.
+ */
 public class ItemStackUtil {
+    /**
+     * Creates a new item stack from the contents of a slot.
+     * @param slot the slot to read from
+     * @return a new item stack
+     */
     public static @NotNull ItemStack create(ResourceSlot<Item> slot) {
         if (slot.isEmpty()) return ItemStack.EMPTY;
-        assert slot.getResource() != null && slot.getAmount() < Integer.MAX_VALUE;
-        ItemStack stack = new ItemStack(slot.getResource().builtInRegistryHolder(), (int) slot.getAmount(), slot.getComponents());
-        return stack;
+        assert slot.getResource() != null && slot.getAmount() > 0 && slot.getAmount() < Integer.MAX_VALUE;
+        return new ItemStack(slot.getResource().builtInRegistryHolder(), (int) slot.getAmount(), slot.getComponents());
     }
 
-    public static @NotNull ItemStack copy(ResourceSlot<Item> slot) {
-        if (slot.isEmpty()) return ItemStack.EMPTY;
-        assert slot.getResource() != null && slot.getAmount() < Integer.MAX_VALUE;
-        DataComponentPatch comoponents = slot.getComponents();
-        return new ItemStack(slot.getResource().builtInRegistryHolder(), (int) slot.getAmount(), comoponents == null ? DataComponentPatch.EMPTY : comoponents);
-    }
-
-    public static ItemStack of(@Nullable Item resource, DataComponentPatch components, int amount) {
+    /**
+     * Creates a new item stack from the specified item, components, and amount.
+     *
+     * @param resource the item to create the stack from
+     * @param components the components to include in the stack
+     * @param amount the amount of the item to include in the stack
+     * @return a new item stack
+     */
+    public static ItemStack of(@Nullable Item resource, @NotNull DataComponentPatch components, int amount) {
         if (resource == null) return ItemStack.EMPTY;
-        ItemStack stack = new ItemStack(resource.builtInRegistryHolder(), amount, components);
-        return stack;
+        assert amount > 0;
+        return new ItemStack(resource.builtInRegistryHolder(), amount, components);
     }
 
+    /**
+     * Creates a new item stack from the specified item and amount.
+     *
+     * @param resource the item to create the stack from
+     * @param amount the amount of the item to include in the stack
+     * @return a new item stack
+     */
     public static ItemStack of(@Nullable Item resource, int amount) {
         if (resource == null) return ItemStack.EMPTY;
+        assert amount > 0;
         return new ItemStack(resource, amount);
+    }
+
+    /**
+     * Prevent instantiation of this utility class.
+     */
+    private ItemStackUtil() {
+        throw new UnsupportedOperationException("This class cannot be instantiated.");
     }
 }

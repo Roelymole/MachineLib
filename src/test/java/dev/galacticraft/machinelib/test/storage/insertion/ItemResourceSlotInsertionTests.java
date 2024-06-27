@@ -33,11 +33,12 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public sealed class ItemResourceSlotInsertionTests implements JUnitTest {
+public class ItemResourceSlotInsertionTests implements JUnitTest {
     private static final int CAPACITY = 64;
     protected ItemResourceSlot slot;
 
@@ -51,126 +52,128 @@ public sealed class ItemResourceSlotInsertionTests implements JUnitTest {
         assertTrue(((ResourceSlotImpl<?>) this.slot).isSane());
     }
 
-    public static final class InsertionFailureTests extends ItemResourceSlotInsertionTests {
+    @Nested
+    final class InsertionFailureTests {
         @Test
         public void full() {
-            this.slot.set(Items.GOLD_INGOT, CAPACITY);
+            slot.set(Items.GOLD_INGOT, CAPACITY);
 
-            assertFalse(this.slot.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.insert(Items.GOLD_INGOT, 16));
+            assertFalse(slot.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.insert(Items.GOLD_INGOT, 16));
         }
 
         @Test
         public void incorrectType() {
-            this.slot.set(Items.IRON_INGOT, 16);
+            slot.set(Items.IRON_INGOT, 16);
 
-            assertFalse(this.slot.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.insert(Items.GOLD_INGOT, 16));
+            assertFalse(slot.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(this.slot.getAmount(), 16);
+            assertEquals(slot.getAmount(), 16);
         }
 
         @Test
         public void insertTag() {
-            this.slot.set(Items.GOLD_INGOT, 16);
+            slot.set(Items.GOLD_INGOT, 16);
 
-            assertFalse(this.slot.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.slot.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.slot.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertFalse(slot.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, slot.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, slot.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
 
-            assertEquals(this.slot.getAmount(), 16);
+            assertEquals(slot.getAmount(), 16);
         }
 
         @Test
         public void containedTag() {
-            this.slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
+            slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
 
-            assertFalse(this.slot.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(0, this.slot.insert(Items.GOLD_INGOT, 16));
+            assertFalse(slot.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(0, slot.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(this.slot.getAmount(), 16);
+            assertEquals(slot.getAmount(), 16);
         }
 
         @Test
         public void mismatchedTag() {
-            this.slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
+            slot.set(Items.GOLD_INGOT, Utils.generateComponents(), 16);
 
-            assertFalse(this.slot.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.slot.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
-            assertEquals(0, this.slot.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertFalse(slot.canInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, slot.tryInsert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
+            assertEquals(0, slot.insert(Items.GOLD_INGOT, Utils.generateComponents(), 16));
 
-            assertEquals(this.slot.getAmount(), 16);
+            assertEquals(slot.getAmount(), 16);
         }
     }
 
-    public static final class InsertionSuccessTests extends ItemResourceSlotInsertionTests {
+    @Nested
+    final class InsertionSuccessTests {
         @Test
         public void empty() {
-            assertTrue(this.slot.canInsert(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.slot.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(16, this.slot.insert(Items.GOLD_INGOT, 16));
+            assertTrue(slot.canInsert(Items.GOLD_INGOT, 16));
+            assertEquals(16, slot.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(16, slot.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(16, this.slot.getAmount());
+            assertEquals(16, slot.getAmount());
         }
 
         @Test
         public void toCapacity() {
-            assertTrue(this.slot.canInsert(Items.GOLD_INGOT, CAPACITY));
-            assertEquals(CAPACITY, this.slot.tryInsert(Items.GOLD_INGOT, CAPACITY));
-            assertEquals(CAPACITY, this.slot.insert(Items.GOLD_INGOT, CAPACITY));
+            assertTrue(slot.canInsert(Items.GOLD_INGOT, CAPACITY));
+            assertEquals(CAPACITY, slot.tryInsert(Items.GOLD_INGOT, CAPACITY));
+            assertEquals(CAPACITY, slot.insert(Items.GOLD_INGOT, CAPACITY));
 
-            assertEquals(CAPACITY, this.slot.getAmount());
+            assertEquals(CAPACITY, slot.getAmount());
         }
 
         @Test
         public void overCapacity() {
-            assertEquals(CAPACITY, this.slot.tryInsert(Items.GOLD_INGOT, CAPACITY + 8));
-            assertEquals(CAPACITY, this.slot.insert(Items.GOLD_INGOT, CAPACITY + 8));
+            assertEquals(CAPACITY, slot.tryInsert(Items.GOLD_INGOT, CAPACITY + 8));
+            assertEquals(CAPACITY, slot.insert(Items.GOLD_INGOT, CAPACITY + 8));
 
-            assertEquals(CAPACITY, this.slot.getAmount());
+            assertEquals(CAPACITY, slot.getAmount());
         }
 
         @Test
         public void preFill() {
-            this.slot.set(Items.GOLD_INGOT, 16);
-            assertTrue(this.slot.canInsert(Items.GOLD_INGOT, 48));
-            assertEquals(48, this.slot.tryInsert(Items.GOLD_INGOT, 48));
-            assertEquals(48, this.slot.insert(Items.GOLD_INGOT, 48));
+            slot.set(Items.GOLD_INGOT, 16);
+            assertTrue(slot.canInsert(Items.GOLD_INGOT, 48));
+            assertEquals(48, slot.tryInsert(Items.GOLD_INGOT, 48));
+            assertEquals(48, slot.insert(Items.GOLD_INGOT, 48));
 
-            assertEquals(16 + 48, this.slot.getAmount());
+            assertEquals(16 + 48, slot.getAmount());
         }
 
         @Test
         public void preFill_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.slot.set(Items.GOLD_INGOT, components, 16);
-            assertTrue(this.slot.canInsert(Items.GOLD_INGOT, components, 48));
-            assertEquals(48, this.slot.tryInsert(Items.GOLD_INGOT, components, 48));
-            assertEquals(48, this.slot.insert(Items.GOLD_INGOT, components, 48));
+            slot.set(Items.GOLD_INGOT, components, 16);
+            assertTrue(slot.canInsert(Items.GOLD_INGOT, components, 48));
+            assertEquals(48, slot.tryInsert(Items.GOLD_INGOT, components, 48));
+            assertEquals(48, slot.insert(Items.GOLD_INGOT, components, 48));
 
-            assertEquals(16 + 48, this.slot.getAmount());
+            assertEquals(16 + 48, slot.getAmount());
         }
 
         @Test
         public void preFill_overCapacity() {
-            this.slot.set(Items.GOLD_INGOT, 50);
-            assertEquals(14, this.slot.tryInsert(Items.GOLD_INGOT, 16));
-            assertEquals(14, this.slot.insert(Items.GOLD_INGOT, 16));
+            slot.set(Items.GOLD_INGOT, 50);
+            assertEquals(14, slot.tryInsert(Items.GOLD_INGOT, 16));
+            assertEquals(14, slot.insert(Items.GOLD_INGOT, 16));
 
-            assertEquals(CAPACITY, this.slot.getAmount());
+            assertEquals(CAPACITY, slot.getAmount());
         }
 
         @Test
         public void preFill_overCapacity_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.slot.set(Items.GOLD_INGOT, components, 50);
-            assertEquals(14, this.slot.tryInsert(Items.GOLD_INGOT, components, 16));
-            assertEquals(14, this.slot.insert(Items.GOLD_INGOT, components, 16));
+            slot.set(Items.GOLD_INGOT, components, 50);
+            assertEquals(14, slot.tryInsert(Items.GOLD_INGOT, components, 16));
+            assertEquals(14, slot.insert(Items.GOLD_INGOT, components, 16));
 
-            assertEquals(CAPACITY, this.slot.getAmount());
+            assertEquals(CAPACITY, slot.getAmount());
         }
     }
 }

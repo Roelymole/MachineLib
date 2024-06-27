@@ -71,7 +71,7 @@ public final class TankImpl implements Tank {
     }
 
     @Override
-    public @Nullable DataComponentPatch getComponents() {
+    public @NotNull DataComponentPatch getComponents() {
         return this.slot.getComponents();
     }
 
@@ -92,7 +92,11 @@ public final class TankImpl implements Tank {
 
     @Override
     public FluidVariant createVariant() {
-        return this.getFluid() == null ? FluidVariant.blank() : FluidVariant.of(this.getFluid(), this.getComponents() == null ? DataComponentPatch.EMPTY : this.getComponents());
+        if (this.getFluid() == null) {
+            return FluidVariant.blank();
+        } else {
+            return FluidVariant.of(this.getFluid(), this.getComponents());
+        }
     }
 
     @Override

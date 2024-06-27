@@ -30,8 +30,18 @@ import java.util.function.Supplier;
 
 /**
  * Represents an object that can be (de)serialized from a packet.
+ *
+ * @param <B> the type of buffer to use
  */
 public interface PacketSerializable<B extends ByteBuf> {
+    /**
+     * Creates a codec for a packet-serializable object.
+     *
+     * @param constructor the constructor for the object to create
+     * @param <B> the type of buffer to use
+     * @param <T> the type of object to create
+     * @return a codec for the object
+     */
     static <B extends ByteBuf, T extends PacketSerializable<B>> StreamCodec<B, T> createCodec(@NotNull Supplier<@NotNull T> constructor) {
         return new StreamCodec<>() {
             @Override

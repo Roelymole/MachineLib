@@ -22,8 +22,22 @@
 
 package dev.galacticraft.machinelib.api.misc;
 
+/**
+ * Represents an object that can be compared to some other object.
+ * @param <T> the type of object to compare to. Does not have to be the same as the implementing class.
+ */
 public interface Equivalent<T> {
+    /**
+     * Checks if this object has changed from the previous state.
+     *
+     * @param previous the previous state of this object
+     * @return {@code true} if this object has changed, {@code false} otherwise
+     */
     boolean hasChanged(T previous);
 
+    /**
+     * Copies the state of this object into another object.
+     * @param other the object to copy into
+     */
     void copyInto(T other);
 }

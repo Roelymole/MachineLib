@@ -27,8 +27,7 @@ package dev.galacticraft.machinelib.api.misc;
  */
 public interface Modifiable {
     /**
-     * Returns the number of times this object has been modified.
-     * @return the number of times this object has been modified.
+     * {@return the number of times this object has been modified}
      */
     long getModifications();
 }

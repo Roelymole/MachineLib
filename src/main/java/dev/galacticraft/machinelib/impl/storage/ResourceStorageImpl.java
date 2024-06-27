@@ -23,7 +23,6 @@
 package dev.galacticraft.machinelib.impl.storage;
 
 import com.google.common.collect.Iterators;
-import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -56,11 +55,6 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     @Override
     public @NotNull Slot getSlot(int slot) {
         return this.slots[slot];
-    }
-
-    @Override
-    public @NotNull ResourceFilter<Resource> getStrictFilter(int slot) {
-        return this.slots[slot].getFilter();
     }
 
     @NotNull

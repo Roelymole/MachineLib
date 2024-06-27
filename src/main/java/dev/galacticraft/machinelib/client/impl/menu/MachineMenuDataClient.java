@@ -20,12 +20,38 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.api.menu.sync;
+package dev.galacticraft.machinelib.client.impl.menu;
 
-import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.menu.MachineMenuData;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
-public interface MenuSyncReceiver<Machine extends MachineBlockEntity, Menu extends MachineMenu<? super Machine>> {
-    void receive(Menu menu, RegistryFriendlyByteBuf buf);
+public class MachineMenuDataClient extends MachineMenuData {
+    @Override
+    public void synchronize() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void synchronizeFull() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void handle(RegistryFriendlyByteBuf buf) {
+        int n = buf.readByte();
+
+        if (n == this.data.size()) {
+            for (int i = 0; i < n; i++) {
+                var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(i);
+                key.readPacket(buf);
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                int index = buf.readByte();
+                var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(index);
+                key.readDeltaPacket(buf);
+            }
+        }
+    }
 }

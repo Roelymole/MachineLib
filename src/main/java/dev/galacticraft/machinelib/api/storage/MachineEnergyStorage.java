@@ -24,9 +24,9 @@ package dev.galacticraft.machinelib.api.storage;
 
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedEnergyStorage;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Modifiable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
-import dev.galacticraft.machinelib.api.misc.Modifiable;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.impl.storage.EmptyMachineEnergyStorage;
 import dev.galacticraft.machinelib.impl.storage.MachineEnergyStorageImpl;
@@ -34,6 +34,7 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.LongTag;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,15 +45,42 @@ import team.reborn.energy.api.EnergyStorage;
  * The flow of energy is not restricted here, use {@link #getExposedStorage(ResourceFlow)} if you need filtering.
  *
  * @see ExposedEnergyStorage
- * @see team.reborn.energy.api.EnergyStorage
+ * @see EnergyStorage
  */
 public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTag>, PacketSerializable<ByteBuf>, DeltaPacketSerializable<ByteBuf, long[]>, Modifiable {
 
+    /**
+     * {@return an energy storage with a capacity of zero}
+     */
     @Contract(pure = true)
     static @NotNull MachineEnergyStorage empty() {
         return EmptyMachineEnergyStorage.INSTANCE;
     }
 
+    /**
+     * Creates a new energy storage.
+     *
+     * @param energyCapacity The capacity of the energy storage
+     * @param ioRate The maximum amount of energy that can be inserted or extracted per tick
+     * @param externalInsertion Whether the energy storage can be inserted into from outside
+     * @param externalExtraction Whether the energy storage can be extracted from outside
+     * @return The newly created energy storage
+     */
+    @Contract(pure = true)
+    static @NotNull MachineEnergyStorage create(long energyCapacity, long ioRate, boolean externalInsertion, boolean externalExtraction) {
+        return create(energyCapacity, ioRate, ioRate, externalInsertion, externalExtraction);
+    }
+
+    /**
+     * Creates a new energy storage.
+     *
+     * @param energyCapacity the capacity of the energy storage
+     * @param insertion the maximum amount of energy that can be inserted per tick
+     * @param extraction the maximum amount of energy that can be extracted per tick
+     * @param externalInsertion whether the energy storage can be inserted into from outside
+     * @param externalExtraction whether the energy storage can be extracted from outside
+     * @return the newly created energy storage
+     */
     @Contract(pure = true)
     static @NotNull MachineEnergyStorage create(long energyCapacity, long insertion, long extraction, boolean externalInsertion, boolean externalExtraction) {
         if (energyCapacity == 0 || insertion == 0 || extraction == 0) return empty();
@@ -64,29 +92,58 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
         return new MachineEnergyStorageImpl(energyCapacity, insertion, extraction, externalInsertion, externalExtraction);
     }
 
-    @Contract(pure = true)
-    static @NotNull MachineEnergyStorage create(long energyCapacity, long ioRate, boolean externalInsertion, boolean externalExtraction) {
-        if (energyCapacity == 0 || ioRate == 0) return empty();
-
-        StoragePreconditions.notNegative(energyCapacity);
-        StoragePreconditions.notNegative(ioRate);
-        return new MachineEnergyStorageImpl(energyCapacity, ioRate, ioRate, externalInsertion, externalExtraction);
-    }
-
+    /**
+     * {@return whether the given amount of energy can be extracted}
+     */
     boolean canExtract(long amount);
 
+    /**
+     * {@return whether the given amount of energy can be inserted}
+     */
     boolean canInsert(long amount);
 
+    /**
+     * {@return the amount of energy that can be extracted}
+     */
     long tryExtract(long amount);
 
+    /**
+     * {@return the amount of energy that can be inserted}
+     */
     long tryInsert(long amount);
 
+    /**
+     * Extracts the given amount of energy from the storage.
+     *
+     * @param amount the amount of energy to extract
+     * @return the amount of energy that was actually extracted
+     */
     long extract(long amount);
 
+    /**
+     * Inserts the given amount of energy into the storage.
+     *
+     * @param amount the amount of energy to insert
+     * @return the amount of energy that was actually inserted
+     */
     long insert(long amount);
 
+    /**
+     * Extracts the given amount of energy from the storage.
+     * If there is not enough energy, nothing is extracted.
+     *
+     * @param amount the amount of energy to extract
+     * @return whether the exact amount of energy was extracted
+     */
     boolean extractExact(long amount);
 
+    /**
+     * Inserts the given amount of energy into the storage.
+     * If there is not enough space, nothing is inserted.
+     *
+     * @param amount the amount of energy to insert
+     * @return whether the exact amount of energy was inserted
+     */
     boolean insertExact(long amount);
 
     @Override
@@ -96,18 +153,14 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
     long insert(long amount, @NotNull TransactionContext transaction);
 
     /**
-     * Returns whether the energy storage is full (cannot insert more energy).
-     * An energy storage can be both full and empty at the same time.
-     *
-     * @return Whether the energy storage is full
+     * {@return whether the energy storage is full}
+     * An energy storage with a capacity of zero can be both full and empty at the same time.
      */
     boolean isFull();
 
     /**
-     * Returns whether the energy storage is empty (contains no energy).
+     * {@return whether the energy storage is empty}
      * An energy storage can be both full and empty at the same time.
-     *
-     * @return Whether the energy storage is empty
      */
     boolean isEmpty();
 
@@ -121,21 +174,31 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
 
     /**
      * Sets the energy stored to the given amount.
+     *
      * @param amount The amount of energy to set the energy stored to
      */
     void setEnergy(long amount);
 
     /**
-     * Returns an exposed energy storage that has restricted input and output.
+     * {@return a new exposed energy storage}
      *
      * @param flow The resource flow
-     * @return The exposed energy storage
      */
     @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow);
 
+    /**
+     * {@return whether exposed storages can be inserted into}
+     */
     boolean canExposedInsert();
 
+    /**
+     * {@return whether exposed storages can be extracted from}
+     */
     boolean canExposedExtract();
 
+    /**
+     * Sets the listener (called when the energy storage changes). Internal use only.
+     */
+    @ApiStatus.Internal
     void setListener(Runnable listener);
 }

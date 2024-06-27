@@ -40,15 +40,15 @@ public enum ResourceFlow implements StringRepresentable {
     /**
      * Resources can flow into the machine.
      */
-    INPUT(Component.translatable(Constant.TranslationKey.IN).setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN))),
+    INPUT(0b01, Component.translatable(Constant.TranslationKey.IN).setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN))),
     /**
      * Resources can flow out of the machine.
      */
-    OUTPUT(Component.translatable(Constant.TranslationKey.OUT).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_RED))),
+    OUTPUT(0b10, Component.translatable(Constant.TranslationKey.OUT).setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_RED))),
     /**
      * Resources can flow into and out of the machine.
      */
-    BOTH(Component.translatable(Constant.TranslationKey.BOTH).setStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)));
+    BOTH(0b11, Component.translatable(Constant.TranslationKey.BOTH).setStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)));
 
     /**
      * do not mutate.
@@ -62,14 +62,17 @@ public enum ResourceFlow implements StringRepresentable {
      * The text of the flow direction.
      */
     private final @NotNull Component name;
+    private final int id;
 
     /**
      * Creates a new resource flow.
      *
+     * @param id
      * @param name The text of the flow direction.
      */
     @Contract(pure = true)
-    ResourceFlow(@NotNull Component name) {
+    ResourceFlow(int id, @NotNull Component name) {
+        this.id = id;
         this.name = name;
     }
 
@@ -77,10 +80,22 @@ public enum ResourceFlow implements StringRepresentable {
         return VALUES[ordinal];
     }
 
+    public static ResourceFlow getFromId(byte id) {
+        return switch (id) {
+//            case 0b00 -> null;
+            case 0b01 -> INPUT;
+            case 0b10 -> OUTPUT;
+            case 0b11 -> BOTH;
+            default -> throw new IllegalArgumentException("Invalid id: " + id);
+        };
+    }
+
+    public int getId() {
+        return id;
+    }
+
     /**
-     * Returns the name of the flow direction.
-     *
-     * @return The text of the flow direction.
+     * {@return The name of the flow direction}
      */
     @Contract(pure = true)
     public @NotNull Component getName() {
@@ -88,10 +103,7 @@ public enum ResourceFlow implements StringRepresentable {
     }
 
     /**
-     * Returns whether this flow can flow into the given flow.
-     *
-     * @param flow The flow to check.
-     * @return Whether this flow can flow into the given flow.
+     * {@return whether this flow can flow in the direction of the given flow}.
      */
     @Contract(pure = true)
     public boolean canFlowIn(ResourceFlow flow) {

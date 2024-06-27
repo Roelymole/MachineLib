@@ -40,21 +40,19 @@ import java.util.Objects;
  * Stores the state of a machine.
  */
 public class MachineState implements Serializable<CompoundTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, MachineState> {
+    /**
+     * The current status of the machine.
+     */
     protected @Nullable MachineStatus status = null;
-    protected boolean powered;
+    /**
+     * The current redstone power state of the machine.
+     */
+    protected boolean powered = false;
 
-    public MachineState() {
-        this(false);
-    }
-
-    public MachineState(boolean powered) {
-        this.powered = powered;
-    }
+    public MachineState() {}
 
     /**
-     * Returns the current status of the machine. Can be null if not set.
-     *
-     * @return the current status of the machine.
+     * {@return the current status of the machine} Can be null if not set.
      */
     public @Nullable MachineStatus getStatus() {
         return this.status;
@@ -84,6 +82,7 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
         other.powered = this.powered;
     }
 
+    @Override
     public void readTag(@NotNull CompoundTag tag) {
         this.powered = tag.getBoolean(Constant.Nbt.POWERED);
     }
@@ -95,9 +94,7 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     }
 
     /**
-     * Returns the name of the current status of the machine or 'disabled' if the machine is currently disabled.
-     *
-     * @return the current status of the machine.
+     * {@return the name of the current status of the machine} Can be 'Disabled' if the machine is currently disabled.
      */
     public @NotNull Component getStatusText(@NotNull RedstoneMode activation) {
         return activation.isActive(this.powered) ? this.status != null ? this.status.getText() : Component.translatable(Constant.TranslationKey.UNKNOWN_STATUS).withStyle(ChatFormatting.GRAY) : Component.translatable(Constant.TranslationKey.DISABLED).withStyle(ChatFormatting.RED);
@@ -115,7 +112,7 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     /**
      * Checks if the machine is currently active (status-wise).
      *
-     * @return true if the machine is active, false otherwise.
+     * @return {@code true} if the machine is active, {@code false} otherwise.
      */
     public boolean isActive() {
         return this.status != null && this.status.getType().isActive();
@@ -124,7 +121,7 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     /**
      * Checks if the machine is currently receiving redstone signal.
      *
-     * @return true if the machine is receiving redstone signal, false otherwise.
+     * @return {@code true} if the machine is receiving redstone signal, {@code false} otherwise.
      */
     public boolean isPowered() {
         return this.powered;

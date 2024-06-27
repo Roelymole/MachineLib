@@ -35,11 +35,12 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public sealed class FluidStorageExtractionTest implements JUnitTest {
+public class FluidStorageExtractionTest implements JUnitTest {
     protected MachineFluidStorage storage;
 
     @BeforeEach
@@ -52,173 +53,175 @@ public sealed class FluidStorageExtractionTest implements JUnitTest {
         assertTrue(((ResourceSlotImpl<?>) this.storage.getSlot(0)).isSane());
     }
 
-    public static final class ExtractionFailureTests extends FluidStorageExtractionTest {
+    @Nested
+    final class ExtractionFailureTests {
         @Test
         public void empty() {
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, FluidConstants.BUCKET));
+            assertFalse(storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, FluidConstants.BUCKET));
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertFalse(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertFalse(storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
 
-            assertFalse(this.storage.extractOne(Fluids.WATER));
+            assertFalse(storage.extractOne(Fluids.WATER));
         }
 
         @Test
         public void incorrectType() {
-            this.storage.getSlot(0).set(Fluids.LAVA, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.LAVA, FluidConstants.BUCKET);
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, FluidConstants.BUCKET));
-            assertFalse(this.storage.extractOne(Fluids.WATER));
+            assertFalse(storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, FluidConstants.BUCKET));
+            assertFalse(storage.extractOne(Fluids.WATER));
 
-            assertFalse(this.storage.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void extractionTag() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertFalse(this.storage.extractOne(Fluids.WATER, Utils.generateComponents()));
+            assertFalse(storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertFalse(storage.extractOne(Fluids.WATER, Utils.generateComponents()));
 
-            assertFalse(this.storage.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void containedTag() {
-            this.storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, null, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, null, FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, null, FluidConstants.BUCKET));
-            assertFalse(this.storage.extractOne(Fluids.WATER, null));
+            assertFalse(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertFalse(storage.extractOne(Fluids.WATER, DataComponentPatch.EMPTY));
 
-            assertFalse(this.storage.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void mismatchedTag() {
-            this.storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
-            assertFalse(this.storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertFalse(this.storage.extractOne(Fluids.WATER, Utils.generateComponents()));
+            assertFalse(storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, storage.extract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertFalse(storage.extractOne(Fluids.WATER, Utils.generateComponents()));
 
-            assertFalse(this.storage.isEmpty());
+            assertFalse(storage.isEmpty());
         }
     }
 
-    public static final class ExtractionSuccessTests extends FluidStorageExtractionTest {
+    @Nested
+    final class ExtractionSuccessTests {
         @Test
         public void exact_typed() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.extract(Fluids.WATER, FluidConstants.BUCKET));
+            assertTrue(storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.extract(Fluids.WATER, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void exact_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, components, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.extract(Fluids.WATER, components, FluidConstants.BUCKET));
+            assertTrue(storage.canExtract(Fluids.WATER, components, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.extract(Fluids.WATER, components, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void exact_typed_emptyNbt() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertTrue(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void excess_typed() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, FluidConstants.BOTTLE));
+            assertTrue(storage.canExtract(Fluids.WATER, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, FluidConstants.BOTTLE));
 
-            assertEquals(this.storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void excess_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, components, FluidConstants.BOTTLE));
+            assertTrue(storage.canExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, components, FluidConstants.BOTTLE));
 
-            assertEquals(this.storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void excess_typed_emptyNbt() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertTrue(this.storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
+            assertTrue(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
 
-            assertEquals(this.storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void insufficient_typed() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
 
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void insufficient_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            this.storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BOTTLE);
+            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BOTTLE);
 
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, components, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, components, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void insufficient_typed_emptyNbt() {
-            this.storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
+            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
 
-            assertEquals(FluidConstants.BOTTLE, this.storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BOTTLE, this.storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
 
-            assertTrue(this.storage.isEmpty());
+            assertTrue(storage.isEmpty());
         }
     }
 }

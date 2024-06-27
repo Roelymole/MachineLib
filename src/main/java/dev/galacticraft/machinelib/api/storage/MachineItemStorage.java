@@ -36,6 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Represents a storage for items in a machine.
+ * @see ResourceStorage
+ */
 public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSlot>, Container {
     static @NotNull MachineItemStorage create(ItemResourceSlot @NotNull ... slots) {
         if (slots.length == 0) return empty();

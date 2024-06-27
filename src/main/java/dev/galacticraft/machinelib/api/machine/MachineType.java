@@ -54,15 +54,33 @@ public interface MachineType<Machine extends MachineBlockEntity, Menu extends Ma
         return new MachineTypeImpl<>(block, blockEntityType, menuType,  energySupplier, itemSupplier, fluidSupplier);
     }
 
+    /**
+     * {@return an energy storage configured for this machine}
+     */
     @NotNull MachineEnergyStorage createEnergyStorage();
 
+    /**
+     * {@return an item storage configured for this machine}
+     */
     @NotNull MachineItemStorage createItemStorage();
 
+    /**
+     * {@return a fluid storage configured for this machine}
+     */
     @NotNull MachineFluidStorage createFluidStorage();
 
+    /**
+     * {@return the block associated with this machine type}
+     */
     @NotNull Block getBlock();
 
+    /**
+     * {@return the menu type associated with this machine type}
+     */
     @NotNull MenuType<Menu> getMenuType();
 
+    /**
+     * {@return the block entity type associated with this machine type}
+     */
     @NotNull BlockEntityType<Machine> getBlockEntityType();
 }

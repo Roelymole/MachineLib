@@ -54,20 +54,69 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
         return new ItemResourceSlotImpl(inputType, display, filter, capacity);
     }
 
+    /**
+     * Consumes one item from the slot.
+     * Similar to {@link #extractOne()} but will replace the item with its remainder.
+     *
+     * @return the item that was consumed, or {@code null} if the slot was empty
+     */
     @Nullable Item consumeOne();
 
+    /**
+     * Consumes one item of the specified type from the slot.
+     * Similar to {@link #extractOne(Object)} but will replace the item with its remainder.
+     *
+     * @param resource the item type to consume
+     * @return {@code true} if the item was consumed, {@code false} otherwise
+     */
     boolean consumeOne(@NotNull Item resource);
 
+    /**
+     * Consumes one item of the specified type and components from the slot.
+     * Similar to {@link #extractOne(Object, DataComponentPatch)} but will replace the item with its remainder.
+     *
+     * @param resource the item type to consume
+     * @param components the components to match. If {@code null}, any components will match
+     * @return {@code true} if the item was consumed, {@code false} otherwise
+     */
     boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components);
 
+    /**
+     * Consumes the specified number of items from the slot.
+     * Similar to {@link #extract(long)} but will replace the item with its remainder.
+     *
+     * @param amount the number of items to consume
+     * @return the number of items that were actually consumed
+     */
     long consume(long amount);
 
+    /**
+     * Consumes the specified number of items of the specified type from the slot.
+     * Similar to {@link #extract(Object, long)} but will replace the item with its remainder.
+     *
+     * @param resource the item type to consume
+     * @param amount the number of items to consume
+     * @return the number of items that were actually consumed
+     */
     long consume(@NotNull Item resource, long amount);
 
-    long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
+    /**
+     * Consumes the specified number of items of the specified type and components from the slot.
+     * Similar to {@link #extract(Object, DataComponentPatch, long)} but will replace the item with its remainder.
+     *
+     * @param resource the item type to consume
+     * @param components the components to match. If {@code null}, any components will match
+     * @param amount the number of items to consume
+     * @return the number of items that were actually consumed
+     */
+    long consume(@NotNull Item resource, @NotNull DataComponentPatch components, long amount);
 
+    /**
+     * {@return the display properties of this slot, or {@code null} if hidden}
+     */
     @Nullable ItemSlotDisplay getDisplay();
 
+    // required to merge ContainerItemContext#getAmount with ResourceSlot#getAmount
     @Override
     long getAmount();
 

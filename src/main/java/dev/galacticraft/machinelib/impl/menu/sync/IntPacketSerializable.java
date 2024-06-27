@@ -20,28 +20,34 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.api.misc;
+package dev.galacticraft.machinelib.impl.menu.sync;
 
-import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import io.netty.buffer.ByteBuf;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * Extension of a mutable object, allowing for the manual marking of modification.
- * @see Modifiable
- */
-@ApiStatus.Internal
-public interface MutableModifiable extends Modifiable {
-    /**
-     * Marks this object as modified within the transaction's lifetime.
-     * Should the transaction be aborted, the modification state will revert itself.
-     *
-     * @param context The transaction context. It can be null if there is no active transaction.
-     */
-    void markModified(@Nullable TransactionContext context);
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
-    /**
-     * Marks this object as modified, incrementing the modification count.
-     */
-    void markModified();
+public record IntPacketSerializable(IntSupplier getter,
+                                    IntConsumer setter) implements DeltaPacketSerializable<ByteBuf, int[]> {
+    @Override
+    public boolean hasChanged(int[] previous) {
+        return previous[0] != this.getter.getAsInt();
+    }
+
+    @Override
+    public void copyInto(int[] other) {
+        other[0] = this.getter.getAsInt();
+    }
+
+    @Override
+    public void readPacket(@NotNull ByteBuf buf) {
+        this.setter.accept(buf.readInt());
+    }
+
+    @Override
+    public void writePacket(@NotNull ByteBuf buf) {
+        buf.writeInt(this.getter.getAsInt());
+    }
 }

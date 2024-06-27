@@ -30,6 +30,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
+/**
+ * Represents a storage for fluids in a machine.
+ * @see ResourceStorage
+ */
 public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourceSlot> {
     static @NotNull MachineFluidStorage create(FluidResourceSlot @NotNull ... slots) {
         if (slots.length == 0) return empty();

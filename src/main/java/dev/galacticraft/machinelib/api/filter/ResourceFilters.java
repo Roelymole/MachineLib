@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.api.filter;
 
-import dev.galacticraft.machinelib.impl.Utils;
 import net.fabricmc.fabric.api.lookup.v1.item.ItemApiLookup;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -48,9 +47,9 @@ public final class ResourceFilters {
     /**
      * A filter that determines if an item can have energy extracted from it.
      */
-    public static final ResourceFilter<Item> CAN_EXTRACT_ENERGY = (item, tag) -> {
+    public static final ResourceFilter<Item> CAN_EXTRACT_ENERGY = (item, components) -> {
         if (item == null) return false;
-        EnergyStorage storage = ContainerItemContext.withConstant(ItemVariant.of(item, tag), 1).find(EnergyStorage.ITEM);
+        EnergyStorage storage = ContainerItemContext.withConstant(ItemVariant.of(item, components), 1).find(EnergyStorage.ITEM);
         if (storage == null || !storage.supportsExtraction()) return false;
         try (Transaction test = Transaction.openNested(Transaction.getCurrentUnsafe())) { // SAFE: the transaction is immediately canceled
             if (storage.extract(1, test) == 1) return true;
@@ -61,9 +60,9 @@ public final class ResourceFilters {
     /**
      * A filter that determines if an item can have energy inserted into it.
      */
-    public static final ResourceFilter<Item> CAN_INSERT_ENERGY = (item, tag) -> {
+    public static final ResourceFilter<Item> CAN_INSERT_ENERGY = (item, components) -> {
         if (item == null) return false;
-        EnergyStorage storage = ContainerItemContext.withConstant(ItemVariant.of(item, tag), 1).find(EnergyStorage.ITEM);
+        EnergyStorage storage = ContainerItemContext.withConstant(ItemVariant.of(item, components), 1).find(EnergyStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) return false;
         try (Transaction test = Transaction.openNested(Transaction.getCurrentUnsafe())) { // SAFE: the transaction is immediately canceled
             if (storage.insert(1, test) == 1) return true;
@@ -74,12 +73,12 @@ public final class ResourceFilters {
     /**
      * A constant filter that matches any resource.
      */
-    private static final ResourceFilter<?> ANY = (resource, tag) -> true;
+    private static final ResourceFilter<?> ANY = (resource, components) -> true;
 
     /**
      * A constant filter that rejects all resources.
      */
-    private static final ResourceFilter<?> NONE = (resource, tag) -> false;
+    private static final ResourceFilter<?> NONE = (resource, components) -> false;
 
     /**
      * This class cannot be instantiated as it only provides static utility methods.
@@ -96,8 +95,8 @@ public final class ResourceFilters {
      * @param <Resource> The type of the resource being filtered.
      * @return A resource filter that checks the resource's components.
      */
-    public static <Resource> @NotNull ResourceFilter<Resource> ofComponents(DataComponentPatch components) {
-        return (resource, tag1) -> Utils.componentsEqual(components, tag1);
+    public static <Resource> @NotNull ResourceFilter<Resource> ofComponents(@NotNull DataComponentPatch components) {
+        return (resource, components1) -> components1.equals(components);
     }
 
     /**
@@ -113,7 +112,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static <Resource> @NotNull ResourceFilter<Resource> ofResource(@NotNull Resource resource, @Nullable DataComponentPatch components) {
-        return (r, t) -> r == resource && Utils.componentsEqual(t, components);
+        return (r, t) -> r == resource && (components == null || components.equals(t));
     }
 
     /**
@@ -126,7 +125,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static <Resource> @NotNull ResourceFilter<Resource> ofResource(@NotNull Resource resource) {
-        return (r, tag) -> r == resource;
+        return (r, components) -> r == resource;
     }
 
     /**
@@ -152,7 +151,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Item> itemTag(@NotNull TagKey<Item> tag, @Nullable DataComponentPatch components) {
-        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(componentsC, components);
+        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && (components == null || components.equals(componentsC));
     }
 
     /**
@@ -177,7 +176,7 @@ public final class ResourceFilters {
      */
     @Contract(pure = true)
     public static @NotNull ResourceFilter<Fluid> fluidTag(@NotNull TagKey<Fluid> tag, @Nullable DataComponentPatch components) {
-        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && Utils.componentsEqual(componentsC, components);
+        return (r, componentsC) -> r != null && r.builtInRegistryHolder().is(tag) && (components == null || components.equals(componentsC));
     }
 
     /**
@@ -308,10 +307,9 @@ public final class ResourceFilters {
     }
 
     /**
-     * Returns a resource filter that accepts any resource.
+     * {@return a resource filter that accepts any resource}
      *
      * @param <Resource> The type of resource to be filtered.
-     * @return A resource filter that accepts any resource.
      */
     @Contract(pure = true)
     public static <Resource> @NotNull ResourceFilter<Resource> any() {
@@ -319,49 +317,43 @@ public final class ResourceFilters {
     }
 
     /**
-     * Returns a resource filter that rejects all resources.
+     * {@return a resource filter that rejects all resources}
      *
      * @param <Resource> The type of resource to be filtered.
-     * @return A resource filter that rejects all resources.
      */
     public static <Resource> @NotNull ResourceFilter<Resource> none() {
         return (ResourceFilter<Resource>) NONE;
     }
 
     /**
-     * Returns a resource filter that rejects resources that pass the given filter.
+     * {@return a resource filter that rejects resources that pass the given filter}
      *
      * @param filter The filter to apply.
      * @param <Resource> The type of resource to be filtered.
-     * @return A resource filter that rejects resources that pass the given filter.
      */
     public static <Resource> @NotNull ResourceFilter<Resource> not(ResourceFilter<Resource> filter) {
-        return (resource, tag) -> !filter.test(resource, tag);
+        return (resource, components) -> !filter.test(resource, components);
     }
 
     /**
-     * Returns a resource filter that applies two filters to a resource,
-     * and only accepts resources that pass both filters.
+     * {@return a resource filter that applies two filters to a resource, and only accepts resources that pass both filters}
      *
      * @param a The first filter to apply.
      * @param b The second filter to apply.
      * @param <Resource> The type of resource to be filtered.
-     * @return A resource filter that applies both filters to a resource, and only accepts resources that pass both filters.
      */
     public static <Resource> @NotNull ResourceFilter<Resource> and(ResourceFilter<Resource> a, ResourceFilter<Resource> b) {
-        return (resource, tag) -> a.test(resource, tag) && b.test(resource, tag);
+        return (resource, components) -> a.test(resource, components) && b.test(resource, components);
     }
 
     /**
-     * Returns a resource filter that applies two filters to a resource,
-     * and accepts resources that pass either of the filters.
+     * {@return a resource filter that applies both filters to a resource, and accepts resources that pass either of the filters}
      *
      * @param a The first filter to apply.
      * @param b The second filter to apply.
      * @param <Resource> The type of resource to be filtered.
-     * @return A resource filter that applies both filters to a resource, and accepts resources that pass either of the filters.
      */
     public static <Resource> @NotNull ResourceFilter<Resource> or(ResourceFilter<Resource> a, ResourceFilter<Resource> b) {
-        return (resource, tag) -> a.test(resource, tag) || b.test(resource, tag);
+        return (resource, components) -> a.test(resource, components) || b.test(resource, components);
     }
 }

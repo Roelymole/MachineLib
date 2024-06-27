@@ -30,25 +30,25 @@ import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
-import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import team.reborn.energy.api.EnergyStorage;
 
 /**
  * Represents a face of a {@link MachineBlockEntity} that has been configured to
  * accept certain types of resources.
  */
-public class MachineIOFace implements Serializable<CompoundTag>, PacketSerializable<ByteBuf>, Equivalent<MachineIOFace> {
-    public static final StreamCodec<ByteBuf, MachineIOFace> CODEC = PacketSerializable.createCodec(MachineIOFace::new);
+public class IoFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf>, Equivalent<IoFace> {
+    public static final StreamCodec<ByteBuf, IoFace> CODEC = PacketSerializable.createCodec(IoFace::new);
 
     /**
      * The type of resource that this face is configured to accept.
@@ -59,11 +59,11 @@ public class MachineIOFace implements Serializable<CompoundTag>, PacketSerializa
      */
     protected @NotNull ResourceFlow flow;
 
-    public MachineIOFace() {
+    public IoFace() {
         this(ResourceType.NONE, ResourceFlow.BOTH);
     }
 
-    public MachineIOFace(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
+    public IoFace(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
         this.type = type;
         this.flow = flow;
     }
@@ -94,41 +94,54 @@ public class MachineIOFace implements Serializable<CompoundTag>, PacketSerializa
     }
 
     @Override
-    public @NotNull CompoundTag createTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putByte(Constant.Nbt.FLOW, (byte) this.flow.ordinal());
-        tag.putByte(Constant.Nbt.RESOURCE, (byte) this.type.ordinal());
-
-        return tag;
+    public @NotNull ByteTag createTag() {
+        return ByteTag.valueOf(pack(this.type, this.flow));
     }
 
     @Override
-    public void readTag(@NotNull CompoundTag tag) {
-        this.type = ResourceType.getFromOrdinal(tag.getByte(Constant.Nbt.RESOURCE));
-        this.flow = ResourceFlow.getFromOrdinal(tag.getByte(Constant.Nbt.FLOW));
+    public void readTag(@NotNull ByteTag tag) {
+        byte packed = tag.getAsByte();
+        this.type = unpackType(packed);
+        this.flow = unpackFlow(packed);
     }
 
     @Override
     public void writePacket(@NotNull ByteBuf buf) {
-        buf.writeByte(this.type.ordinal()).writeByte(this.flow.ordinal());
+        buf.writeByte(pack(this.type, this.flow));
     }
 
     @Override
     public void readPacket(@NotNull ByteBuf buf) {
-        this.type = ResourceType.getFromOrdinal(buf.readByte());
-        this.flow = ResourceFlow.getFromOrdinal(buf.readByte());
+        byte packed = buf.readByte();
+        this.type = unpackType(packed);
+        this.flow = unpackFlow(packed);
     }
 
     @Override
-    public boolean hasChanged(@NotNull MachineIOFace previous) {
+    public boolean hasChanged(@NotNull IoFace previous) {
         return previous.type != this.type
                 || previous.flow != this.flow;
     }
 
     @Override
-    public void copyInto(@NotNull MachineIOFace other) {
+    public void copyInto(@NotNull IoFace other) {
         other.type = this.type;
         other.flow = this.flow;
+    }
+
+    @VisibleForTesting
+    public static byte pack(ResourceType type, ResourceFlow flow) {
+        return (byte) (flow.getId() << 3 | type.getId());
+    }
+
+    @VisibleForTesting
+    public static ResourceFlow unpackFlow(byte packed) {
+        return ResourceFlow.getFromId((byte) (packed >> 3));
+    }
+
+    @VisibleForTesting
+    public static ResourceType unpackType(byte packed) {
+        return ResourceType.getFromId((byte) (packed & 0b111));
     }
 
     @FunctionalInterface

@@ -48,7 +48,15 @@ public enum AccessLevel implements StringRepresentable {
      */
     PRIVATE(Component.translatable(Constant.TranslationKey.PRIVATE_ACCESS));
 
+    /**
+     * All the values of this enum.
+     * Do not modify this array.
+     */
     public static final AccessLevel[] VALUES = AccessLevel.values();
+
+    /**
+     * The stream codec for this enum. Allows for {@code null} values.
+     */
     public static final StreamCodec<ByteBuf, AccessLevel> CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : VALUES[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**
@@ -56,6 +64,10 @@ public enum AccessLevel implements StringRepresentable {
      */
     private final @NotNull Component name;
 
+    /**
+     * Constructs a new access level.
+     * @param name the name of the access level
+     */
     @Contract(pure = true)
     AccessLevel(@NotNull Component name) {
         this.name = name;
@@ -79,19 +91,16 @@ public enum AccessLevel implements StringRepresentable {
     }
 
     /**
-     * Returns the access level corresponding to the given ordinal value.
+     * {@return the access level corresponding to the given ordinal value}
      *
      * @param ordinal the ordinal value of the access level
-     * @return the access level corresponding to the given ordinal value
      */
     public static @NotNull AccessLevel getByOrdinal(byte ordinal) {
         return VALUES[ordinal];
     }
 
     /**
-     * Returns the name of the access level.
-     *
-     * @return The text of the access level.
+     * {@return the name of the access level}
      */
     @Contract(pure = true)
     public @NotNull Component getName() {

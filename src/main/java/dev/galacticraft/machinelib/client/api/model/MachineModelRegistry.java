@@ -24,8 +24,8 @@ package dev.galacticraft.machinelib.client.api.model;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
+import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.util.BlockFace;
-import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -59,10 +59,9 @@ public interface MachineModelRegistry {
     }
 
     /**
-     * Returns the registered sprite provider for a block.
+     * {@return the registered provider, or null if none is registered}
      *
      * @param providerId The provider id to get the provider for.
-     * @return The registered provider, or null if none is registered.
      */
     static @Nullable SpriteProviderFactory getProviderFactory(@NotNull ResourceLocation providerId) {
         return FACTORIES.get(providerId);

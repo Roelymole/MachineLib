@@ -35,10 +35,18 @@ import java.util.function.Supplier;
 /**
  * Represents an object that can be deserialized from a specific tag or a packet.
  *
- * @param <T> the type of tag used for deserialization
+ * @param <T> the type of NBT tag used for deserialization
  * @see Serializable
  */
 public interface Serializable<T extends Tag> {
+    /**
+     * Creates a codec for a serializable object.
+     *
+     * @param factory the factory for the object to create
+     * @param <T> the type of tag to use
+     * @param <S> the type of object to create
+     * @return a codec for this type of object
+     */
     static <T extends Tag, S extends Serializable<T>> Codec<S> createCodec(@NotNull Supplier<S> factory) {
         return new Codec<>() {
             @Override
@@ -64,13 +72,14 @@ public interface Serializable<T extends Tag> {
      * Serializes this object as a tag.
      *
      * @return the created tag
+     * @see #readTag(Tag)
      */
     @NotNull T createTag();
 
     /**
      * Deserializes this object's state from a tag.
      *
-     * @param tag the tag to be read.
+     * @param tag the tag to be read
      * @see #createTag()
      */
     void readTag(@NotNull T tag);

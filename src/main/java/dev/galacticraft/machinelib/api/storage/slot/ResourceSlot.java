@@ -23,55 +23,132 @@
 package dev.galacticraft.machinelib.api.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
+import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
-import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// NO I/O CONSTRAINTS
-// Resource must be comparable by identity
-// FILTER DOES NOT INCLUDE NULL/EMPTY
+/**
+ * A slot that can store multiple of a single instance of resource (e.g., sticks).
+ * <br>
+ * There are no i/o restrictions on this slot,
+ * meaning that any resources can be inserted or extracted regardless of filter.
+ *
+ * @param <Resource> The type of resource (e.g., item) this slot can store. Must be comparable by identity.
+ * @see StorageAccess
+ */
 public interface ResourceSlot<Resource> extends StorageAccess<Resource>, MutableModifiable, Serializable<CompoundTag>, PacketSerializable<RegistryFriendlyByteBuf> {
+    /**
+     * The type of input this slot accepts.
+     * Governs in-world and player interactions.
+     *
+     * @return the type of input this slot accepts.
+     */
     InputType inputType();
 
+    /**
+     * {@return the resource stored in this slot} If the slot is empty, returns null.
+     */
     @Nullable Resource getResource();
 
+    /**
+     * {@return the amount of the resource stored in this slot} If the slot is empty, returns 0.
+     */
     long getAmount();
 
-    @Nullable DataComponentPatch getComponents();
+    /**
+     * {@return the components of the resource stored in this slot} If the slot is empty, returns an empty patch.
+     */
+    @NotNull DataComponentPatch getComponents();
 
+    /**
+     * {@return the capacity of this slot} The real capacity may smaller if the resource stored has a smaller capacity.
+     */
     long getCapacity();
 
-    long getCapacityFor(@NotNull Resource resource);
+    /**
+     * {@return the capacity of this slot for a specific resource}
+     *
+     * @param resource The resource to check the capacity of.
+     * @param components The components of the resource to check the capacity of.
+     */
+    long getCapacityFor(@NotNull Resource resource, @NotNull DataComponentPatch components);
 
+    /**
+     * {@return The current capacity of this slot}
+     */
     long getRealCapacity();
 
+    /**
+     * {@return the filter for this slot} The filter determines what resources can be stored in this slot.
+     * The filter may fail on empty ({@code null}) resource types, and it is possible
+     * for the storage to contain values that fail this filter.
+     *
+     * @see ResourceFilter
+     */
     @NotNull ResourceFilter<Resource> getFilter();
 
-    boolean contains(@NotNull Resource resource);
-
-    boolean contains(@NotNull Resource resource, @Nullable DataComponentPatch components);
-
+    /**
+     * {@return whether this slot contains more than the given amount of the resource}
+     *
+     * @param amount The amount to check against.
+     */
     boolean canExtract(long amount);
 
+    /**
+     * {@return the amount of resources that can be extracted from this slot} Does not extract the resources.
+     *
+     * @param amount The maximum amount to extract.
+     */
     long tryExtract(long amount);
 
+    /**
+     * Extracts a single resource from this slot. Note that the components of the resource are not returned.
+     *
+     * @return the extracted resource, or {@code null} if the slot is empty.
+     */
     @Nullable Resource extractOne();
 
+    /**
+     * Extracts the given amount of resources from this slot. Note that the components of the resource are not returned.
+     *
+     * @param amount The amount to extract.
+     * @return the amount of resources extracted.
+     */
     long extract(long amount);
 
-    @Contract("null, !null, _ -> fail")
-    void set(@Nullable Resource resource, @Nullable DataComponentPatch components, long amount);
+    /**
+     * Sets the resource stored in this slot to the given resource and amount.
+     * Does not increment the modification counter.
+     * Equivalent to {@link #set(Object, DataComponentPatch, long)} but assumes an empty component patch.
+     *
+     * @param resource The resource to set.
+     * @param amount The amount of the resource to set.
+     */
     void set(@Nullable Resource resource, long amount);
 
+    /**
+     * Sets the resource stored in this slot to the given resource, components, and amount.
+     * Does not increment the modification counter.
+     *
+     * @param resource The resource to set.
+     * @param components The components of the resource to set.
+     * @param amount The amount of the resource to set.
+     */
+    void set(@Nullable Resource resource, @NotNull DataComponentPatch components, long amount);
+
+    /**
+     * Sets the parent of this slot. For internal use only.
+     *
+     * @param parent The parent to set.
+     */
     @ApiStatus.Internal
     void _setParent(MutableModifiable parent);
 }

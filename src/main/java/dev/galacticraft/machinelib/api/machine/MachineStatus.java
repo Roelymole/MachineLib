@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents the status of a machine.
+ * @see MachineStatuses
  */
 public interface MachineStatus {
     /**
@@ -62,16 +63,12 @@ public interface MachineStatus {
     }
 
      /**
-     * Returns the name of the machine status.
-     *
-     * @return The text of the machine status.
+     * {@return the name of the machine status}
      */
     @NotNull Component getText();
 
     /**
-     * Returns the type of the machine status.
-     *
-     * @return The type of the machine status.
+     * {@return the type of the machine status}
      */
     @NotNull MachineStatus.Type getType();
 
@@ -152,9 +149,7 @@ public interface MachineStatus {
         }
 
         /**
-         * Returns whether the machine should be considered to be generating resources.
-         *
-         * @return whether the machine should be considered to be generating resources.
+         * {@return whether the machine should be considered to be working}
          */
         @Contract(pure = true)
         public boolean isActive() {

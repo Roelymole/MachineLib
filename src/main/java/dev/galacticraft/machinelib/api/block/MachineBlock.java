@@ -38,14 +38,17 @@ import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.block.entity.MachineBlockEntityTicker;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -84,7 +87,7 @@ import java.util.function.Supplier;
 /**
  * The base block for all machines.
  *
- * @see MachineBlockEntity
+ * @param <Machine> The machine block entity attached to this block.
  */
 public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntityBlock {
     public static final MapCodec<MachineBlock<? extends MachineBlockEntity>> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -256,9 +259,9 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     }
 
     @Override
-    public final @NotNull InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!world.isClientSide) {
-            BlockEntity entity = world.getBlockEntity(pos);
+    public final @NotNull InteractionResult useWithoutItem(BlockState state, @NotNull Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide) {
+            BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof MachineBlockEntity machine) {
                 SecuritySettings security = machine.getSecurity();
 
@@ -274,21 +277,21 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     }
 
     @Override
-    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
-        super.playerWillDestroy(world, pos, state, player);
-        BlockEntity entity = world.getBlockEntity(pos);
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        super.playerWillDestroy(level, pos, state, player);
+        BlockEntity entity = level.getBlockEntity(pos);
         if (entity instanceof MachineBlockEntity machine) {
             if (!machine.areDropsDisabled()) {
                 MachineItemStorage inv = machine.itemStorage();
                 List<ItemEntity> entities = new ArrayList<>();
                 for (ItemResourceSlot slot : inv.getSlots()) {
                     if (!slot.isEmpty()) {
-                        entities.add(new ItemEntity(world, pos.getX(), pos.getY() + 1, pos.getZ(), ItemStackUtil.create(slot)));
-                        slot.set(null, null, 0);
+                        entities.add(new ItemEntity(level, pos.getX(), pos.getY() + 1, pos.getZ(), ItemStackUtil.create(slot)));
+                        slot.set(null, DataComponentPatch.EMPTY, 0);
                     }
                 }
                 for (ItemEntity itemEntity : entities) {
-                    world.addFreshEntity(itemEntity);
+                    level.addFreshEntity(itemEntity);
                 }
             }
         }
@@ -310,7 +313,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         BlockEntity blockEntity = reader.getBlockEntity(pos);
         if (blockEntity instanceof MachineBlockEntity machine) {
             CompoundTag config = new CompoundTag();
-            config.put(Constant.Nbt.CONFIGURATION, machine.getIOConfig().createTag());
+            config.put(Constant.Nbt.CONFIGURATION, machine.getIoConfig().createTag());
             config.put(Constant.Nbt.SECURITY, machine.getSecurity().createTag());
             config.put(Constant.Nbt.REDSTONE_MODE, machine.getRedstoneMode().createTag());
             BlockItem.setBlockEntityData(stack, blockEntity.getType(), config);
@@ -321,17 +324,16 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
 
     @Nullable
     @Override
-    public <B extends BlockEntity> BlockEntityTicker<B> getTicker(Level world, BlockState state, BlockEntityType<B> type) {
-        return !world.isClientSide ? MachineBlockEntityTicker.getInstance() : null;
+    public <B extends BlockEntity> BlockEntityTicker<B> getTicker(Level level, BlockState state, BlockEntityType<B> type) {
+        return !level.isClientSide ? MachineBlockEntityTicker.getInstance() : null;
     }
 
     /**
-     * Returns this machine's description for the tooltip when left shift is pressed.
+     * {@return this machine's detailed tooltip description} Shown when left shift is pressed.
      *
      * @param stack The item stack (the contained item is this block).
      * @param context The context of the tooltip.
      * @param flag Flags to determine if extra information should be added
-     * @return This machine's description.
      */
     public @Nullable Component shiftDescription(ItemStack stack, TooltipContext context, TooltipFlag flag) {
         return Component.translatable(this.getDescriptionId() + ".description");

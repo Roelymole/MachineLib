@@ -135,7 +135,7 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
     }
 
     @Override
-    public void registerData(MachineData data) {
+    public void registerData(MachineMenuData data) {
         super.registerData(data);
 
         data.registerInt(this::getProgress, this::setProgress);
@@ -146,9 +146,7 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
     }
 
     /**
-     * Returns the current progress of the machine.
-     *
-     * @return The progress value.
+     * {@return the current progress of the machine}
      */
     public int getProgress() {
         return this.progress;

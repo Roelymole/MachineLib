@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.menu.sync;
+package dev.galacticraft.machinelib.impl.menu;
 
-import dev.galacticraft.machinelib.api.menu.MachineData;
+import dev.galacticraft.machinelib.api.menu.MachineMenuData;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPayload;
 import io.netty.buffer.Unpooled;
@@ -30,10 +30,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 
-public class MachineDataImpl extends MachineData {
+public class MachineMenuDataImpl extends MachineMenuData {
     private final ServerPlayer player;
 
-    public MachineDataImpl(ServerPlayer player) {
+    public MachineMenuDataImpl(ServerPlayer player) {
         this.player = player;
     }
 

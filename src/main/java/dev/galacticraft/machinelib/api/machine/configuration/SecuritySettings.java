@@ -23,8 +23,8 @@
 package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
-import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
+import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -47,42 +47,38 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
      * The profile of the player who owns the linked machine.
      */
     protected @Nullable UUID owner = null;
-    protected @Nullable String username = null;
 
     /**
      * The access level of the linked machine.
      */
     protected @NotNull AccessLevel accessLevel = AccessLevel.PUBLIC;
 
+    /**
+     * Updates the owner of the linked machine if it is not already set.
+     *
+     * @param player the player to try to set as the owner
+     */
     public void tryUpdate(@NotNull Player player) {
         if (this.owner == null) {
             this.owner = player.getUUID();
         }
-
-        if (player.getUUID() == this.owner) {
-            this.username = player.getGameProfile().getName();
-        }
     }
 
     /**
-     * Returns whether the player is the owner of the linked machine.
+     * {@return whether the player is the owner of the linked machine}
      *
-     * @param player The player to check.
-     * @return Whether the player is the owner of the linked machine.
+     * @param player the player to check
      */
     @Contract(pure = true)
     public boolean isOwner(@NotNull Player player) {
-        boolean b = player.getUUID() == this.owner;
-        if (b) {
-            this.username = player.getGameProfile().getName();
-        }
-        return b;
+        return player.getUUID() == this.owner;
     }
 
-    public @Nullable String getUsername() {
-        return this.username;
-    }
-
+    /**
+     * {@return whether the player has access to the linked machine}
+     *
+     * @param player the player to check
+     */
     public boolean hasAccess(@NotNull Player player) {
         return switch (this.accessLevel) {
             case PUBLIC -> true;
@@ -92,9 +88,7 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
     }
 
     /**
-     * Returns the access level of the linked machine.
-     *
-     * @return The access level of the linked machine.
+     * {@return the access level of the linked machine}
      */
     public @NotNull AccessLevel getAccessLevel() {
         return this.accessLevel;
@@ -110,9 +104,7 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
     }
 
     /**
-     * Returns the uuid of the player that owns the linked machine.
-     *
-     * @return the uuid of the player that owns the linked machine.
+     * {@return the uuid of the player that owns the linked machine}
      */
     public @Nullable UUID getOwner() {
         return this.owner;
@@ -123,9 +115,6 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
         CompoundTag nbt = new CompoundTag();
         if (this.owner != null) {
             nbt.putUUID(Constant.Nbt.OWNER, this.owner);
-            if (this.username!= null) {
-                nbt.putString(Constant.Nbt.USERNAME, this.username);
-            }
         }
         nbt.putString(Constant.Nbt.ACCESS_LEVEL, this.accessLevel.getSerializedName());
         return nbt;
@@ -136,9 +125,6 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
         if (tag.contains(Constant.Nbt.OWNER)) {
             this.owner = tag.getUUID(Constant.Nbt.OWNER);
         }
-        if (tag.contains(Constant.Nbt.USERNAME)) {
-            this.username = tag.getString(Constant.Nbt.USERNAME);
-        }
 
         if (tag.contains(Constant.Nbt.ACCESS_LEVEL)) {
             this.accessLevel = AccessLevel.fromString(tag.getString(Constant.Nbt.ACCESS_LEVEL));
@@ -148,100 +134,70 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
     @Override
     public void writePacket(@NotNull FriendlyByteBuf buf) {
         buf.writeByte(this.accessLevel.ordinal());
-        byte bits = 0b0000;
-        if (this.owner != null) bits |= 0b0001;
-        if (this.username != null) bits |= 0b0010;
-
-        if (this.owner == null) {
-            buf.writeByte(0b0000);
-        } else {
-            buf.writeByte(bits);
+        buf.writeBoolean(this.owner != null);
+        if (this.owner != null) {
             buf.writeUUID(this.owner);
-            if (this.username != null) buf.writeUtf(this.username);
         }
     }
 
     @Override
     public void readPacket(@NotNull FriendlyByteBuf buf) {
         this.accessLevel = AccessLevel.getByOrdinal(buf.readByte());
-        byte bits = buf.readByte();
-
-        if (bits == 0b0000) {
-            this.owner = null;
-            this.username = null;
-        } else {
+        if (buf.readBoolean()) {
             this.owner = buf.readUUID();
-            if ((bits & 0b0010) != 0) this.username = buf.readUtf();
+        } else {
+            this.owner = null;
         }
     }
 
     @Override
     public void writeDeltaPacket(@NotNull FriendlyByteBuf buf, SecuritySettings previous) {
-        byte ref = 0b00000;
-        byte nullRef = 0b00000;
-        if (!Objects.equals(previous.owner, this.owner)) {
-            ref |= 0b00001;
-            if (this.username == null) nullRef |= 0b00001;
-        }
-        if (!Objects.equals(previous.username, this.username)) {
-            ref |= 0b00010;
-            if (this.username == null) nullRef |= 0b00010;
-        }
+        byte ref = 0b000;
+
         if (previous.accessLevel != this.accessLevel) {
-            ref |= 0b01000;
+            ref |= 0b001;
+        }
+
+        if (previous.owner != this.owner) {
+            if (this.owner != null) {
+                ref |= 0b010;
+            } else {
+                ref |= 0b100;
+            }
         }
 
         buf.writeByte(ref);
-        buf.writeByte(nullRef);
-
-        if (!Objects.equals(previous.owner, this.owner)) {
-            previous.owner = this.owner;
-            if (previous.owner != null) {
-                buf.writeUUID(previous.owner);
-            }
+        if ((ref & 0b001) != 0) {
+            buf.writeByte(this.accessLevel.ordinal());
         }
-        if (!Objects.equals(previous.username, this.username)) {
-            previous.username = this.username;
-            if (previous.username != null) {
-                buf.writeUtf(previous.username);
-            }
-        }
-        if (previous.accessLevel != this.accessLevel) {
-            previous.accessLevel = this.accessLevel;
-            buf.writeByte(previous.accessLevel.ordinal());
+        if ((ref & 0b010) != 0) {
+            buf.writeUUID(this.owner);
         }
     }
 
     @Override
     public void readDeltaPacket(@NotNull FriendlyByteBuf buf) {
         byte ref = buf.readByte();
-        byte nullRef = buf.readByte();
-        ref ^= nullRef;
 
-        if ((ref & 0b00001) != 0) {
-            this.owner = buf.readUUID();
-        } else if ((nullRef & 0b00001) != 0) {
-            this.owner = null;
-        }
-        if ((ref & 0b00010) != 0) {
-            this.username = buf.readUtf();
-        } else if ((nullRef & 0b00010) != 0) {
-            this.username = null;
-        }
-        if ((ref & 0b01000) != 0) {
+        if ((ref & 0b001) != 0) {
             this.accessLevel = AccessLevel.getByOrdinal(buf.readByte());
+        }
+
+        if ((ref & 0b010) != 0) {
+            this.owner = buf.readUUID();
+        } else if ((ref & 0b100) != 0) {
+            this.owner = null;
         }
     }
 
     @Override
     public boolean hasChanged(SecuritySettings previous) {
-        return !Objects.equals(previous.owner, this.owner) || !Objects.equals(previous.username, this.username) || previous.accessLevel != this.accessLevel;
+        return !Objects.equals(previous.owner, this.owner) || previous.accessLevel != this.accessLevel;
     }
 
     @Override
     public void copyInto(SecuritySettings other) {
         other.owner = this.owner;
-        other.username = this.username;
         other.accessLevel = this.accessLevel;
     }
 }

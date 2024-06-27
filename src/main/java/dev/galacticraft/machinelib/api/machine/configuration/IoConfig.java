@@ -22,52 +22,64 @@
 
 package dev.galacticraft.machinelib.api.machine.configuration;
 
+import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
-import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamCodec;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Stores the configuration of a machine's I/O for all six faces.
  */
-public class MachineIOConfig implements Serializable<ListTag>, PacketSerializable<ByteBuf>, MachineRenderData, DeltaPacketSerializable<ByteBuf, MachineIOConfig> {
-    public static final StreamCodec<ByteBuf, MachineIOConfig> CODEC = PacketSerializable.createCodec(MachineIOConfig::new);
+public final class IoConfig implements Serializable<ListTag>, MachineRenderData, DeltaPacketSerializable<ByteBuf, IoConfig> {
+    public static final StreamCodec<ByteBuf, IoConfig> CODEC = PacketSerializable.createCodec(IoConfig::new);
 
-    private final MachineIOFace[] faces;
+    /**
+     * The I/O configuration for each face.
+     */
+    private final IoFace[] faces;
 
-    public MachineIOConfig() {
-        this.faces = new MachineIOFace[6];
+    /**
+     * Creates a new I/O configuration with all faces blank.
+     */
+    public IoConfig() {
+        this.faces = new IoFace[6];
 
         for (int i = 0; i < this.faces.length; i++) {
-            this.faces[i] = new MachineIOFace();
+            this.faces[i] = new IoFace();
         }
     }
 
-    public MachineIOConfig(MachineIOFace[] faces) {
+    /**
+     * Creates a new I/O configuration with the given faces.
+     * @param faces the faces to use
+     */
+    public IoConfig(IoFace[] faces) {
         this.faces = faces;
     }
 
     /**
-     * Returns the I/O configuration for the given face.
+     * {@return the I/O configuration for the given face}
      *
      * @param face the block face to pull the option from
-     * @return the I/O configuration for the given face.
      */
     @NotNull
-    public MachineIOFace get(@NotNull BlockFace face) {
+    public IoFace get(@NotNull BlockFace face) {
         return this.faces[face.ordinal()];
     }
 
     @Override
     public @NotNull ListTag createTag() {
         ListTag nbt = new ListTag();
-        for (MachineIOFace face : this.faces) {
+        for (IoFace face : this.faces) {
             nbt.add(face.createTag());
         }
         return nbt;
@@ -75,32 +87,38 @@ public class MachineIOConfig implements Serializable<ListTag>, PacketSerializabl
 
     @Override
     public void readTag(@NotNull ListTag tag) {
-        for (int i = 0; i < tag.size(); i++) {
-            this.faces[i].readTag(tag.getCompound(i));
+        if (tag.getElementType() == Tag.TAG_BYTE) {
+            for (int i = 0; i < tag.size(); i++) {
+                this.faces[i].readTag((ByteTag) tag.get(i));
+            }
+        } else {
+            for (IoFace face : faces) {
+                face.setOption(ResourceType.NONE, ResourceFlow.BOTH);
+            }
         }
     }
 
     @Override
     public void writePacket(@NotNull ByteBuf buf) {
-        for (MachineIOFace face : this.faces) {
+        for (IoFace face : this.faces) {
             face.writePacket(buf);
         }
     }
 
     @Override
     public void readPacket(@NotNull ByteBuf buf) {
-        for (MachineIOFace face : this.faces) {
+        for (IoFace face : this.faces) {
             face.readPacket(buf);
         }
     }
 
     @Override
-    public MachineIOConfig getIOConfig() {
+    public IoConfig getIoConfig() {
         return this;
     }
 
     @Override
-    public boolean hasChanged(@NotNull MachineIOConfig previous) {
+    public boolean hasChanged(@NotNull IoConfig previous) {
         for (int i = 0; i < this.faces.length; i++) {
             if (this.faces[i].hasChanged(previous.faces[i])) {
                 return true;
@@ -118,7 +136,7 @@ public class MachineIOConfig implements Serializable<ListTag>, PacketSerializabl
     }
 
     @Override
-    public void writeDeltaPacket(@NotNull ByteBuf buf, @NotNull MachineIOConfig previous) {
+    public void writeDeltaPacket(@NotNull ByteBuf buf, @NotNull IoConfig previous) {
         byte n = 0;
         for (int i = 0; i < this.faces.length; i++) {
             if (this.faces[i].hasChanged(previous.faces[i])) {
@@ -135,7 +153,7 @@ public class MachineIOConfig implements Serializable<ListTag>, PacketSerializabl
     }
 
     @Override
-    public void copyInto(@NotNull MachineIOConfig other) {
+    public void copyInto(@NotNull IoConfig other) {
         for (int i = 0; i < this.faces.length; i++) {
             this.faces[i].copyInto(other.faces[i]);
         }

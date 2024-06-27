@@ -22,20 +22,19 @@
 
 package dev.galacticraft.machinelib.client.api.screen;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
-import dev.galacticraft.machinelib.api.machine.configuration.MachineIOFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
-import dev.galacticraft.machinelib.client.api.render.MachineRenderData;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
@@ -68,6 +67,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,13 +76,16 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
 
 import static dev.galacticraft.machinelib.impl.Constant.TextureCoordinate.*;
 
 /**
  * Handles most of the boilerplate code for machine screens.
  * Handles the rendering of tanks, configuration panels and capacitors.
+ *
+ * @param <Machine> The type of machine block entity.
+ * @param <Menu> The type of machine menu.
  */
 @Environment(EnvType.CLIENT)
 public class MachineScreen<Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> extends AbstractContainerScreen<Menu> {
@@ -180,11 +183,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * The height of the capacitor.
      */
     protected int capacitorHeight = 48;
+
     /**
      * The skin of the owner of this machine.
      * Defaults to steve if the skin cannot be found.
      */
-    private @NotNull Supplier<PlayerSkin> ownerSkin = Suppliers.memoize(() -> DefaultPlayerSkin.get(UUID.randomUUID()));
+    private final @NotNull CompletableFuture<PlayerSkin> ownerSkin;
+    private final @NotNull CompletableFuture<GameProfile> owner;
 
     private @Nullable MachineBakedModel model;
 
@@ -203,18 +208,19 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         this.texture = texture;
         this.renderData = menu.configuration;
 
-        MachineScreen.this.ownerSkin = Minecraft.getInstance().getSkinManager().lookupInsecure(new GameProfile(this.menu.security.getOwner(), this.menu.security.getUsername()));
+        UUID owner = this.menu.security.getOwner() == null ? this.menu.player.getUUID() : this.menu.security.getOwner();
+        this.owner = SkullBlockEntity.fetchGameProfile(owner).thenApply(o -> o.orElse(new GameProfile(owner, "???")));
+        this.ownerSkin = this.owner.thenCompose(profile -> Minecraft.getInstance().getSkinManager().getOrLoad(profile));
     }
 
     /**
-     * Returns the requested item based on the id
+     * {@return the item requested item, or the fallback item if the item is unavailable}
      *
-     * @param id        the id of the item
-     * @param other
-     * @return the item stack
+     * @param id the id of the item
+     * @param fallback the fallback item
      */
-    private static Item getOptionalItem(ResourceLocation id, Item other) {
-        return BuiltInRegistries.ITEM.getOptional(id).orElse(other);
+    private static Item getOptionalItem(ResourceLocation id, Item fallback) {
+        return BuiltInRegistries.ITEM.getOptional(id).orElse(fallback);
     }
 
     @Override
@@ -306,7 +312,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             poseStack.pushPose();
             poseStack.translate(this.imageWidth, SPACING, 0);
             graphics.renderFakeItem(ALUMINUM_WIRE, PANEL_ICON_X, PANEL_ICON_Y);
-            PlayerFaceRenderer.draw(graphics, this.ownerSkin.get(), OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE);
+            PlayerFaceRenderer.draw(graphics, this.ownerSkin.getNow(DefaultPlayerSkin.get(this.menu.security.getOwner() == null ? this.menu.playerUUID : this.menu.security.getOwner())), OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.STATISTICS)
                     .setStyle(Constant.Text.GREEN_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
             List<FormattedCharSequence> text = this.font.split(this.menu.type.getBlock().getName(), 64);
@@ -361,7 +367,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param face     the face to draw
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull MachineRenderData data, @NotNull BlockFace face) {
-        MachineIOFace machineFace = menu.configuration.get(face);
+        IoFace machineFace = menu.configuration.get(face);
         if (this.model != null) {
             graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, model.getSprite(face, data, machineFace.getType(), machineFace.getFlow()));
         }
@@ -624,10 +630,11 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseX -= this.imageWidth;
         mouseY -= SPACING;
         if (Tab.STATS.isOpen()) {
-            if (this.menu.security.getUsername() != null) {
+            GameProfile ownerProfile = this.owner.getNow(null);
+            if (ownerProfile != null) {
                 if (mouseIn(mouseX, mouseY, OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE, OWNER_FACE_SIZE)) {
                     assert this.menu.security.getOwner() != null;
-                    graphics.renderTooltip(this.font, Component.literal(this.menu.security.getUsername()), mX, mY);
+                    graphics.renderTooltip(this.font, Component.literal(ownerProfile.getName()), mX, mY);
                 }
             }
         } else {
@@ -681,7 +688,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void renderFaceTooltip(GuiGraphics graphics, @NotNull BlockFace face, int mouseX, int mouseY) {
         TOOLTIP_ARRAY.add(face.getName());
-        MachineIOFace configuredFace = this.menu.configuration.get(face);
+        IoFace configuredFace = this.menu.configuration.get(face);
         if (configuredFace.getType() != ResourceType.NONE) {
             TOOLTIP_ARRAY.add(configuredFace.getType().getName().copy().append(" ").append(configuredFace.getFlow().getName()));
         }
@@ -804,7 +811,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         if (Tab.CONFIGURATION.isOpen()) {
             mouseX -= (this.leftPos - PANEL_WIDTH);
             mouseY -= (this.topPos + (TAB_HEIGHT + SPACING + SPACING));
-            MachineIOFace config = null;
+            IoFace config = null;
             if (mouseIn(mouseX, mouseY, TOP_FACE_X, TOP_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
                 config = this.menu.configuration.get(BlockFace.TOP);
             } else if (mouseIn(mouseX, mouseY, LEFT_FACE_X, LEFT_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
@@ -881,36 +888,28 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     }
 
     /**
-     * Returns the x offset of the screen.
-     *
-     * @return the x offset of the screen
+     * {@return the x offset of the screen}
      */
     public int getX() {
         return this.leftPos;
     }
 
     /**
-     * Returns the y offset of the screen.
-     *
-     * @return the y offset of the screen
+     * {@return the y offset of the screen}
      */
     public int getY() {
         return this.topPos;
     }
 
     /**
-     * Returns the width of the background image.
-     *
-     * @return the width of the screen
+     * {@return the width of the background image}
      */
     public int getImageWidth() {
         return this.imageWidth;
     }
 
     /**
-     * Returns the height of the background image.
-     *
-     * @return the height of the screen
+     * {@return the height of the background image}
      */
     public int getImageHeight() {
         return this.imageHeight;
@@ -926,7 +925,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     }
 
     /**
-     * The four different types of configuration panel.
+     * The four different types of configuration panels.
      */
     public enum Tab {
         REDSTONE(TAB_REDSTONE_U, TAB_REDSTONE_V, PANEL_REDSTONE_U, PANEL_REDSTONE_V, true, MachineScreen.REDSTONE),

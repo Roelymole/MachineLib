@@ -20,20 +20,24 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.api.machine;
+package dev.galacticraft.machinelib.test.misc;
 
-import dev.galacticraft.machinelib.impl.Constant;
-import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.function.UnaryOperator;
+public class MachineFaceBitPackingTest {
+    @Test
+    public void verifyPackedIntegrity() {
+        for (ResourceType type : ResourceType.values()) {
+            for (ResourceFlow flow : ResourceFlow.VALUES) {
+                byte pack = IoFace.pack(type, flow);
 
-public class MachineComponents {
-
-    private static <T> DataComponentType<T> register(String id, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
-        return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Constant.id(id), builderOperator.apply(DataComponentType.builder()).build());
+                Assertions.assertEquals(type, IoFace.unpackType(pack));
+                Assertions.assertEquals(flow, IoFace.unpackFlow(pack));
+            }
+        }
     }
-
-    public static void register() {}
 }

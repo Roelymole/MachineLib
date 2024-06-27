@@ -27,7 +27,6 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.impl.Utils;
 import net.fabricmc.fabric.api.lookup.v1.item.ItemApiLookup;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -35,6 +34,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.*;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -70,7 +70,11 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public long getCapacityFor(@NotNull Item item) {
+    public long getCapacityFor(@NotNull Item item, @NotNull DataComponentPatch components) {
+        Optional<? extends Integer> optional = components.get(DataComponents.MAX_STACK_SIZE);
+        if (optional != null && optional.isPresent()) {
+           return optional.get();
+        }
         return Math.min(this.capacity, item.getDefaultMaxStackSize());
     }
 
@@ -98,8 +102,9 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
     @Override
     public boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components) {
+        DataComponentPatch actual = this.components;
         if (this.extractOne(resource, components)) {
-            this.insertRemainder(resource, components, 1);
+            this.insertRemainder(resource, actual, 1);
             return true;
         } else {
             return false;
@@ -110,10 +115,10 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     public long consume(long amount) {
         Item item = this.resource;
         if (item == null) return 0;
-        DataComponentPatch tag = this.components;
+        DataComponentPatch components = this.components;
         long consumed = this.extract(amount);
         if (consumed > 0) {
-            this.insertRemainder(item, tag, 1);
+            this.insertRemainder(item, components, 1);
             return consumed;
         }
         return consumed;
@@ -121,24 +126,25 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
     @Override
     public long consume(@NotNull Item resource, long amount) {
-        DataComponentPatch tag = this.components;
+        DataComponentPatch components = this.components;
         long consumed = this.extract(resource, amount);
-        if (consumed > 0) {
-            this.insertRemainder(resource, tag, (int) consumed);
-        }
-        return consumed;
-    }
-
-    @Override
-    public long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
-        long consumed = this.extract(resource, components, amount);
         if (consumed > 0) {
             this.insertRemainder(resource, components, (int) consumed);
         }
         return consumed;
     }
 
-    private void insertRemainder(@NotNull Item resource, DataComponentPatch tag, int extracted) {
+    @Override
+    public long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount) {
+        DataComponentPatch actual = this.components;
+        long consumed = this.extract(resource, components, amount);
+        if (consumed > 0) {
+            this.insertRemainder(resource, actual, (int) consumed);
+        }
+        return consumed;
+    }
+
+    private void insertRemainder(@NotNull Item resource, @NotNull DataComponentPatch tag, int extracted) {
         if (resource.hasCraftingRemainingItem()) {
             if (this.isEmpty()) {
                 ItemStack remainder = resource.getRecipeRemainder(ItemStackUtil.of(resource, tag, extracted));
@@ -160,7 +166,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.ITEM.getKey(this.resource).toString());
         tag.putInt(AMOUNT_KEY, (int) this.amount);
-        if (this.components != null && !this.components.isEmpty()) tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, this.components).getOrThrow());
+        if (!this.components.isEmpty()) tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, this.components).getOrThrow());
         if (this.recipes != null) {
             ListTag recipeTag = new ListTag();
             for (ResourceLocation entry : this.recipes) {
@@ -176,7 +182,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (tag.isEmpty()) {
             this.setEmpty();
         } else {
-            this.set(BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : null, tag.getInt(AMOUNT_KEY));
+            this.set(BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : DataComponentPatch.EMPTY, tag.getInt(AMOUNT_KEY));
             if (this.inputType() == InputType.RECIPE_OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
                 ListTag list = tag.getList(RECIPES_KEY, Tag.TAG_STRING);
                 if (!list.isEmpty()) {
@@ -198,7 +204,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (this.amount > 0) {
             buf.writeInt((int) this.amount);
             buf.writeUtf(BuiltInRegistries.ITEM.getKey(this.resource).toString());
-            DataComponentPatch.STREAM_CODEC.encode(buf, this.components == null ? DataComponentPatch.EMPTY : this.components);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
         } else {
             buf.writeInt(0);
         }
@@ -247,7 +253,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
                 @Override
                 public ItemVariant getResource() {
-                    return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components == null ? DataComponentPatch.EMPTY : ItemResourceSlotImpl.this.components);
+                    return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
                 }
 
                 @Override
@@ -271,7 +277,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
     @Override
     public ItemVariant getItemVariant() {
-        return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components == null ? DataComponentPatch.EMPTY : ItemResourceSlotImpl.this.components);
+        return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
     }
 
     @Override
@@ -283,11 +289,11 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     public long exchange(ItemVariant newVariant, long maxAmount, TransactionContext transaction) {
         StoragePreconditions.notBlankNotNegative(newVariant, maxAmount);
 
-        if (newVariant.getItem() == this.resource && Utils.componentsEqual(this.components, newVariant.getComponents())) {
+        if (newVariant.getItem() == this.resource && this.components.equals(newVariant.getComponents())) {
             return Math.min(this.amount, maxAmount);
         }
 
-        if (this.amount == maxAmount && this.getCapacityFor(newVariant.getItem()) >= maxAmount) {
+        if (this.amount == maxAmount && this.getCapacityFor(newVariant.getItem(), newVariant.getComponents()) >= maxAmount) {
             this.updateSnapshots(transaction);
             this.set(newVariant.getItem(), newVariant.getComponents(), maxAmount);
             return maxAmount;

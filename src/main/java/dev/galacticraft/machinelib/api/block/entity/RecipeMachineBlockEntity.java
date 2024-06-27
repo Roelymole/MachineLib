@@ -30,7 +30,6 @@ import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -64,6 +63,10 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
      */
     @ApiStatus.Internal
     private long inventoryModCount = -1;
+
+    /**
+     * The last machine status used on recipe failure.
+     */
     @ApiStatus.Internal
     private MachineStatus cachedRecipeState = null;
 
@@ -129,9 +132,9 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     protected abstract void extractCraftingMaterials(@NotNull RecipeHolder<R> recipe);
 
     /**
-     * Returns the machine status to use when the machine is working on a certain recipe.
+     * {@return the machine status to use when the machine is working on a certain recipe}
      *
-     * @return The machine status to use when the machine is working on a certain recipe.
+     * @param recipe The recipe to get the working status of.
      */
     @Contract(pure = true)
     protected abstract @NotNull MachineStatus workingStatus(RecipeHolder<R> recipe);
@@ -183,16 +186,16 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     /**
      * Updates the currently active recipe if the inventory has changed.
      *
-     * @param world    The world.
+     * @param level The world.
      * @param profiler The world profiler.
      * @return {@code null} if the machine can have a recipe, or a {@link MachineStatus machine status} describing why it cannot.
      */
     @Nullable
-    protected MachineStatus testInventoryRecipe(@NotNull ServerLevel world, @NotNull ProfilerFiller profiler) {
+    protected MachineStatus testInventoryRecipe(@NotNull ServerLevel level, @NotNull ProfilerFiller profiler) {
         if (this.inventoryModCount != this.itemStorage().getModifications()) { // includes output slots
             this.inventoryModCount = this.itemStorage().getModifications();
             profiler.push("find_recipe");
-            RecipeHolder<R> recipe = this.findValidRecipe(world);
+            RecipeHolder<R> recipe = this.findValidRecipe(level);
             profiler.pop();
             if (recipe != null) {
                 if (this.canOutputStacks(recipe)) {
@@ -227,9 +230,7 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     }
 
     /**
-     * Returns the recipe type of the machine.
-     *
-     * @return The recipe type of the machine.
+     * {@return the recipe type of the machine}
      */
     @Contract(pure = true)
     public @NotNull RecipeType<R> getRecipeType() {
@@ -240,14 +241,14 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
      * Finds the first valid recipe in the machine's inventory.
      * Will always test for the current recipe first.
      *
-     * @param world The world.
+     * @param level The world.
      * @return The first valid recipe in the machine's inventory.
      */
-    protected @Nullable RecipeHolder<R> findValidRecipe(@NotNull Level world) {
-        if (this.cachedRecipe != null && this.cachedRecipe.value().matches(this.craftingInv(), world)) {
+    protected @Nullable RecipeHolder<R> findValidRecipe(@NotNull Level level) {
+        if (this.cachedRecipe != null && this.cachedRecipe.value().matches(this.craftingInv(), level)) {
             return this.cachedRecipe;
         }
-        return world.getRecipeManager().getRecipeFor(this.getRecipeType(), this.craftingInv(), world).orElse(null);
+        return level.getRecipeManager().getRecipeFor(this.getRecipeType(), this.craftingInv(), level).orElse(null);
     }
 
     @Override
@@ -264,18 +265,15 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     }
 
     /**
-     * Returns the process time of the given recipe.
+     * {@return the processing time of the given recipe}
      *
-     * @param recipe The recipe to get the process time of.
-     * @return The process time of the given recipe.
+     * @param recipe The recipe to get the processing time of.
      */
     @Contract(pure = true)
     public abstract int getProcessingTime(@NotNull RecipeHolder<R> recipe);
 
     /**
-     * Returns the progress of the machine.
-     *
-     * @return The progress of the machine.
+     * {@return the machine's progress}
      */
     @Contract(pure = true)
     public int getProgress() {
@@ -293,9 +291,7 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     }
 
     /**
-     * Returns the active recipe of the machine. May be {@code null}.
-     *
-     * @return The active recipe of the machine.
+     * {@return the active recipe of the machine} May be {@code null}.
      */
     @Contract(pure = true)
     public @Nullable RecipeHolder<R> getActiveRecipe() {

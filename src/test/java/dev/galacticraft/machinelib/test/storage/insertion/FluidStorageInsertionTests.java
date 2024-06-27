@@ -32,15 +32,15 @@ import dev.galacticraft.machinelib.test.JUnitTest;
 import dev.galacticraft.machinelib.test.Utils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public sealed class FluidStorageInsertionTests implements JUnitTest {
+public class FluidStorageInsertionTests implements JUnitTest {
     private static final long CAPACITY = FluidConstants.BUCKET * 16;
     protected MachineFluidStorage group;
 
@@ -54,126 +54,128 @@ public sealed class FluidStorageInsertionTests implements JUnitTest {
         assertTrue(((ResourceSlotImpl<?>) this.group.getSlot(0)).isSane());
     }
 
-    public static final class InsertionFailureTests extends FluidStorageInsertionTests {
+    @Nested
+    final class InsertionFailureTests {
         @Test
         public void full() {
-            this.group.getSlot(0).set(Fluids.WATER, CAPACITY);
+            group.getSlot(0).set(Fluids.WATER, CAPACITY);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, FluidConstants.BUCKET));
+            assertFalse(group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, group.insert(Fluids.WATER, FluidConstants.BUCKET));
         }
 
         @Test
         public void incorrectType() {
-            this.group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.LAVA, FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.LAVA, FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.LAVA, FluidConstants.BUCKET));
+            assertFalse(group.canInsert(Fluids.LAVA, FluidConstants.BUCKET));
+            assertEquals(0, group.tryInsert(Fluids.LAVA, FluidConstants.BUCKET));
+            assertEquals(0, group.insert(Fluids.LAVA, FluidConstants.BUCKET));
 
-            assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
+            assertEquals(group.getAmount(0), FluidConstants.BUCKET);
         }
 
         @Test
         public void insertTag() {
-            this.group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertFalse(group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
 
-            assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
+            assertEquals(group.getAmount(0), FluidConstants.BUCKET);
         }
 
         @Test
         public void containedTag() {
-            this.group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, FluidConstants.BUCKET));
+            assertFalse(group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(0, group.insert(Fluids.WATER, FluidConstants.BUCKET));
 
-            assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
+            assertEquals(group.getAmount(0), FluidConstants.BUCKET);
         }
 
         @Test
         public void mismatchedTag() {
-            this.group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            group.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
-            assertFalse(this.group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
-            assertEquals(0, this.group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertFalse(group.canInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, group.tryInsert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
+            assertEquals(0, group.insert(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
 
-            assertEquals(this.group.getAmount(0), FluidConstants.BUCKET);
+            assertEquals(group.getAmount(0), FluidConstants.BUCKET);
         }
     }
 
-    public static final class InsertionSuccessTests extends FluidStorageInsertionTests {
+    @Nested
+    final class InsertionSuccessTests {
         @Test
         public void empty() {
-            assertTrue(this.group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
-            assertEquals(FluidConstants.BUCKET, this.group.insert(Fluids.WATER, FluidConstants.BUCKET));
+            assertTrue(group.canInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, group.tryInsert(Fluids.WATER, FluidConstants.BUCKET));
+            assertEquals(FluidConstants.BUCKET, group.insert(Fluids.WATER, FluidConstants.BUCKET));
 
-            assertEquals(FluidConstants.BUCKET, this.group.getAmount(0));
+            assertEquals(FluidConstants.BUCKET, group.getAmount(0));
         }
 
         @Test
         public void toCapacity() {
-            assertTrue(this.group.canInsert(Fluids.WATER, CAPACITY));
-            assertEquals(CAPACITY, this.group.tryInsert(Fluids.WATER, CAPACITY));
-            assertEquals(CAPACITY, this.group.insert(Fluids.WATER, CAPACITY));
+            assertTrue(group.canInsert(Fluids.WATER, CAPACITY));
+            assertEquals(CAPACITY, group.tryInsert(Fluids.WATER, CAPACITY));
+            assertEquals(CAPACITY, group.insert(Fluids.WATER, CAPACITY));
 
-            assertEquals(CAPACITY, this.group.getAmount(0));
+            assertEquals(CAPACITY, group.getAmount(0));
         }
 
         @Test
         public void overCapacity() {
-            assertEquals(CAPACITY, this.group.tryInsert(Fluids.WATER, CAPACITY + FluidConstants.BOTTLE));
-            assertEquals(CAPACITY, this.group.insert(Fluids.WATER, CAPACITY + FluidConstants.BOTTLE));
+            assertEquals(CAPACITY, group.tryInsert(Fluids.WATER, CAPACITY + FluidConstants.BOTTLE));
+            assertEquals(CAPACITY, group.insert(Fluids.WATER, CAPACITY + FluidConstants.BOTTLE));
 
-            assertEquals(CAPACITY, this.group.getAmount(0));
+            assertEquals(CAPACITY, group.getAmount(0));
         }
 
         @Test
         public void preFill() {
-            this.group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
-            assertTrue(this.group.canInsert(Fluids.WATER, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.insert(Fluids.WATER, FluidConstants.BUCKET * 6));
+            group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            assertTrue(group.canInsert(Fluids.WATER, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, group.tryInsert(Fluids.WATER, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, group.insert(Fluids.WATER, FluidConstants.BUCKET * 6));
 
-            assertEquals(FluidConstants.BUCKET * 7, this.group.getAmount(0));
+            assertEquals(FluidConstants.BUCKET * 7, group.getAmount(0));
         }
 
         @Test
         public void preFill_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
-            assertTrue(this.group.canInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
-            assertEquals(FluidConstants.BUCKET * 6, this.group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
+            group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            assertTrue(group.canInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
+            assertEquals(FluidConstants.BUCKET * 6, group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 6));
 
-            assertEquals(FluidConstants.BUCKET * 7, this.group.getAmount(0));
+            assertEquals(FluidConstants.BUCKET * 7, group.getAmount(0));
         }
 
         @Test
         public void preFill_overCapacity() {
-            this.group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET * 12);
-            assertEquals(FluidConstants.BUCKET * 4, this.group.tryInsert(Fluids.WATER, FluidConstants.BUCKET * 7));
-            assertEquals(FluidConstants.BUCKET * 4, this.group.insert(Fluids.WATER, FluidConstants.BUCKET * 7));
+            group.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET * 12);
+            assertEquals(FluidConstants.BUCKET * 4, group.tryInsert(Fluids.WATER, FluidConstants.BUCKET * 7));
+            assertEquals(FluidConstants.BUCKET * 4, group.insert(Fluids.WATER, FluidConstants.BUCKET * 7));
 
-            assertEquals(CAPACITY, this.group.getAmount(0));
+            assertEquals(CAPACITY, group.getAmount(0));
         }
 
         @Test
         public void preFill_overCapacity_tag() {
             DataComponentPatch components = Utils.generateComponents();
-            this.group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET * 12);
-            assertEquals(FluidConstants.BUCKET * 4, this.group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
-            assertEquals(FluidConstants.BUCKET * 4, this.group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
+            group.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET * 12);
+            assertEquals(FluidConstants.BUCKET * 4, group.tryInsert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
+            assertEquals(FluidConstants.BUCKET * 4, group.insert(Fluids.WATER, components, FluidConstants.BUCKET * 7));
 
-            assertEquals(CAPACITY, this.group.getAmount(0));
+            assertEquals(CAPACITY, group.getAmount(0));
         }
     }
 }

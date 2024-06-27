@@ -25,7 +25,6 @@ package dev.galacticraft.machinelib.api.util;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -202,9 +201,7 @@ public enum BlockFace implements StringRepresentable {
     }
 
     /**
-     * Returns the opposite face.
-     *
-     * @return The opposite face.
+     * {@return the face opposite to this one}
      */
     @Contract(pure = true)
     public @NotNull BlockFace getOpposite() {
@@ -219,9 +216,7 @@ public enum BlockFace implements StringRepresentable {
     }
 
     /**
-     * Returns whether this face is the side of a block.
-     *
-     * @return whether this face is the side of a block.
+     * {@return whether this face is the side of a block}
      */
     @Contract(pure = true)
     public boolean side() {
@@ -229,9 +224,7 @@ public enum BlockFace implements StringRepresentable {
     }
 
     /**
-     * Returns whether this face is the top or bottom of a block.
-     *
-     * @return Whether this face is the top or bottom of a block.
+     * {@return whether this face is the top or bottom of a block}
      */
     @Contract(pure = true)
     public boolean base() {

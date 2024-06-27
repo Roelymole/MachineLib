@@ -62,7 +62,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
     }
 
     @Override
-    public long getCapacityFor(@NotNull Fluid fluid) {
+    public long getCapacityFor(@NotNull Fluid fluid, @NotNull DataComponentPatch components) {
         return this.getCapacity();
     }
 
@@ -73,7 +73,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.isEmpty()) return tag;
         tag.putString(RESOURCE_KEY, BuiltInRegistries.FLUID.getKey(this.resource).toString());
         tag.putLong(AMOUNT_KEY, this.amount);
-        if (this.components != null && !this.components.isEmpty()) {
+        if (!this.components.isEmpty()) {
             tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encode(this.components, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
         }
         return tag;
@@ -85,7 +85,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
             this.setEmpty();
         } else {
             this.set(BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString(RESOURCE_KEY))),
-                    tag.contains(COMPONENTS_KEY, Tag.TAG_COMPOUND) ? DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag.getCompound(COMPONENTS_KEY)).getOrThrow().getFirst() : null,
+                    tag.contains(COMPONENTS_KEY, Tag.TAG_COMPOUND) ? DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag.getCompound(COMPONENTS_KEY)).getOrThrow().getFirst() : DataComponentPatch.EMPTY,
                     tag.getLong(AMOUNT_KEY)
             );
         }
@@ -97,7 +97,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (this.amount > 0) {
             buf.writeLong(this.amount);
             buf.writeUtf(BuiltInRegistries.FLUID.getKey(this.resource).toString());
-            DataComponentPatch.STREAM_CODEC.encode(buf, this.components == null ? DataComponentPatch.EMPTY : this.components);
+            DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
         } else {
             buf.writeLong(0);
         }

@@ -59,24 +59,18 @@ public interface ItemSlotDisplay {
     }
 
     /**
-     * Returns the x-position of this slot
-     *
-     * @return the x-position of this slot
+     * {@return the x-position of this slot}
      */
     int x();
 
     /**
-     * Returns the y-position of this slot
-     *
-     * @return the y-position of this slot
+     * {@return the y-position of this slot}
      */
     int y();
 
     /**
-     * Returns the icon for this slot.
+     * {@return The icon for this slot or {@code null} if no icon is assigned to this slot}
      * The first ID represents the texture atlas, while the second ID is the sprite (on the atlas).
-     *
-     * @return The icon for this slot. Returns {@code null} if no icon is assigned to this slot.
      */
     @Nullable Pair<ResourceLocation, ResourceLocation> icon();
 }

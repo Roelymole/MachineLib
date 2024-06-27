@@ -27,7 +27,6 @@ import dev.galacticraft.machinelib.impl.MachineLib;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -45,10 +44,10 @@ public class ClothConfigScreen {
                 .setDefaultValue(Config.DEFAULT.enableColoredVanillaFluidNames())
                 .build()
         );
-        general.addEntry(entryBuilder.startEnumSelector(Component.translatable("ui.machinelib.config.fluid_display_mode"), Config.FluidDisplayMode.class, MachineLib.CONFIG.fluidDisplayMode())
-                .setSaveConsumer(MachineLib.CONFIG::setFluidDisplayMode)
-                .setDefaultValue(Config.DEFAULT.fluidDisplayMode())
-                .setEnumNameProvider(v -> ((Config.FluidDisplayMode)v).getName())
+        general.addEntry(entryBuilder.startEnumSelector(Component.translatable("ui.machinelib.config.fluid_display_mode"), Config.FluidUnits.class, MachineLib.CONFIG.fluidUnits())
+                .setSaveConsumer(MachineLib.CONFIG::getFluidUnits)
+                .setDefaultValue(Config.DEFAULT.fluidUnits())
+                .setEnumNameProvider(v -> ((Config.FluidUnits)v).getName())
                 .build()
         );
 

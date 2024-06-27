@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
+ * A gametest helper class that can be used to create tests with a single method.
+ *
  * @see BasicTest
  * @see MachineTest
  */

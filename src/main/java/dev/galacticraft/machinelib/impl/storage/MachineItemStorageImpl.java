@@ -48,7 +48,7 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
 
     @Override
     public @NotNull ItemStack getItem(int i) {
-        return ItemStackUtil.copy(this.getSlot(i));
+        return ItemStackUtil.create(this.getSlot(i));
     }
 
     @Override

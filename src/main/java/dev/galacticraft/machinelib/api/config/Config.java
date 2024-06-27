@@ -29,38 +29,99 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.io.File;
 
+/**
+ * MachineLib configuration/settings.
+ */
 public interface Config {
+    /**
+     * The default config. Do not modify this.
+     */
     Config DEFAULT = new MachineLibConfig(null);
 
+    /**
+     * Loads a config from the provided file.
+     * @param file the file to load the config from
+     * @return the loaded config
+     */
     static Config loadFrom(File file) {
         return new MachineLibConfig(file);
     }
 
+    /**
+     * {@return whether vanilla fluid names should be colored}
+     */
     boolean enableColoredVanillaFluidNames();
+
+    /**
+     * Sets whether vanilla fluid names should be colored.
+     *
+     * @param enabled whether vanilla fluid names should be colored
+     */
     void setEnableColoredVanillaFluidNames(boolean enabled);
 
-    FluidDisplayMode fluidDisplayMode();
-    void setFluidDisplayMode(FluidDisplayMode value);
+    /**
+     * {@return what unit fluids should be displayed in}
+     */
+    FluidUnits fluidUnits();
 
+    /**
+     * Sets what unit fluids should be displayed in.
+     *
+     * @param units what unit fluids should be displayed in
+     */
+    void getFluidUnits(FluidUnits units);
+
+    /**
+     * Copies the state of the provided config into this config.
+     * @param config the config to copy from
+     */
     void copyFrom(Config config);
 
+    /**
+     * Reloads the config from the file.
+     */
     @ApiStatus.Internal
     void reload();
 
+    /**
+     * Saves the config to the file.
+     */
     void save();
 
-    enum FluidDisplayMode {
+    /**
+     * The unit to display fluids in.
+     */
+    enum FluidUnits {
+        /**
+         * Display fluids in millibuckets.
+         * 1000mB = 1 bucket.
+         */
         @SerializedName("millibucket")
         MILLIBUCKET(Component.translatable("ui.machinelib.config.fluid_display_mode.millibucket")),
+
+        /**
+         * Display fluids in 81000ths of a bucket.
+         * @see net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants#BUCKET
+         */
         @SerializedName("raw")
         RAW(Component.translatable("ui.machinelib.config.fluid_display_mode.raw")),;
 
+        /**
+         * The name of this display mode.
+         */
         private final Component name;
 
-        FluidDisplayMode(Component name) {
+        /**
+         * Creates a new display mode.
+         * @param name the name of this display mode
+         */
+        FluidUnits(Component name) {
             this.name = name;
         }
 
+        /**
+         * {@return the name of this display mode}
+         */
         public Component getName() {
             return name;
         }

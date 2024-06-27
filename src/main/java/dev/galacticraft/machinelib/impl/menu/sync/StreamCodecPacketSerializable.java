@@ -20,38 +20,46 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.impl.menu.sync;
+package dev.galacticraft.machinelib.impl.menu.sync;
 
-import dev.galacticraft.machinelib.api.menu.MachineData;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.NotNull;
 
-public class MachineDataClient extends MachineData {
-    @Override
-    public void synchronize() {
-        throw new UnsupportedOperationException();
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+public final class StreamCodecPacketSerializable<T> implements DeltaPacketSerializable<RegistryFriendlyByteBuf, Void> {
+    private final StreamCodec<? super RegistryFriendlyByteBuf, T> codec;
+    private final Supplier<T> getter;
+    private final Consumer<T> setter;
+    private T previous = null;
+
+    public StreamCodecPacketSerializable(StreamCodec<? super RegistryFriendlyByteBuf, T> codec, Supplier<T> getter, Consumer<T> setter) {
+        this.codec = codec;
+        this.getter = getter;
+        this.setter = setter;
     }
 
     @Override
-    public void synchronizeFull() {
-        throw new UnsupportedOperationException();
+    public boolean hasChanged(Void ignored) {
+        return !Objects.equals(this.previous, this.getter.get());
     }
 
     @Override
-    public void handle(RegistryFriendlyByteBuf buf) {
-        int n = buf.readByte();
+    public void copyInto(Void other) {
+        this.previous = this.getter.get();
+    }
 
-        if (n == this.data.size()) {
-            for (int i = 0; i < n; i++) {
-                var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(i);
-                key.readPacket(buf);
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                int index = buf.readByte();
-                var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(index);
-                key.readDeltaPacket(buf);
-            }
-        }
+    @Override
+    public void readPacket(@NotNull RegistryFriendlyByteBuf buf) {
+        this.setter.accept(this.codec.decode(buf));
+    }
+
+    @Override
+    public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
+        this.codec.encode(buf, this.getter.get());
     }
 }

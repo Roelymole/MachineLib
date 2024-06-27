@@ -56,6 +56,8 @@ public class CraftingRecipeTestContainer extends RecipeTestContainer implements 
     /**
      * Creates a new container with the given slots.
      *
+     * @param width the width of the crafting grid
+     * @param height the height of the crafting grid
      * @param slots the slots to use
      * @return a new test container
      */
@@ -68,6 +70,8 @@ public class CraftingRecipeTestContainer extends RecipeTestContainer implements 
     /**
      * Creates a new container with the slots specified by a slice of the given storage access
      *
+     * @param width the width of the crafting grid
+     * @param height the height of the crafting grid
      * @param access the storage access providing the slots
      * @param start the index of the first slot to include in the container
      * @param len the number of slots to include in the container
