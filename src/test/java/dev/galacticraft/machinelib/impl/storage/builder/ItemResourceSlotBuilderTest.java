@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.storage.builder;
+package dev.galacticraft.machinelib.impl.storage.builder;
 
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
@@ -34,28 +34,28 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ItemResourceSlotBuilderTest implements MinecraftTest {
-    private ItemResourceSlot.Builder builder;
+class ItemResourceSlotBuilderTest implements MinecraftTest {
+    ItemResourceSlot.Builder builder;
     
     @BeforeEach
-    public void setup() {
+    void setup() {
         this.builder = ItemResourceSlot.builder(InputType.STORAGE);
     }
 
     @Test
-    public void invalidCapacity() {
+    void invalidCapacity() {
         assertThrows(IllegalArgumentException.class, () -> builder.capacity(0).build());
     }
 
     @Test
-    public void capacity() {
+    void capacity() {
         ItemResourceSlot slot = builder.capacity(32).build();
 
         assertEquals(32, slot.getCapacity());
     }
 
     @Test
-    public void icon() {
+    void icon() {
         Pair<ResourceLocation, ResourceLocation> icon = new Pair<>(new ResourceLocation("null"), new ResourceLocation("null"));
         ItemResourceSlot slot = builder.icon(icon).build();
 
@@ -63,7 +63,7 @@ public class ItemResourceSlotBuilderTest implements MinecraftTest {
     }
 
     @Test
-    public void displayPosition() {
+    void displayPosition() {
         ItemResourceSlot slot = builder.pos(11, 43).build();
 
         assertEquals(11, slot.getDisplay().x());
@@ -71,22 +71,41 @@ public class ItemResourceSlotBuilderTest implements MinecraftTest {
     }
 
     @Test
-    public void displayPositionXY() {
+    void displayPositionXY() {
         ItemResourceSlot slot = builder.x(5).y(7).build();
 
         assertEquals(5, slot.getDisplay().x());
         assertEquals(7, slot.getDisplay().y());
     }
 
+
     @Test
-    public void defaultFilter() {
+    void hidden() {
+        ItemResourceSlot slot = builder.hidden().build();
+
+        assertThrows(UnsupportedOperationException.class, () -> builder.x(0));
+        assertThrows(UnsupportedOperationException.class, () -> builder.y(0));
+        assertThrows(UnsupportedOperationException.class, () -> builder.icon(null));
+
+        assertNull(slot.getDisplay());
+    }
+
+    @Test
+    void hiddenPost() {
+        builder.x(10).hidden();
+
+        assertThrows(UnsupportedOperationException.class, () -> builder.build());
+    }
+
+    @Test
+    void defaultFilter() {
         ItemResourceSlot slot = builder.build();
 
         assertSame(ResourceFilters.any(), slot.getFilter());
     }
 
     @Test
-    public void filter() {
+    void filter() {
         ItemResourceSlot slot = builder.filter(ResourceFilters.none()).build();
 
         assertSame(ResourceFilters.none(), slot.getFilter());

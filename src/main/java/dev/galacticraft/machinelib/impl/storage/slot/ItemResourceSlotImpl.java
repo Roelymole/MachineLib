@@ -90,17 +90,6 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public boolean consumeOne(@NotNull Item resource) {
-        DataComponentPatch tag = this.components;
-        if (this.extractOne(resource)) {
-            this.insertRemainder(resource, tag, 1);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
     public boolean consumeOne(@NotNull Item resource, @Nullable DataComponentPatch components) {
         DataComponentPatch actual = this.components;
         if (this.extractOne(resource, components)) {
@@ -120,16 +109,6 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (consumed > 0) {
             this.insertRemainder(item, components, 1);
             return consumed;
-        }
-        return consumed;
-    }
-
-    @Override
-    public long consume(@NotNull Item resource, long amount) {
-        DataComponentPatch components = this.components;
-        long consumed = this.extract(resource, amount);
-        if (consumed > 0) {
-            this.insertRemainder(resource, components, (int) consumed);
         }
         return consumed;
     }

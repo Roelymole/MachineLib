@@ -34,6 +34,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * A slot that can store multiple of a single instance of resource (e.g., sticks).
@@ -126,22 +127,26 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
 
     /**
      * Sets the resource stored in this slot to the given resource and amount.
+     * For synchronization and testing purposes only.
      * Does not increment the modification counter.
      * Equivalent to {@link #set(Object, DataComponentPatch, long)} but assumes an empty component patch.
      *
      * @param resource The resource to set.
      * @param amount The amount of the resource to set.
      */
+    @VisibleForTesting
     void set(@Nullable Resource resource, long amount);
 
     /**
      * Sets the resource stored in this slot to the given resource, components, and amount.
+     * For synchronization and testing purposes only.
      * Does not increment the modification counter.
      *
      * @param resource The resource to set.
      * @param components The components of the resource to set.
      * @param amount The amount of the resource to set.
      */
+    @VisibleForTesting
     void set(@Nullable Resource resource, @NotNull DataComponentPatch components, long amount);
 
     /**

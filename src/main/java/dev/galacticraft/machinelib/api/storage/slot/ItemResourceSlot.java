@@ -37,6 +37,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A resource slot that stores items.
+ */
 public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemContext, FakeRecipeHolder {
     @Contract("_ -> new")
     static @NotNull Builder builder(InputType inputType) {
@@ -69,7 +72,9 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
      * @param resource the item type to consume
      * @return {@code true} if the item was consumed, {@code false} otherwise
      */
-    boolean consumeOne(@NotNull Item resource);
+    default boolean consumeOne(@NotNull Item resource) {
+        return this.consumeOne(resource, null);
+    }
 
     /**
      * Consumes one item of the specified type and components from the slot.
@@ -98,7 +103,9 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
      * @param amount the number of items to consume
      * @return the number of items that were actually consumed
      */
-    long consume(@NotNull Item resource, long amount);
+    default long consume(@NotNull Item resource, long amount) {
+        return this.consume(resource, null, amount);
+    }
 
     /**
      * Consumes the specified number of items of the specified type and components from the slot.
@@ -109,7 +116,7 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
      * @param amount the number of items to consume
      * @return the number of items that were actually consumed
      */
-    long consume(@NotNull Item resource, @NotNull DataComponentPatch components, long amount);
+    long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
     /**
      * {@return the display properties of this slot, or {@code null} if hidden}

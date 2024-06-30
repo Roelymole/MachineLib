@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.storage.builder;
+package dev.galacticraft.machinelib.impl.storage.builder;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
@@ -33,28 +33,28 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FluidResourceSlotBuilderTests implements MinecraftTest {
-    private FluidResourceSlot.Builder builder;
+class FluidResourceSlotBuilderTest implements MinecraftTest {
+    FluidResourceSlot.Builder builder;
     
     @BeforeEach
-    public void setup() {
+    void setup() {
         this.builder = FluidResourceSlot.builder(InputType.STORAGE);
     }
 
     @Test
-    public void invalidCapacity() {
+    void invalidCapacity() {
         assertThrows(IllegalArgumentException.class, () -> builder.capacity(0).build());
     }
 
     @Test
-    public void capacity() {
+    void capacity() {
         FluidResourceSlot slot = builder.capacity(FluidConstants.BUCKET * 64).build();
 
         assertEquals(FluidConstants.BUCKET * 64, slot.getCapacity());
     }
 
     @Test
-    public void hidden() {
+    void hidden() {
         builder.hidden();
 
         assertThrows(UnsupportedOperationException.class, () -> builder.x(0));
@@ -63,31 +63,46 @@ public class FluidResourceSlotBuilderTests implements MinecraftTest {
         assertThrows(UnsupportedOperationException.class, () -> builder.height(0));
 
         assertNull(builder.build().getDisplay());
+        assertTrue(builder.build().isHidden());
     }
 
     @Test
-    public void hiddenPost() {
+    void hiddenPost() {
         builder.x(10).hidden();
 
         assertThrows(UnsupportedOperationException.class, () -> builder.build());
     }
 
     @Test
-    public void height() {
+    void height() {
         FluidResourceSlot slot = builder.height(16).build();
 
         assertEquals(16, slot.getDisplay().height());
     }
 
     @Test
-    public void invalidHeight() {
+    void invalidHeight() {
         builder.height(-4);
 
         assertThrows(IllegalArgumentException.class, () -> builder.build());
     }
 
     @Test
-    public void displayPosition() {
+    void width() {
+        FluidResourceSlot slot = builder.width(16).build();
+
+        assertEquals(16, slot.getDisplay().width());
+    }
+
+    @Test
+    void invalidWidth() {
+        builder.width(-4);
+
+        assertThrows(IllegalArgumentException.class, () -> builder.build());
+    }
+
+    @Test
+    void displayPosition() {
         FluidResourceSlot slot = builder.pos(11, 43).build();
 
         assertEquals(11, slot.getDisplay().x());
@@ -95,7 +110,7 @@ public class FluidResourceSlotBuilderTests implements MinecraftTest {
     }
 
     @Test
-    public void displayPositionXY() {
+    void displayPositionXY() {
         FluidResourceSlot slot = builder.x(5).y(7).build();
 
         assertEquals(5, slot.getDisplay().x());
@@ -103,14 +118,14 @@ public class FluidResourceSlotBuilderTests implements MinecraftTest {
     }
 
     @Test
-    public void defaultFilter() {
+    void defaultFilter() {
         FluidResourceSlot slot = builder.build();
 
         assertSame(ResourceFilters.any(), slot.getFilter());
     }
 
     @Test
-    public void filter() {
+    void filter() {
         FluidResourceSlot slot = builder.filter(ResourceFilters.none()).build();
 
         assertSame(ResourceFilters.none(), slot.getFilter());

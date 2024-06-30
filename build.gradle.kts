@@ -242,6 +242,7 @@ tasks.withType<Jar> {
 
 tasks.test {
     useJUnitPlatform()
+    enableAssertions = true
     workingDir("run")
 
     Files.createDirectories(workingDir.toPath())

@@ -41,7 +41,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -252,7 +251,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
                 }
 
                 if (nbt.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE)) {
-                    tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag((ByteTag) Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
+                    tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag(Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
                 }
             }
         }
@@ -277,7 +276,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public @NotNull BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         super.playerWillDestroy(level, pos, state, player);
         BlockEntity entity = level.getBlockEntity(pos);
         if (entity instanceof MachineBlockEntity machine) {

@@ -20,22 +20,22 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.storage.slot.insertion;
+package dev.galacticraft.machinelib.impl.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
-import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
-public class ItemSlotInsertionTests extends SlotInsertionTests<Item, ItemResourceSlot> {
-    public ItemSlotInsertionTests() {
-        super(Items.STICK, Items.GLASS);
+import static org.junit.jupiter.api.Assertions.*;
+
+class FluidResourceSlotImplTest extends ResourceSlotImplTest<Fluid, FluidResourceSlotImpl> {
+    FluidResourceSlotImplTest() {
+        super(Fluids.WATER, Fluids.LAVA);
     }
 
     @Override
-    protected ItemResourceSlot createSlot() {
-        return ItemResourceSlot.create(InputType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any(), (int) CAPACITY);
+    FluidResourceSlotImpl createSlot() {
+        return new FluidResourceSlotImpl(InputType.STORAGE, null, CAPACITY, ResourceFilters.any());
     }
 }

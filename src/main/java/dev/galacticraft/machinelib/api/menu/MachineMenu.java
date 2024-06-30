@@ -217,7 +217,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
         this.levelAccess = ContainerLevelAccess.create(machine.getLevel(), machine.getBlockPos());
 
-        this.machineSlots = new StorageSlot[this.itemStorage.size()];
+        StorageSlot[] slots = new StorageSlot[this.itemStorage.size()];
 
         int index = 0;
         for (ItemResourceSlot slot : this.itemStorage) {
@@ -230,9 +230,12 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
                     slot1 = new StorageSlot(this.itemStorage, slot, display, index, this.playerUUID);
                 }
                 this.addSlot(slot1);
-                this.machineSlots[index++] = slot1;
+                slots[index++] = slot1;
             }
         }
+
+        this.machineSlots = new StorageSlot[index];
+        System.arraycopy(slots, 0, this.machineSlots, 0, index);
 
         index = 0;
         for (FluidResourceSlot slot : this.fluidStorage) {

@@ -20,22 +20,30 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.storage.slot.extraction;
+package dev.galacticraft.machinelib.test.util;
 
-import dev.galacticraft.machinelib.api.filter.ResourceFilters;
-import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
-import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import org.jetbrains.annotations.NotNull;
 
-public class FluidSlotExtractionTests extends SlotExtractionTests<Fluid, FluidResourceSlot> {
-    public FluidSlotExtractionTests() {
-        super(Fluids.WATER, Fluids.LAVA);
+import java.util.Optional;
+import java.util.stream.Stream;
+
+public class StaticRegistryAccess implements RegistryAccess {
+    public static final StaticRegistryAccess INSTANCE = new StaticRegistryAccess();
+
+    private StaticRegistryAccess() {
     }
 
     @Override
-    protected FluidResourceSlot createSlot() {
-        return FluidResourceSlot.create(InputType.STORAGE, TankDisplay.create(0, 0), CAPACITY, ResourceFilters.any());
+    public <E> @NotNull Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> key) {
+        return (Optional<Registry<E>>) BuiltInRegistries.REGISTRY.getOptional(key.location());
+    }
+
+    @Override
+    public @NotNull Stream<RegistryEntry<?>> registries() {
+        return BuiltInRegistries.REGISTRY.entrySet().stream().map(entry -> new RegistryEntry(entry.getKey(), entry.getValue()));
     }
 }

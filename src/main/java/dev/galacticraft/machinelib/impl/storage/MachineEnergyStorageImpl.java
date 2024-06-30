@@ -64,11 +64,6 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public boolean supportsInsertion() {
-        return true;
-    }
-
-    @Override
     public boolean canExtract(long amount) {
         return this.amount >= amount;
     }
@@ -145,11 +140,6 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public boolean supportsExtraction() {
-        return this.maxOutput > 0;
-    }
-
-    @Override
     public long extract(long amount, @NotNull TransactionContext transaction) {
         long extracted = this.tryExtract(amount);
 
@@ -211,7 +201,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
             case BOTH -> {
                 if (this.insert) {
                     if (this.extract) {
-                        return this;
+                        return ExposedEnergyStorage.create(this, this.maxInput, this.maxOutput);
                     } else {
                         return ExposedEnergyStorage.create(this, this.maxInput, 0);
                     }
@@ -272,16 +262,6 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
 
     private void markModified() {
         if (this.listener != null) this.listener.run();
-    }
-
-    @Override
-    public void readDeltaPacket(@NotNull ByteBuf buf) {
-        this.amount = buf.readLong();
-    }
-
-    @Override
-    public void writeDeltaPacket(@NotNull ByteBuf buf, long[] previous) {
-        buf.writeLong(this.amount);
     }
 
     @Override

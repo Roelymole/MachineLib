@@ -22,15 +22,22 @@
 
 package dev.galacticraft.machinelib.test;
 
+import dev.galacticraft.machinelib.test.util.StaticRegistryAccess;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
+import java.util.Random;
+
 public class Utils {
+    private static final Random RANDOM = new Random();
     private static long counter = 0;
+
     public static DataComponentPatch generateComponents() {
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putLong("UniqueId", counter++);
@@ -39,5 +46,19 @@ public class Utils {
 
     public static ItemStack itemStack(Item item, DataComponentPatch components, int amount) {
         return new ItemStack(item.builtInRegistryHolder(), amount, components);
+    }
+
+    public static RegistryFriendlyByteBuf createBuf() {
+        return new RegistryFriendlyByteBuf(Unpooled.buffer(), StaticRegistryAccess.INSTANCE);
+    }
+
+    public static int random(int min, int not, int max) {
+        int random = RANDOM.nextInt(min, max);
+        return random == not ? random(min, not, max) : random;
+    }
+
+    public static long random(long min, long not, long max) {
+        long random = RANDOM.nextLong(min, max);
+        return random == not ? random(min, not, max) : random;
     }
 }
