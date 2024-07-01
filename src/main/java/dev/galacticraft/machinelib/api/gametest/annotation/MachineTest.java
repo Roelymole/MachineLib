@@ -22,7 +22,9 @@
 
 package dev.galacticraft.machinelib.api.gametest.annotation;
 
+import dev.galacticraft.machinelib.api.gametest.MachineTestContext;
 import dev.galacticraft.machinelib.api.gametest.SimpleGameTest;
+import net.minecraft.gametest.framework.GameTest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -30,20 +32,50 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a test that has to wait a specified number of ticks for results.
- * Annotated methods should have initial setup in their body,
- * and return a {@link Runnable} that verifies state at the end.
+ * <p>{@code @MachineTest} annotated methods should only be found in {@link dev.galacticraft.machinelib.api.gametest.MachineGameTest}s and descendants.
+ *
+ * <p>{@code @MachineTest} annotated methods must not be {@code private} or {@code static}.
+ *
+ * <p>{@code @MachineTest} annotated methods can take
+ * a {@link net.minecraft.gametest.framework.GameTestHelper},
+ * a {@link MachineTestContext},
+ * OR a {@link dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity} (and descendant classes).
+ *
+ * <p>{@code @MachineTest} annotated methods should return a {@link Runnable} that will be executed after {@code workTime} ticks have passed.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MachineTest {
+    /**
+     * {@return the batch name of the test}
+     * @see GameTest#batch()
+     */
     String batch() default "";
+
+    /**
+     * {@return the group name of the test}
+     * Used for test naming only.
+     */
     String group() default "";
+
+    /**
+     * {@return the structure file to use for the test}
+     * @see GameTest#template()
+     */
     String structure() default SimpleGameTest.STRUCTURE_3x3;
 
+    /**
+     * {@return the setup time of the test}
+     */
     int setupTime() default 1;
 
+    /**
+     * {@return the work time of the test}
+     */
     int workTime() default 1;
 
+    /**
+     * {@return whether to capture {@link net.minecraft.gametest.framework.GameTestAssertException}s and unwrap them.
+     */
     boolean captureAssertions() default true;
 }

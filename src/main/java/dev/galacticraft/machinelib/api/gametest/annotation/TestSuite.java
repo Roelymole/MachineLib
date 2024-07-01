@@ -27,8 +27,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Applies default values to all test methods in the class.
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TestSuite {
+    /**
+     * {@return the name of the test suite}
+     * Sets the default group name for all test methods in the class.
+     */
     String value(); // name
 }

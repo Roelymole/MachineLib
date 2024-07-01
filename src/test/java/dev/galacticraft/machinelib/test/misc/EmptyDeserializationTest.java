@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.test.misc;
 
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -38,7 +38,7 @@ public class EmptyDeserializationTest {
 
     @Test
     public void ioConfiguration() {
-        IoConfig ioConfig = new IoConfig();
+        IOConfig ioConfig = new IOConfig();
         Assertions.assertDoesNotThrow(() -> ioConfig.readTag(new ListTag()));
     }
 }

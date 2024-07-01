@@ -39,22 +39,22 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Stores the configuration of a machine's I/O for all six faces.
  */
-public final class IoConfig implements Serializable<ListTag>, MachineRenderData, DeltaPacketSerializable<ByteBuf, IoConfig> {
-    public static final StreamCodec<ByteBuf, IoConfig> CODEC = PacketSerializable.createCodec(IoConfig::new);
+public final class IOConfig implements Serializable<ListTag>, MachineRenderData, DeltaPacketSerializable<ByteBuf, IOConfig> {
+    public static final StreamCodec<ByteBuf, IOConfig> CODEC = PacketSerializable.createCodec(IOConfig::new);
 
     /**
      * The I/O configuration for each face.
      */
-    private final IoFace[] faces;
+    private final IOFace[] faces;
 
     /**
      * Creates a new I/O configuration with all faces blank.
      */
-    public IoConfig() {
-        this.faces = new IoFace[6];
+    public IOConfig() {
+        this.faces = new IOFace[6];
 
         for (int i = 0; i < this.faces.length; i++) {
-            this.faces[i] = new IoFace();
+            this.faces[i] = new IOFace();
         }
     }
 
@@ -62,7 +62,7 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
      * Creates a new I/O configuration with the given faces.
      * @param faces the faces to use
      */
-    public IoConfig(IoFace[] faces) {
+    public IOConfig(IOFace[] faces) {
         this.faces = faces;
     }
 
@@ -72,14 +72,14 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
      * @param face the block face to pull the option from
      */
     @NotNull
-    public IoFace get(@NotNull BlockFace face) {
+    public IOFace get(@NotNull BlockFace face) {
         return this.faces[face.ordinal()];
     }
 
     @Override
     public @NotNull ListTag createTag() {
         ListTag nbt = new ListTag();
-        for (IoFace face : this.faces) {
+        for (IOFace face : this.faces) {
             nbt.add(face.createTag());
         }
         return nbt;
@@ -92,7 +92,7 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
                 this.faces[i].readTag((ByteTag) tag.get(i));
             }
         } else {
-            for (IoFace face : faces) {
+            for (IOFace face : faces) {
                 face.setOption(ResourceType.NONE, ResourceFlow.BOTH);
             }
         }
@@ -100,25 +100,25 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
 
     @Override
     public void writePacket(@NotNull ByteBuf buf) {
-        for (IoFace face : this.faces) {
+        for (IOFace face : this.faces) {
             face.writePacket(buf);
         }
     }
 
     @Override
     public void readPacket(@NotNull ByteBuf buf) {
-        for (IoFace face : this.faces) {
+        for (IOFace face : this.faces) {
             face.readPacket(buf);
         }
     }
 
     @Override
-    public IoConfig getIoConfig() {
+    public IOConfig getIOConfig() {
         return this;
     }
 
     @Override
-    public boolean hasChanged(@NotNull IoConfig previous) {
+    public boolean hasChanged(@NotNull IOConfig previous) {
         for (int i = 0; i < this.faces.length; i++) {
             if (this.faces[i].hasChanged(previous.faces[i])) {
                 return true;
@@ -136,7 +136,7 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
     }
 
     @Override
-    public void writeDeltaPacket(@NotNull ByteBuf buf, @NotNull IoConfig previous) {
+    public void writeDeltaPacket(@NotNull ByteBuf buf, @NotNull IOConfig previous) {
         byte n = 0;
         for (int i = 0; i < this.faces.length; i++) {
             if (this.faces[i].hasChanged(previous.faces[i])) {
@@ -153,7 +153,7 @@ public final class IoConfig implements Serializable<ListTag>, MachineRenderData,
     }
 
     @Override
-    public void copyInto(@NotNull IoConfig other) {
+    public void copyInto(@NotNull IOConfig other) {
         for (int i = 0; i < this.faces.length; i++) {
             this.faces[i].copyInto(other.faces[i]);
         }

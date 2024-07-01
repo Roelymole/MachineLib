@@ -22,8 +22,15 @@
 
 package dev.galacticraft.machinelib.api.machine;
 
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 
+/**
+ * The data required to render a machine on the client.
+ * By default, no data is synced to the client, so this should be manually synchronized if more data is needed.
+ */
 public interface MachineRenderData {
-    IoConfig getIoConfig();
+    /**
+     * {@return the I/O configuration of the machine}
+     */
+    IOConfig getIOConfig();
 }

@@ -29,7 +29,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
-import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.transfer.InputType;
@@ -367,7 +367,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param face     the face to draw
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull MachineRenderData data, @NotNull BlockFace face) {
-        IoFace machineFace = menu.configuration.get(face);
+        IOFace machineFace = menu.configuration.get(face);
         if (this.model != null) {
             graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, model.getSprite(face, data, machineFace.getType(), machineFace.getFlow()));
         }
@@ -688,7 +688,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void renderFaceTooltip(GuiGraphics graphics, @NotNull BlockFace face, int mouseX, int mouseY) {
         TOOLTIP_ARRAY.add(face.getName());
-        IoFace configuredFace = this.menu.configuration.get(face);
+        IOFace configuredFace = this.menu.configuration.get(face);
         if (configuredFace.getType() != ResourceType.NONE) {
             TOOLTIP_ARRAY.add(configuredFace.getType().getName().copy().append(" ").append(configuredFace.getFlow().getName()));
         }
@@ -811,7 +811,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         if (Tab.CONFIGURATION.isOpen()) {
             mouseX -= (this.leftPos - PANEL_WIDTH);
             mouseY -= (this.topPos + (TAB_HEIGHT + SPACING + SPACING));
-            IoFace config = null;
+            IOFace config = null;
             if (mouseIn(mouseX, mouseY, TOP_FACE_X, TOP_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
                 config = this.menu.configuration.get(BlockFace.TOP);
             } else if (mouseIn(mouseX, mouseY, LEFT_FACE_X, LEFT_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {

@@ -61,11 +61,11 @@ public abstract class SimpleGameTest implements FabricGameTest {
                 tests.add(this.createTest(basicTest.batch(), basicTest.group(), method.getName(), basicTest.structure(), basicTest.workTime(), basicTest.setupTime(), helper -> {
                     Runnable runnable = GameTestUtils.invokeUnorderedArguments(this, method, helper);
                     if (runnable == null) {
-                        if (basicTest.workTime() == 1) helper.succeed();
+                        if (basicTest.setupTime() == 1) helper.succeed();
                     } else {
-                        helper.runAfterDelay(1, () -> {
+                        helper.runAfterDelay(basicTest.setupTime(), () -> {
                             runnable.run();
-                            helper.succeed();
+                            if (basicTest.workTime() == 1) helper.succeed();
                         });
                     }
                 }));

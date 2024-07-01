@@ -25,8 +25,8 @@ package dev.galacticraft.machinelib.api.menu;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineState;
 import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.machine.configuration.SecuritySettings;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
@@ -135,7 +135,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
     /**
      * The I/O configuration of the machine associated with this menu.
      */
-    public final @NotNull IoConfig configuration;
+    public final @NotNull IOConfig configuration;
 
     /**
      * The security settings of the machine associated with this menu.
@@ -206,7 +206,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         this.playerInventory = player.getInventory();
         this.playerUUID = player.getUUID();
 
-        this.configuration = machine.getIoConfig();
+        this.configuration = machine.getIOConfig();
         this.security = machine.getSecurity();
         this.redstoneMode = machine.getRedstoneMode();
 
@@ -273,7 +273,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         BlockPos blockPos = buf.readBlockPos();
         this.machine = (Machine) inventory.player.level().getBlockEntity(blockPos); //todo: actually stop using the BE on the client side
         this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), blockPos);
-        this.configuration = new IoConfig();
+        this.configuration = new IOConfig();
         this.configuration.readPacket(buf);
         this.security = new SecuritySettings();
         this.security.readPacket(buf);
@@ -392,7 +392,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         data.register(this.itemStorage, new long[this.itemStorage.size()]); //todo: probably synced by vanilla - is this necessary?
         data.register(this.fluidStorage, new long[this.fluidStorage.size()]);
         data.register(this.energyStorage, new long[1]);
-        data.register(this.configuration, new IoConfig());
+        data.register(this.configuration, new IOConfig());
         data.register(this.security, new SecuritySettings());
         data.registerEnum(RedstoneMode.values(), () -> this.redstoneMode, mode -> this.redstoneMode = mode);
         data.register(this.state, new MachineState());
@@ -543,7 +543,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @ApiStatus.Internal
     public void cycleFaceConfig(BlockFace face, boolean reverse, boolean reset) {
-        IoFace option = this.configuration.get(face);
+        IOFace option = this.configuration.get(face);
 
         short bits = calculateIoBitmask();
         if (bits != 0b1_000_000_000_000 && !reset && !isFaceLocked(face)) {

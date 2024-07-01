@@ -47,8 +47,8 @@ import team.reborn.energy.api.EnergyStorage;
  * Represents a face of a {@link MachineBlockEntity} that has been configured to
  * accept certain types of resources.
  */
-public class IoFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf>, Equivalent<IoFace> {
-    public static final StreamCodec<ByteBuf, IoFace> CODEC = PacketSerializable.createCodec(IoFace::new);
+public class IOFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf>, Equivalent<IOFace> {
+    public static final StreamCodec<ByteBuf, IOFace> CODEC = PacketSerializable.createCodec(IOFace::new);
 
     /**
      * The type of resource that this face is configured to accept.
@@ -59,36 +59,57 @@ public class IoFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf
      */
     protected @NotNull ResourceFlow flow;
 
-    public IoFace() {
+    public IOFace() {
         this(ResourceType.NONE, ResourceFlow.BOTH);
     }
 
-    public IoFace(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
+    public IOFace(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
         this.type = type;
         this.flow = flow;
     }
 
+    /**
+     * {@return the type of resource this face is configured to accept}
+     */
     public @NotNull ResourceType getType() {
         return this.type;
     }
 
+    /**
+     * {@return the flow direction of this face}
+     * If the resource type is {@code NONE} this should always be {@code BOTH}.
+     */
     public @NotNull ResourceFlow getFlow() {
         return this.flow;
     }
 
+    /**
+     * Sets the type and flow of this face.
+     * @param type the resource type to accept
+     * @param flow the flow direction of this face
+     */
     public void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
         this.type = type;
         this.flow = flow;
     }
 
+    /**
+     * {@return an exposed item storage configured for this face}
+     */
     public @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull StorageProvider<Item, ItemVariant> provider) {
         return null;
     }
 
+    /**
+     * {@return an exposed fluid storage configured for this face}
+     */
     public @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull StorageProvider<Fluid, FluidVariant> provider) {
         return null;
     }
 
+    /**
+     * {@return an exposed energy storage configured for this face}
+     */
     public @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage) {
         return null;
     }
@@ -118,13 +139,13 @@ public class IoFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf
     }
 
     @Override
-    public boolean hasChanged(@NotNull IoFace previous) {
+    public boolean hasChanged(@NotNull IOFace previous) {
         return previous.type != this.type
                 || previous.flow != this.flow;
     }
 
     @Override
-    public void copyInto(@NotNull IoFace other) {
+    public void copyInto(@NotNull IOFace other) {
         other.type = this.type;
         other.flow = this.flow;
     }

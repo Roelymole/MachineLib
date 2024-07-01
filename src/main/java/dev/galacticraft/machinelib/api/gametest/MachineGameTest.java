@@ -160,6 +160,11 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
         });
     }
 
+    /**
+     * Creates a machine at the {@link #MACHINE_POS} position.
+     * @param helper the game test helper
+     * @return the newly created machine
+     */
     protected Machine createMachine(GameTestHelper helper) {
         helper.setBlock(MACHINE_POS, this.type.getBlock());
         return (Machine) helper.getBlockEntity(MACHINE_POS);

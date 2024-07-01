@@ -84,7 +84,7 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
 
     protected void fulfillRunConditions(Machine machine) {
         for (IngredientSupplier<C, R, Machine> condition : this.conditions) {
-            condition.fulfillRunRequirements(machine);
+            condition.supplyIngredient(machine);
         }
     }
 
@@ -129,7 +129,7 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
 
         for (int i = 0; i < this.conditions.size(); i++) {
             if (i == ignored) continue;
-            this.conditions.get(i).fulfillRunRequirements(machine);
+            this.conditions.get(i).supplyIngredient(machine);
         }
 
         helper.runAfterDelay(this.recipeRuntime, () -> {

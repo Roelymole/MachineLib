@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a resource storage exposed to adjacent blocks or items.
+ * Has additional restrictions on the flow of resources compared to {@link ResourceStorage}s.
  *
  * @param <Resource> the type of resource stored in the storage
  * @param <Variant> the type of variant associated with the resource

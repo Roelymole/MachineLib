@@ -39,5 +39,4 @@ public class TestMod implements ModInitializer {
         TestModMenuTypes.register();
         TestModMachineTypes.initialize();
     }
-
 }

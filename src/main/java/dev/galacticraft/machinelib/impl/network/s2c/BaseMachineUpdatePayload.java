@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.network.s2c;
 
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -33,12 +33,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record BaseMachineUpdatePayload(BlockPos pos, IoConfig config) implements CustomPacketPayload {
+public record BaseMachineUpdatePayload(BlockPos pos, IOConfig config) implements CustomPacketPayload {
     public static final Type<BaseMachineUpdatePayload> TYPE = new Type<>(Constant.id("machine_update"));
     public static final StreamCodec<ByteBuf, BaseMachineUpdatePayload> CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC,
             BaseMachineUpdatePayload::pos,
-            IoConfig.CODEC,
+            IOConfig.CODEC,
             BaseMachineUpdatePayload::config,
             BaseMachineUpdatePayload::new
     );
@@ -51,7 +51,7 @@ public record BaseMachineUpdatePayload(BlockPos pos, IoConfig config) implements
     public void apply(ClientPlayNetworking.Context context) {
         ClientLevel level = context.client().level;
         if (level != null && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
-            this.config.copyInto(machine.getIoConfig());
+            this.config.copyInto(machine.getIOConfig());
             machine.setChanged();
             machine.markForRerender();
         }

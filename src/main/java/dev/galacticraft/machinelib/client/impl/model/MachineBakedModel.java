@@ -25,8 +25,8 @@ package dev.galacticraft.machinelib.client.impl.model;
 import com.google.gson.JsonObject;
 import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.api.machine.MachineRenderData;
-import dev.galacticraft.machinelib.api.machine.configuration.IoConfig;
-import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
+import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
@@ -120,7 +120,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         BlockFace face = BlockFace.toFace(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
         assert face != null;
 
-        IoFace machineFace = renderData == null ? new IoFace() : renderData.getIoConfig().get(face);
+        IOFace machineFace = renderData == null ? new IOFace() : renderData.getIOConfig().get(face);
         quad.spriteBake(getSprite(face,
                         renderData,
                         machineFace.getType(), machineFace.getFlow()),
@@ -129,9 +129,9 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         return true;
     }
 
-    private boolean transformItem(IoConfig config, @NotNull MutableQuadView quad) {
+    private boolean transformItem(IOConfig config, @NotNull MutableQuadView quad) {
         BlockFace face = BlockFace.toFace(Direction.NORTH, quad.nominalFace());
-        IoFace IOFace = config.get(face);
+        IOFace IOFace = config.get(face);
         assert face != null;
         quad.spriteBake(getSprite(face,
                         config,
@@ -225,7 +225,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         assert ((BlockItem) stack.getItem()).getBlock() instanceof MachineBlock;
         CustomData customData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
 
-        IoConfig config = new IoConfig();
+        IOConfig config = new IOConfig();
         if (!customData.isEmpty()) {
             CompoundTag beTag = customData.getUnsafe();
             if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {

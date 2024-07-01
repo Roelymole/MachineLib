@@ -312,7 +312,7 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         BlockEntity blockEntity = reader.getBlockEntity(pos);
         if (blockEntity instanceof MachineBlockEntity machine) {
             CompoundTag config = new CompoundTag();
-            config.put(Constant.Nbt.CONFIGURATION, machine.getIoConfig().createTag());
+            config.put(Constant.Nbt.CONFIGURATION, machine.getIOConfig().createTag());
             config.put(Constant.Nbt.SECURITY, machine.getSecurity().createTag());
             config.put(Constant.Nbt.REDSTONE_MODE, machine.getRedstoneMode().createTag());
             BlockItem.setBlockEntityData(stack, blockEntity.getType(), config);

@@ -50,7 +50,7 @@ public record SideConfigurationUpdatePayload(BlockPos pos, BlockFace face, Resou
 
     public void apply(ClientPlayNetworking.Context context) {
         if (context.client().level.getBlockEntity(this.pos) instanceof MachineBlockEntity machine) {
-            machine.getIoConfig().get(this.face).setOption(this.resource, this.flow);
+            machine.getIOConfig().get(this.face).setOption(this.resource, this.flow);
             machine.setChanged();
         }
     }

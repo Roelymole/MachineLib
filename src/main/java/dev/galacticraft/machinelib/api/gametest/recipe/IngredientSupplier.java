@@ -26,7 +26,18 @@ import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Recipe;
 
+/**
+ * A functional interface for fulfilling the run requirements of a machine.
+ * @param <C> the type of container
+ * @param <R> the type of recipe
+ * @param <Machine> the type of machine
+ */
 @FunctionalInterface
 public interface IngredientSupplier<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> {
-    void fulfillRunRequirements(Machine machine);
+    /**
+     * Fulfills a single run requirement of a machine (energy, item, fluid, etc.).
+     * It is best to split requirements to test as many edge cases as possible.
+     * @param machine the machine to supply an ingredient to
+     */
+    void supplyIngredient(Machine machine);
 }

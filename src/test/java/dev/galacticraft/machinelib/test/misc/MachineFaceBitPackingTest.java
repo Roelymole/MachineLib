@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.test.misc;
 
-import dev.galacticraft.machinelib.api.machine.configuration.IoFace;
+import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import org.junit.jupiter.api.Assertions;
@@ -33,10 +33,10 @@ public class MachineFaceBitPackingTest {
     public void verifyPackedIntegrity() {
         for (ResourceType type : ResourceType.values()) {
             for (ResourceFlow flow : ResourceFlow.VALUES) {
-                byte pack = IoFace.pack(type, flow);
+                byte pack = IOFace.pack(type, flow);
 
-                Assertions.assertEquals(type, IoFace.unpackType(pack));
-                Assertions.assertEquals(flow, IoFace.unpackFlow(pack));
+                Assertions.assertEquals(type, IOFace.unpackType(pack));
+                Assertions.assertEquals(flow, IOFace.unpackFlow(pack));
             }
         }
     }

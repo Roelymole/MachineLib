@@ -30,6 +30,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Wrapper around {@link GameTestHelper} with additional methods for testing machines.
+ */
 public class MachineTestContext {
     private final BlockPos pos;
     private final GameTestHelper helper;
@@ -40,6 +43,9 @@ public class MachineTestContext {
         this.helper = helper;
     }
 
+    /**
+     * {@return the game test helper}
+     */
     public GameTestHelper helper() {
         return this.helper;
     }
@@ -54,10 +60,22 @@ public class MachineTestContext {
         }
     }
 
+    /**
+     * Fails the test with the given message.
+     * @param message the message to fail with
+     * @param objects the objects to format the message with
+     * @return a new {@link GameTestAssertPosException} with the given message
+     */
     public GameTestAssertPosException fail(String message, Object... objects) {
         return new GameTestAssertPosException(new MessageFormat(message).format(objects), this.helper.absolutePos(this.pos), this.pos, this.helper.getTick());
     }
 
+    /**
+     * Fails the test with the given message.
+     *
+     * @param message the message to fail with
+     * @return a new {@link GameTestAssertPosException} with the given message
+     */
     public GameTestAssertPosException fail(String message) {
         return new GameTestAssertPosException(message, this.helper.absolutePos(this.pos), this.pos, this.helper.getTick());
     }

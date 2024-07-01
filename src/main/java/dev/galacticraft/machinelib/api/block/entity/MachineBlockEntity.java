@@ -114,7 +114,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     private final MachineType<? extends MachineBlockEntity, ? extends MachineMenu<? extends MachineBlockEntity>> type;
 
-    private final IoConfig configuration;
+    private final IOConfig configuration;
     private final SecuritySettings security;
     private @NotNull RedstoneMode redstone = RedstoneMode.IGNORE;
 
@@ -214,11 +214,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         this.type = type;
         this.name = name;
 
-        IoFace[] faces = new IoFace[6];
+        IOFace[] faces = new IOFace[6];
         for (int i = 0; i < faces.length; i++) {
-            faces[i] = new InternalIoFace(i);
+            faces[i] = new InternalIOFace(i);
         }
-        this.configuration = new IoConfig(faces);
+        this.configuration = new IOConfig(faces);
         this.security = new InternalSecuritySettings();
 
         this.state = new InternalMachineState();
@@ -347,7 +347,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * {@return the IO configuration of this machine}
      */
     @Contract(pure = true)
-    public final @NotNull IoConfig getIoConfig() {
+    public final @NotNull IOConfig getIOConfig() {
         return this.configuration;
     }
 
@@ -499,7 +499,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     @ApiStatus.Internal
     private @Nullable EnergyStorage getExposedEnergyStorage(@Nullable BlockFace face) {
         if (face == null) return this.energyStorage;
-        return this.getIoConfig().get(face).getExposedEnergyStorage(this.energyStorage);
+        return this.getIOConfig().get(face).getExposedEnergyStorage(this.energyStorage);
     }
 
     /**
@@ -533,7 +533,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@Nullable BlockFace face) {
         if (face == null) return this.createExposedItemStorage(ResourceFlow.BOTH);
-        return this.getIoConfig().get(face).getExposedItemStorage(this::createExposedItemStorage);
+        return this.getIOConfig().get(face).getExposedItemStorage(this::createExposedItemStorage);
     }
 
     /**
@@ -576,7 +576,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@Nullable BlockFace face) {
         if (face == null) return this.createExposedFluidStorage(ResourceFlow.BOTH);
-        return this.getIoConfig().get(face).getExposedFluidStorage(this::createExposedFluidStorage);
+        return this.getIOConfig().get(face).getExposedFluidStorage(this::createExposedFluidStorage);
     }
 
     /**
@@ -884,13 +884,13 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     /**
      * Subclass that tracks modifications to save and re-render the block entity.
      */
-    private class InternalIoFace extends IoFace {
+    private class InternalIOFace extends IOFace {
         private final BlockFace face;
         private @Nullable ExposedStorage<Item, ItemVariant> cachedItemStorage = null;
         private @Nullable ExposedStorage<Fluid, FluidVariant> cachedFluidStorage = null;
         private @Nullable EnergyStorage cachedEnergyStorage = null;
 
-        public InternalIoFace(int i) {
+        public InternalIOFace(int i) {
             super(ResourceType.NONE, ResourceFlow.BOTH);
             this.face = BlockFace.values()[i];
         }
