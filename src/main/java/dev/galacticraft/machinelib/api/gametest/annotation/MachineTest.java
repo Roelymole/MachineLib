@@ -75,7 +75,7 @@ public @interface MachineTest {
     int workTime() default 1;
 
     /**
-     * {@return whether to capture {@link net.minecraft.gametest.framework.GameTestAssertException}s and unwrap them.
+     * {@return whether to capture {@link AssertionError}s to add gametest data}
      */
     boolean captureAssertions() default true;
 }
