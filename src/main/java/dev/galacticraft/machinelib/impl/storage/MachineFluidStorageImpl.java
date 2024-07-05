@@ -22,15 +22,30 @@
 
 package dev.galacticraft.machinelib.impl.storage;
 
+import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.impl.compat.transfer.ExposedFluidSlotImpl;
+import dev.galacticraft.machinelib.impl.compat.transfer.ExposedStorageImpl;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class MachineFluidStorageImpl extends ResourceStorageImpl<Fluid, FluidResourceSlot> implements MachineFluidStorage {
     public static final MachineFluidStorageImpl EMPTY = new MachineFluidStorageImpl(new FluidResourceSlot[0]);
 
     public MachineFluidStorageImpl(@NotNull FluidResourceSlot @NotNull [] slots) {
         super(slots);
+    }
+
+    @Override
+    public @Nullable ExposedStorage<Fluid, FluidVariant> createExposedStorage(@NotNull ResourceFlow flow) {
+        ExposedFluidSlotImpl[] slots = new ExposedFluidSlotImpl[this.size()];
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = new ExposedFluidSlotImpl(this.getSlots()[i], flow);
+        }
+        return new ExposedStorageImpl<>(this, slots);
     }
 }

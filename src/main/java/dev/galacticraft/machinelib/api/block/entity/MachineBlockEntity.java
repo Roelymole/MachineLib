@@ -98,7 +98,7 @@ import java.util.Set;
 /**
  * A block entity that represents a machine.
  * <p>
- * This class handles 3 different types of storage and IO configurations:
+ * This class handles three different types of storage and IO configurations:
  * {@link MachineEnergyStorage energy}, {@link MachineItemStorage item} and {@link MachineFluidStorage fluid} storage.
  *
  * @see MachineBlock
@@ -242,19 +242,19 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     public static void registerComponents(@NotNull Block... blocks) {
         EnergyStorage.SIDED.registerForBlocks((world, pos, state, blockEntity, context) -> {
             if (blockEntity != null) {
-                return ((MachineBlockEntity) blockEntity).getExposedEnergyStorage(state, context);
+                return ((MachineBlockEntity) blockEntity).getExposedEnergyStorage(BlockFace.from(state, context));
             }
             return null;
         }, blocks);
         ItemStorage.SIDED.registerForBlocks((world, pos, state, blockEntity, context) -> {
             if (blockEntity != null) {
-                return ((MachineBlockEntity) blockEntity).getExposedItemStorage(state, context);
+                return ((MachineBlockEntity) blockEntity).getExposedItemStorage(BlockFace.from(state, context));
             }
             return null;
         }, blocks);
         FluidStorage.SIDED.registerForBlocks((world, pos, state, blockEntity, context) -> {
             if (blockEntity != null) {
-                return ((MachineBlockEntity) blockEntity).getExposedFluidStorage(state, context);
+                return ((MachineBlockEntity) blockEntity).getExposedFluidStorage(BlockFace.from(state, context));
             }
             return null;
         }, blocks);
@@ -271,7 +271,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * The maximum amount of energy that the machine can insert into items in its inventory (per transaction).
      *
      * @return The maximum amount of energy that the machine can insert into items in its inventory (per transaction).
-     * @see #drainPowerToStack(int)
+     * @see #drainPowerToSlot(int)
      * @see #getEnergyItemExtractionRate()
      */
     @Contract(pure = true)
@@ -283,7 +283,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * The maximum amount of energy that the machine can extract from items in its inventory (per transaction).
      *
      * @return The maximum amount of energy that the machine can extract from items in its inventory (per transaction).
-     * @see #chargeFromStack(int)
+     * @see #chargeFromSlot(int)
      * @see #getEnergyItemInsertionRate()
      */
     @Contract(pure = true)
@@ -372,7 +372,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * @see RedstoneMode
      */
     public boolean isDisabled() {
-        return !this.getRedstoneMode().isActive(this.state.isPowered());
+        return !this.redstone.isActive(this.state.isPowered());
     }
 
     /**
@@ -471,58 +471,12 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     /**
      * {@return a controlled/throttled energy storage to expose to adjacent blocks}
      *
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedEnergyStorage(Direction, Direction)
-     */
-    @ApiStatus.Internal
-    private @Nullable EnergyStorage getExposedEnergyStorage(@NotNull BlockState state, @Nullable Direction direction) {
-        return this.getExposedEnergyStorage(state.getValue(BlockStateProperties.HORIZONTAL_FACING), direction);
-    }
-
-    /**
-     * {@return a controlled/throttled energy storage to expose to adjacent blocks}
-     *
-     * @param facing    the direction this machine is facing.
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedEnergyStorage(BlockFace)
-     */
-    @ApiStatus.Internal
-    private @Nullable EnergyStorage getExposedEnergyStorage(@NotNull Direction facing, @Nullable Direction direction) {
-        return this.getExposedEnergyStorage(BlockFace.toFace(facing, direction));
-    }
-
-    /**
-     * {@return a controlled/throttled energy storage to expose to adjacent blocks}
-     *
      * @param face the block face to get the exposed storages I/O configuration from.
      */
     @ApiStatus.Internal
     private @Nullable EnergyStorage getExposedEnergyStorage(@Nullable BlockFace face) {
-        if (face == null) return this.energyStorage;
-        return this.getIOConfig().get(face).getExposedEnergyStorage(this.energyStorage);
-    }
-
-    /**
-     * {@return a controlled/throttled item storage to expose to adjacent blocks}
-     *
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedItemStorage(Direction, Direction)
-     */
-    @ApiStatus.Internal
-    private @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull BlockState state, @Nullable Direction direction) {
-        return this.getExposedItemStorage(state.getValue(BlockStateProperties.HORIZONTAL_FACING), direction);
-    }
-
-    /**
-     * {@return a controlled/throttled item storage to expose to adjacent blocks}
-     *
-     * @param facing    the direction this machine is facing.
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedItemStorage(BlockFace)
-     */
-    @ApiStatus.Internal
-    private @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull Direction facing, @Nullable Direction direction) {
-        return this.getExposedItemStorage(BlockFace.toFace(facing, direction));
+        if (face == null) return this.energyStorage.getExposedStorage(ResourceFlow.BOTH);
+        return this.configuration.get(face).getExposedEnergyStorage(this.energyStorage);
     }
 
     /**
@@ -532,40 +486,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@Nullable BlockFace face) {
-        if (face == null) return this.createExposedItemStorage(ResourceFlow.BOTH);
-        return this.getIOConfig().get(face).getExposedItemStorage(this::createExposedItemStorage);
-    }
-
-    /**
-     * Creates a new exposed item storage with the specified flow.
-     * @param flow the flow of the storage.
-     * @return the new exposed item storage.
-     */
-    protected ExposedStorage<Item, ItemVariant> createExposedItemStorage(ResourceFlow flow) {
-        return ExposedStorage.createItem(this.itemStorage(), flow);
-    }
-
-    /**
-     * {@return a controlled/throttled fluid storage to expose to adjacent blocks}
-     *
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedFluidStorage(Direction, Direction)
-     */
-    @ApiStatus.Internal
-    private @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull BlockState state, @Nullable Direction direction) {
-        return this.getExposedFluidStorage(state.getValue(BlockStateProperties.HORIZONTAL_FACING), direction);
-    }
-
-    /**
-     * {@return a controlled/throttled fluid storage to expose to adjacent blocks}
-     *
-     * @param facing    the direction this machine is facing.
-     * @param direction the direction the adjacent block is in.
-     * @see #getExposedFluidStorage(BlockFace)
-     */
-    @ApiStatus.Internal
-    private @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull Direction facing, @Nullable Direction direction) {
-        return this.getExposedFluidStorage(BlockFace.toFace(facing, direction));
+        if (face == null) return this.itemStorage.createExposedStorage(ResourceFlow.BOTH);
+        return this.configuration.get(face).getExposedItemStorage(this.itemStorage::createExposedStorage);
     }
 
     /**
@@ -575,18 +497,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @ApiStatus.Internal
     private @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@Nullable BlockFace face) {
-        if (face == null) return this.createExposedFluidStorage(ResourceFlow.BOTH);
-        return this.getIOConfig().get(face).getExposedFluidStorage(this::createExposedFluidStorage);
-    }
-
-    /**
-     * Creates a new exposed fluid storage with the specified flow.
-     *
-     * @param flow the flow of the storage.
-     * @return the new exposed fluid storage.
-     */
-    protected ExposedStorage<Fluid, FluidVariant> createExposedFluidStorage(ResourceFlow flow) {
-        return ExposedStorage.createFluid(this.fluidStorage(), flow);
+        if (face == null) return this.fluidStorage.createExposedStorage(ResourceFlow.BOTH);
+        return this.configuration.get(face).getExposedFluidStorage(this.fluidStorage::createExposedStorage);
     }
 
     /**
@@ -622,7 +534,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         if (tag.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND))
             this.security.readTag(tag.getCompound(Constant.Nbt.SECURITY));
         if (tag.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE))
-            this.redstone = RedstoneMode.readTag((ByteTag) tag.get(Constant.Nbt.REDSTONE_MODE));
+            this.redstone = RedstoneMode.readTag(tag.get(Constant.Nbt.REDSTONE_MODE));
         if (tag.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
             this.state.readTag(tag.getCompound(Constant.Nbt.STATE));
         if (tag.contains(Constant.Nbt.ENERGY_STORAGE, Tag.TAG_LONG))
@@ -650,7 +562,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         }
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         for (Direction direction : Constant.Cache.DIRECTIONS) {
-            EnergyStorage storage = this.getExposedEnergyStorage(facing, direction);
+            EnergyStorage storage = this.getExposedEnergyStorage(BlockFace.from(facing, direction));
             if (storage != null && storage.supportsExtraction()) {
                 EnergyStorageUtil.move(storage, this.energyCache.find(direction), Long.MAX_VALUE, null);
             }
@@ -669,7 +581,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         }
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         for (Direction direction : Constant.Cache.DIRECTIONS) {
-            ExposedStorage<Fluid, FluidVariant> storage = this.getExposedFluidStorage(facing, direction);
+            ExposedStorage<Fluid, FluidVariant> storage = this.getExposedFluidStorage(BlockFace.from(facing, direction));
             if (storage != null && storage.supportsExtraction()) {
                 StorageHelper.moveAll(storage, this.fluidCache.find(direction), Long.MAX_VALUE, null); //TODO: fluid I/O cap
             }
@@ -679,8 +591,8 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     /**
      * Pushes items from this machine to adjacent item storages.
      *
-     * @param level the level.
-     * @param state the machine's block state.
+     * @param level the level
+     * @param state the machine's block state
      */
     protected void trySpreadItems(@NotNull ServerLevel level, @NotNull BlockState state) {
         if (this.itemCache == null) {
@@ -688,7 +600,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         }
         Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         for (Direction direction : Constant.Cache.DIRECTIONS) {
-            Storage<ItemVariant> storage = this.getExposedItemStorage(facing, direction);
+            Storage<ItemVariant> storage = this.getExposedItemStorage(BlockFace.from(facing, direction));
             if (storage != null && storage.supportsExtraction()) {
                 StorageHelper.moveAll(storage, this.itemCache.find(direction), Long.MAX_VALUE, null);
             }
@@ -700,10 +612,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      *
      * @param slot the index of the input slot.
      */
-    protected void chargeFromStack(int slot) {
+    protected void chargeFromSlot(int slot) {
         if (this.energyStorage().isFull()) return;
 
-        EnergyStorage energyStorage = this.itemStorage.getSlot(slot).find(EnergyStorage.ITEM);
+        EnergyStorage energyStorage = this.itemStorage.slot(slot).find(EnergyStorage.ITEM);
         if (energyStorage != null && energyStorage.supportsExtraction()) {
             EnergyStorageUtil.move(energyStorage, this.energyStorage, this.getEnergyItemExtractionRate(), null);
         }
@@ -714,9 +626,9 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      *
      * @param slot the index of the input slot.
      */
-    protected void drainPowerToStack(int slot) {
+    protected void drainPowerToSlot(int slot) {
         if (this.energyStorage().isEmpty()) return;
-        EnergyStorage energyStorage = this.itemStorage.getSlot(slot).find(EnergyStorage.ITEM);
+        EnergyStorage energyStorage = this.itemStorage.slot(slot).find(EnergyStorage.ITEM);
         if (energyStorage != null && energyStorage.supportsInsertion()) {
             EnergyStorageUtil.move(this.energyStorage, energyStorage, this.getEnergyItemInsertionRate(), null);
         }
@@ -730,10 +642,10 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      * @param tankSlot the index of the tank where the fluid will be moved to
      * @param fluid the fluid to be extracted and stored
      */
-    protected void takeFluidFromStack(int inputSlot, int tankSlot, @NotNull Fluid fluid) {
-        FluidResourceSlot tank = this.fluidStorage().getSlot(tankSlot);
+    protected void takeFluidFromSlot(int inputSlot, int tankSlot, @NotNull Fluid fluid) {
+        FluidResourceSlot tank = this.fluidStorage().slot(tankSlot);
         if (tank.isFull()) return;
-        ItemResourceSlot slot = this.itemStorage.getSlot(inputSlot);
+        ItemResourceSlot slot = this.itemStorage.slot(inputSlot);
         Storage<FluidVariant> storage = slot.find(FluidStorage.ITEM);
         if (storage != null && storage.supportsExtraction()) {
             StorageHelper.move(FluidVariant.of(fluid), storage, tank, Integer.MAX_VALUE, null);
@@ -741,21 +653,36 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     }
 
     /**
-     * Tries to insert the specified fluid into the item in the input slot
-     * from the tank of the fluid storage.
+     * Tries to extract fluids from the item in the input slot that match the slot's filter
+     * and moves them into the tank of the fluid storage.
+     *
+     * @param inputSlot the index of the input slot from which the fluid will be extracted
+     * @param tankSlot the index of the tank where the fluid will be moved to
+     */
+    protected void takeFluidFromSlot(int inputSlot, int tankSlot) {
+        FluidResourceSlot tank = this.fluidStorage().slot(tankSlot);
+        if (tank.isFull()) return;
+        ItemResourceSlot slot = this.itemStorage.slot(inputSlot);
+        Storage<FluidVariant> storage = slot.find(FluidStorage.ITEM);
+        if (storage != null && storage.supportsExtraction()) {
+            StorageHelper.move(storage, tank, Integer.MAX_VALUE, null);
+        }
+    }
+
+    /**
+     * Tries to extract fluids from the fluid storage and moves them into the tank of the item in the input slot.
      *
      * @param inputSlot the index of the input slot where the fluid will be inserted
      * @param tankSlot the index of the tank from which the fluid will be extracted
-     * @param fluid the fluid to be inserted into the item
      */
-    protected void insertFluidToStack(int inputSlot, int tankSlot, @NotNull Fluid fluid) {
-        FluidResourceSlot tank = this.fluidStorage().getSlot(tankSlot);
+    protected void drainFluidToSlot(int inputSlot, int tankSlot) {
+        FluidResourceSlot tank = this.fluidStorage().slot(tankSlot);
         if (tank.isEmpty()) return;
 
-        ItemResourceSlot slot = this.itemStorage.getSlot(inputSlot);
+        ItemResourceSlot slot = this.itemStorage.slot(inputSlot);
         Storage<FluidVariant> storage = slot.find(FluidStorage.ITEM);
         if (storage != null && storage.supportsInsertion()) {
-            StorageHelper.move(FluidVariant.of(fluid), tank, storage, Integer.MAX_VALUE, null);
+            StorageHelper.move(tank, storage, Integer.MAX_VALUE, null);
         }
     }
 

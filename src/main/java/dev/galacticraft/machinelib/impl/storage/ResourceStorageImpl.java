@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.impl.storage;
 
-import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -32,8 +31,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Iterator;
 
 public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Resource>> extends BaseSlottedStorage<Resource, Slot> implements ResourceStorage<Resource, Slot>, TransactionContext.CloseCallback {
     private long modifications = 1;
@@ -50,17 +47,6 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     @Override
     public void setListener(Runnable listener) {
         this.listener = listener;
-    }
-
-    @Override
-    public @NotNull Slot getSlot(int slot) {
-        return this.slots[slot];
-    }
-
-    @NotNull
-    @Override
-    public Iterator<Slot> iterator() {
-        return Iterators.forArray(this.slots);
     }
 
     @Override
@@ -112,11 +98,6 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     }
 
     @Override
-    public Slot[] getSlots() {
-        return this.slots;
-    }
-
-    @Override
     public @NotNull ListTag createTag() {
         ListTag tag = new ListTag();
         for (Slot slot : this.slots) {
@@ -163,10 +144,17 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
                 n++;
             }
         }
-        buf.writeByte(n);
+        buf.writeVarInt(n);
+
+        // If all slots have changed, write a full packet instead (removes index overhead)
+        if (n == this.size()) {
+            this.writePacket(buf);
+            return;
+        }
+
         for (int i = 0; i < this.slots.length; i++) {
             if (this.slots[i].getModifications() != previous[i]) {
-                buf.writeByte(i);
+                buf.writeVarInt(i);
                 this.slots[i].writePacket(buf);
             }
         }
@@ -174,9 +162,15 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
 
     @Override
     public void readDeltaPacket(@NotNull RegistryFriendlyByteBuf buf) {
-        int n = buf.readByte();
+        int n = buf.readVarInt();
+
+        if (n == this.size()) {
+            this.readPacket(buf);
+            return;
+        }
+
         for (int i = 0; i < n; i++) {
-            this.slots[buf.readByte()].readPacket(buf);
+            this.slots[buf.readVarInt()].readPacket(buf);
         }
     }
 

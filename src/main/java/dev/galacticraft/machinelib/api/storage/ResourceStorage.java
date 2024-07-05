@@ -22,14 +22,17 @@
 
 package dev.galacticraft.machinelib.api.storage;
 
+import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A storage that can store multiple of multiple instances of one type of resource (e.g., 10 sticks and 3 snowballs).
@@ -45,13 +48,5 @@ public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> 
      */
     void setListener(Runnable listener);
 
-    /**
-     * {@return the slots in this storage}
-     */
-    Slot[] getSlots();
-
-    /**
-     * {@return the slot at the given index}
-     */
-    @NotNull Slot getSlot(int slot);
+    @Nullable ExposedStorage<Resource, ?> createExposedStorage(@NotNull ResourceFlow flow);
 }

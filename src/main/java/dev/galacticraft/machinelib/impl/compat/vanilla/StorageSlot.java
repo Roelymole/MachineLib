@@ -26,7 +26,7 @@ import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.impl.Utils;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;

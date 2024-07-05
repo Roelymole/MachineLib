@@ -53,14 +53,14 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
 
     public GeneratorBlockEntity(@NotNull BlockPos pos, BlockState state) {
         super(TestModMachineTypes.GENERATOR, pos, state);
-        this.fuelInput = this.itemStorage().getSlot(FUEL_SLOT);
+        this.fuelInput = this.itemStorage().slot(FUEL_SLOT);
     }
 
     @Override
     protected void tickConstant(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         super.tickConstant(level, pos, state, profiler);
         profiler.push("power_drain");
-        this.drainPowerToStack(BATTERY_SLOT);
+        this.drainPowerToSlot(BATTERY_SLOT);
         profiler.pop();
         this.trySpreadEnergy(level, state);
     }

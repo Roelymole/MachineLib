@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.impl.compat.transfer;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Item;
@@ -30,12 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ExposedItemSlotImpl extends ExposedSlotImpl<Item, ItemVariant> {
-    public ExposedItemSlotImpl(@NotNull ResourceSlot<Item> slot, boolean insertion, boolean extraction) {
-        super(slot, insertion, extraction);
+    public ExposedItemSlotImpl(@NotNull ResourceSlot<Item> slot, @NotNull ResourceFlow flow) {
+        super(slot, flow);
     }
 
     @Override
-    protected @NotNull ItemVariant createVariant(@Nullable Item item, @Nullable DataComponentPatch components) {
+    protected @NotNull ItemVariant createVariant(@Nullable Item item, @NotNull DataComponentPatch components) {
         return item != null ? ItemVariant.of(item, components) : ItemVariant.blank();
     }
 }

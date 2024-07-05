@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.transfer.InputType;
-import dev.galacticraft.machinelib.test.Utils;
+import dev.galacticraft.machinelib.test.util.Utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;

@@ -22,37 +22,42 @@
 
 package dev.galacticraft.machinelib.impl.compat.transfer;
 
+import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
+
 public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<Resource>> implements ExposedSlot<Resource, Variant> {
     private final @NotNull ResourceSlot<Resource> slot;
     private final boolean insertion;
     private final boolean extraction;
 
-    public ExposedSlotImpl(@NotNull ResourceSlot<Resource> slot, boolean insertion, boolean extraction) {
+    public ExposedSlotImpl(@NotNull ResourceSlot<Resource> slot, @NotNull ResourceFlow flow) {
         this.slot = slot;
-        this.insertion = insertion;
-        this.extraction = extraction;
+        this.insertion = slot.inputType().externalInsertion() && flow == ResourceFlow.INPUT || flow == ResourceFlow.BOTH;
+        this.extraction = slot.inputType().externalExtraction() && flow == ResourceFlow.OUTPUT || flow == ResourceFlow.BOTH;
     }
 
-    protected abstract @NotNull Variant createVariant(@Nullable Resource resource, @Nullable DataComponentPatch components);
+    protected abstract @NotNull Variant createVariant(@Nullable Resource resource, @NotNull DataComponentPatch components);
 
     @Override
     public long insert(Variant variant, long maxAmount, TransactionContext transaction) {
-        if (this.insertion) return this.slot.insert(variant.getObject(), variant.getComponents(), maxAmount, transaction);
-        return 0;
+        return this.insertion && this.slot.getFilter().test(variant.getObject(), variant.getComponents()) ?
+                this.slot.insert(variant.getObject(), variant.getComponents(), maxAmount, transaction)
+                : 0;
     }
 
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
-        if (this.extraction) return this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction);
-        return 0;
+        return this.extraction ? this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction) : 0;
     }
 
     @Override
@@ -73,6 +78,11 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
     @Override
     public Variant getResource() {
         return this.createVariant(this.slot.getResource(), this.slot.getComponents());
+    }
+
+    @Override
+    public @NotNull Iterator<StorageView<Variant>> iterator() {
+        return Iterators.singletonIterator(this);
     }
 
     @Override

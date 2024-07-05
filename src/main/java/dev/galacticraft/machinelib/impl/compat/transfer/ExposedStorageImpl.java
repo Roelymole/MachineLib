@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.compat.transfer;
 import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedSlot;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
-import dev.galacticraft.machinelib.api.misc.Modifiable;
+import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -34,18 +34,38 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 
 public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resource>> implements ExposedStorage<Resource, Variant> {
-    private final Modifiable modifiable;
+    private final ResourceStorage<Resource, ?> storage;
     private final ExposedSlot<Resource, Variant>[] slots;
 
-    public ExposedStorageImpl(Modifiable modifiable, ExposedSlot<Resource, Variant>[] slots) {
-        this.modifiable = modifiable;
+    public ExposedStorageImpl(ResourceStorage<Resource, ?> storage, ExposedSlot<Resource, Variant>[] slots) {
+        this.storage = storage;
         this.slots = slots;
+    }
+
+    @Override
+    public boolean supportsInsertion() {
+        for (ExposedSlot<Resource, Variant> slot : this.slots) {
+            if (slot.supportsInsertion()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean supportsExtraction() {
+        for (ExposedSlot<Resource, Variant> slot : this.slots) {
+            if (slot.supportsExtraction()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public long insert(Variant variant, long maxAmount, TransactionContext transaction) {
         long requested = maxAmount;
-        for (ExposedSlot<Resource, Variant> slot : slots) {
+        for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (maxAmount == 0) return requested;
             maxAmount -= slot.insert(variant, maxAmount, transaction);
         }
@@ -55,7 +75,7 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
         long requested = maxAmount;
-        for (ExposedSlot<Resource, Variant> slot : slots) {
+        for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (maxAmount == 0) return requested;
             maxAmount -= slot.extract(variant, maxAmount, transaction);
         }
@@ -69,6 +89,6 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
 
     @Override
     public long getVersion() {
-        return this.modifiable.getModifications();
+        return this.storage.getModifications();
     }
 }

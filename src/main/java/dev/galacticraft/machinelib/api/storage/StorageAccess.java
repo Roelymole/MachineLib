@@ -95,7 +95,7 @@ public interface StorageAccess<Resource> {
      * except it assumes an empty component patch.
      *
      * @param resource the resource being inserted
-     * @param amount the amount of the resource being inserted
+     * @param amount the amount of the resource that can be inserted
      * @see #tryInsert(Resource, DataComponentPatch, long)
      */
     default long tryInsert(@NotNull Resource resource, long amount) {
@@ -108,7 +108,7 @@ public interface StorageAccess<Resource> {
      *
      * @param resource the resource being inserted
      * @param components the components of the resource
-     * @param amount the amount of the resource being inserted
+     * @param amount the amount of the resource that can be inserted
      */
     long tryInsert(@NotNull Resource resource, @NotNull DataComponentPatch components, long amount);
 
@@ -208,7 +208,7 @@ public interface StorageAccess<Resource> {
      * except it ignores the components of the extracted resources.
      *
      * @param resource the resource being extracted
-     * @param amount the amount of the resource being extracted
+     * @param amount the amount of the resource that can be extracted
      */
     default long tryExtract(@NotNull Resource resource, long amount) {
         return this.tryExtract(resource, null, amount);
@@ -219,7 +219,7 @@ public interface StorageAccess<Resource> {
      *
      * @param resource the resource being extracted
      * @param components the components of the resource. If {@code null}, the components will be ignored
-     * @param amount the amount of the resource being extracted
+     * @param amount the amount of the resource that can be extracted
      */
     long tryExtract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount);
 

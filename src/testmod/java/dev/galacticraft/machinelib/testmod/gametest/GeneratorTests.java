@@ -44,7 +44,7 @@ public class GeneratorTests extends MachineGameTest<GeneratorBlockEntity> {
 
     @MachineTest(workTime = 10)
     public Runnable generatePower(GeneratorBlockEntity machine) {
-        machine.itemStorage().getSlot(GeneratorBlockEntity.FUEL_SLOT).set(Items.COAL, 1);
+        machine.itemStorage().slot(GeneratorBlockEntity.FUEL_SLOT).set(Items.COAL, 1);
         return () -> {
             if (machine.energyStorage().getAmount() != GeneratorBlockEntity.GENERATION_RATE * 10) {
                 throw new GameTestAssertException(String.format("Failed to generate power (%s / %s)!", machine.energyStorage().getAmount(), GeneratorBlockEntity.GENERATION_RATE * 10));

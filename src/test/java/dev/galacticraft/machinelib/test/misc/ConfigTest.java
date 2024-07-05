@@ -25,6 +25,7 @@ package dev.galacticraft.machinelib.test.misc;
 import dev.galacticraft.machinelib.api.config.Config;
 import dev.galacticraft.machinelib.test.MinecraftTest;
 import net.fabricmc.loader.api.FabricLoader;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,11 @@ public class ConfigTest implements MinecraftTest {
     public void setup() {
         FILE.delete();
         this.config = Config.loadFrom(FILE);
+    }
+
+    @AfterEach
+    public void cleanup() {
+        FILE.delete();
     }
 
     @Test

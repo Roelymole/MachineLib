@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test;
+package dev.galacticraft.machinelib.test.util;
 
-import dev.galacticraft.machinelib.test.util.StaticRegistryAccess;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;

@@ -22,20 +22,9 @@
 
 package dev.galacticraft.machinelib.api.compat.transfer;
 
-import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
-import dev.galacticraft.machinelib.impl.compat.transfer.ExposedFluidSlotImpl;
-import dev.galacticraft.machinelib.impl.compat.transfer.ExposedFullFluidSlotImpl;
-import dev.galacticraft.machinelib.impl.compat.transfer.ExposedFullItemSlotImpl;
-import dev.galacticraft.machinelib.impl.compat.transfer.ExposedItemSlotImpl;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.material.Fluid;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a slot exposed to adjacent blocks or items.
@@ -43,54 +32,5 @@ import org.jetbrains.annotations.NotNull;
  * @param <Resource> The type of resource stored in the slot.
  * @param <Variant> The type of variant for the resource that can be stored in the slot.
  */
-public interface ExposedSlot<Resource, Variant extends TransferVariant<Resource>> extends ExposedStorage<Resource, Variant>, SingleSlotStorage<Variant> {
-    /**
-     * Creates an exposed item slot.
-     *
-     * @param slot The backing resource slot.
-     * @param flow The flow restrictions on the slot.
-     * @return An exposed item slot.
-     */
-    @Contract("_, _ -> new")
-    static @NotNull ExposedSlot<Item, ItemVariant> createItem(@NotNull ResourceSlot<Item> slot, @NotNull ResourceFlow flow) {
-        if (flow == ResourceFlow.BOTH) return createFullItem(slot);
-        return new ExposedItemSlotImpl(slot, flow.canFlowIn(ResourceFlow.INPUT), flow.canFlowIn(ResourceFlow.OUTPUT));
-    }
-
-    /**
-     * Creates an exposed fluid slot.
-     *
-     * @param slot The backing resource slot.
-     * @param flow The flow restrictions on the slot.
-     * @return An exposed fluid slot.
-     */
-    @Contract("_, _ -> new")
-    static @NotNull ExposedSlot<Fluid, FluidVariant> createFluid(@NotNull ResourceSlot<Fluid> slot, @NotNull ResourceFlow flow) {
-        if (flow == ResourceFlow.BOTH) return createFullFluid(slot);
-        return new ExposedFluidSlotImpl(slot, flow.canFlowIn(ResourceFlow.INPUT), flow.canFlowIn(ResourceFlow.OUTPUT));
-    }
-
-    /**
-     * Creates a fully exposed item slot.
-     * This slot has no additional I/O restrictions.
-     *
-     * @param slot The backing resource slot.
-     * @return A fully exposed item slot.
-     */
-    @Contract("_ -> new")
-    static @NotNull ExposedSlot<Item, ItemVariant> createFullItem(@NotNull ResourceSlot<Item> slot) {
-        return new ExposedFullItemSlotImpl(slot);
-    }
-
-    /**
-     * Creates a fully exposed fluid slot.
-     * This slot has no additional I/O restrictions.
-     *
-     * @param slot The backing resource slot.
-     * @return A fully exposed fluid slot.
-     */
-    @Contract("_ -> new")
-    static @NotNull ExposedSlot<Fluid, FluidVariant> createFullFluid(@NotNull ResourceSlot<Fluid> slot) {
-        return new ExposedFullFluidSlotImpl(slot);
-    }
+public interface ExposedSlot<Resource, Variant extends TransferVariant<Resource>> extends Storage<Variant>, StorageView<Variant> {
 }

@@ -30,6 +30,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,8 +82,8 @@ public enum BlockFace implements StringRepresentable {
     /**
      * Constructs a block face.
      *
-     * @param name The name of the block face.
-     * @param side Whether the block face is a side face or not.
+     * @param name the name of the block face
+     * @param side whether the block face is a side face or not
      */
     BlockFace(String id, @NotNull MutableComponent name, boolean side) {
         this.id = id;
@@ -90,14 +92,25 @@ public enum BlockFace implements StringRepresentable {
     }
 
     /**
+     * Gets the face corresponding to the given direction and rotation (derived from the block state).
+     *
+     * @param state the block state to get the rotation from
+     * @param target the direction to get the face for
+     * @return the face corresponding to the given direction and rotation
+     */
+    public static @Nullable BlockFace from(@NotNull BlockState state, @Nullable Direction target) {
+        return from(state.getValue(BlockStateProperties.HORIZONTAL_FACING), target);
+    }
+
+    /**
      * Gets the face corresponding to the given direction and rotation.
      *
-     * @param facing The rotation to get the face for.
-     * @param target The direction to get the face for.
-     * @return The face corresponding to the given direction and rotation.
+     * @param facing the rotation to get the face for
+     * @param target the direction to get the face for
+     * @return the face corresponding to the given direction and rotation
      */
     @Contract(pure = true, value = "_, null -> null; _, !null -> !null")
-    public static @Nullable BlockFace toFace(@NotNull Direction facing, @Nullable Direction target) { //todo: a better way to do this?
+    public static @Nullable BlockFace from(@NotNull Direction facing, @Nullable Direction target) { //todo: a better way to do this?
         assert facing != Direction.UP && facing != Direction.DOWN;
 
         if (target == null) return null;

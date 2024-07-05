@@ -66,21 +66,21 @@ public class MixerBlockEntity extends MachineBlockEntity {
     protected void tickConstant(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         super.tickConstant(level, pos, state, profiler);
         profiler.push("charge_stack");
-        this.chargeFromStack(BATTERY_SLOT);
-        this.takeFluidFromStack(WATER_INPUT_SLOT, WATER_TANK, Fluids.WATER);
-        this.takeFluidFromStack(LAVA_INPUT_SLOT, LAVA_TANK, Fluids.LAVA);
+        this.chargeFromSlot(BATTERY_SLOT);
+        this.takeFluidFromSlot(WATER_INPUT_SLOT, WATER_TANK, Fluids.WATER);
+        this.takeFluidFromSlot(LAVA_INPUT_SLOT, LAVA_TANK, Fluids.LAVA);
         profiler.pop();
     }
 
     @Override
     protected @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
-        ItemResourceSlot output = this.itemStorage().getSlot(OUTPUT_SLOT);
+        ItemResourceSlot output = this.itemStorage().slot(OUTPUT_SLOT);
         if (!output.canInsert(Items.OBSIDIAN)) {
             this.progress = 0;
             return MachineStatuses.OUTPUT_FULL;
         }
-        FluidResourceSlot water = this.fluidStorage().getSlot(WATER_TANK);
-        FluidResourceSlot lava = this.fluidStorage().getSlot(LAVA_TANK);
+        FluidResourceSlot water = this.fluidStorage().slot(WATER_TANK);
+        FluidResourceSlot lava = this.fluidStorage().slot(LAVA_TANK);
         if (water.tryExtract(Fluids.WATER, FLUID_REQUIRED) != FLUID_REQUIRED || lava.tryExtract(Fluids.LAVA, FLUID_REQUIRED) != FLUID_REQUIRED) {
             this.progress = 0;
             return MachineStatuses.IDLE;

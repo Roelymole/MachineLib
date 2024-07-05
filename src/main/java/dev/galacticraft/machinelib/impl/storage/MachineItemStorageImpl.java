@@ -22,10 +22,15 @@
 
 package dev.galacticraft.machinelib.impl.storage;
 
+import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.impl.Utils;
+import dev.galacticraft.machinelib.impl.compat.transfer.ExposedItemSlotImpl;
+import dev.galacticraft.machinelib.impl.compat.transfer.ExposedStorageImpl;
+import dev.galacticraft.machinelib.impl.util.Utils;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +53,7 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
 
     @Override
     public @NotNull ItemStack getItem(int i) {
-        return ItemStackUtil.create(this.getSlot(i));
+        return ItemStackUtil.create(this.slot(i));
     }
 
     @Override
@@ -92,6 +97,15 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
     @Override
     public void clearContent() {
         Utils.breakpointMe("attempted to clear items in a vanilla compat container!");
+    }
+
+    @Override
+    public @Nullable ExposedStorage<Item, ItemVariant> createExposedStorage(@NotNull ResourceFlow flow) {
+        ExposedItemSlotImpl[] slots = new ExposedItemSlotImpl[this.size()];
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = new ExposedItemSlotImpl(this.slot(i), flow);
+        }
+        return new ExposedStorageImpl<>(this, slots);
     }
 
     @Override

@@ -61,16 +61,16 @@ public class MelterBlockEntity extends MachineBlockEntity {
 
     public MelterBlockEntity(@NotNull BlockPos pos, BlockState state) {
         super(TestModMachineTypes.MELTER, pos, state);
-        this.itemInput = this.itemStorage().getSlot(INPUT_SLOT);
-        this.fluidOutput = this.fluidStorage().getSlot(LAVA_TANK);
+        this.itemInput = this.itemStorage().slot(INPUT_SLOT);
+        this.fluidOutput = this.fluidStorage().slot(LAVA_TANK);
     }
 
     @Override
     protected void tickConstant(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler) {
         super.tickConstant(level, pos, state, profiler);
         profiler.push("charge_stack");
-        this.chargeFromStack(BATTERY_SLOT);
-        this.insertFluidToStack(LAVA_OUTPUT_SLOT, LAVA_TANK, Fluids.LAVA);
+        this.chargeFromSlot(BATTERY_SLOT);
+        this.drainFluidToSlot(LAVA_OUTPUT_SLOT, LAVA_TANK);
         profiler.pop();
         this.trySpreadFluids(level, state);
     }

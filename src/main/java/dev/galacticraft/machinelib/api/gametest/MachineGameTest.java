@@ -101,7 +101,7 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
     public TestFunction createChargeFromEnergyItemTest(int slot, Item energyProvider) {
         return this.createTest("chargeFromItem", STRUCTURE_3x3, 2, 1, helper -> {
             Machine machine = this.createMachine(helper);
-            machine.itemStorage().getSlot(slot).set(energyProvider, 1);
+            machine.itemStorage().slot(slot).set(energyProvider, 1);
             helper.runAfterDelay(1, () -> {
                 if (machine.energyStorage().isEmpty()) {
                     helper.fail("Machine did not charge from the stack!", machine.getBlockPos());
@@ -117,7 +117,7 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
             Machine machine = this.createMachine(helper);
 
             machine.energyStorage().setEnergy(machine.energyStorage().getCapacity());
-            machine.itemStorage().getSlot(slot).set(energyConsumer, 1);
+            machine.itemStorage().slot(slot).set(energyConsumer, 1);
 
             helper.runAfterDelay(1, () -> {
                 if (machine.energyStorage().isFull()) {
@@ -132,9 +132,9 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
     public TestFunction createTakeFromFluidItemTest(int slot, Item fluidProvider, int tank) {
         return this.createTest("takeFluidFromItem", STRUCTURE_3x3, 2, 1, helper -> {
             Machine machine = this.createMachine(helper);
-            machine.itemStorage().getSlot(slot).set(fluidProvider, 1);
+            machine.itemStorage().slot(slot).set(fluidProvider, 1);
             helper.runAfterDelay(1, () -> {
-                if (machine.fluidStorage().getSlot(tank).isEmpty()) {
+                if (machine.fluidStorage().slot(tank).isEmpty()) {
                     helper.fail("Machine did not take fluid from the stack!", machine.getBlockPos());
                 } else {
                     helper.succeed();
@@ -147,8 +147,8 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
         return this.createTest("drainFluidIntoItem", STRUCTURE_3x3, 2, 1, helper -> {
             Machine machine = this.createMachine(helper);
 
-            machine.fluidStorage().getSlot(tank).set(fluid, FluidConstants.BUCKET);
-            machine.itemStorage().getSlot(slot).set(Items.BUCKET, 1);
+            machine.fluidStorage().slot(tank).set(fluid, FluidConstants.BUCKET);
+            machine.itemStorage().slot(slot).set(Items.BUCKET, 1);
 
             helper.runAfterDelay(1, () -> {
                 if (machine.energyStorage().isFull()) {

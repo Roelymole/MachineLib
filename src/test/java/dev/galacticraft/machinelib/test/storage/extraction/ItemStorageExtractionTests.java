@@ -29,7 +29,7 @@ import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
 import dev.galacticraft.machinelib.test.MinecraftTest;
-import dev.galacticraft.machinelib.test.Utils;
+import dev.galacticraft.machinelib.test.util.Utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.AfterEach;
@@ -40,83 +40,83 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ItemStorageExtractionTests implements MinecraftTest {
-    protected MachineItemStorage group;
+    protected MachineItemStorage storage;
 
     @BeforeEach
     public void setup() {
-        this.group = MachineItemStorage.create(ItemResourceSlot.create(InputType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any()));
+        this.storage = MachineItemStorage.create(ItemResourceSlot.create(InputType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any()));
     }
 
     @AfterEach
     public void verify() {
-        assertTrue(((ResourceSlotImpl<?>) this.group.getSlot(0)).isSane());
+        assertTrue(((ResourceSlotImpl<?>) this.storage.slot(0)).isSane());
     }
 
     @Nested
     final class ExtractionFailureTests {
         @Test
         public void empty() {
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, 1));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, 1));
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
         }
 
         @Test
         public void incorrectType() {
-            group.getSlot(0).set(Items.IRON_INGOT, 1);
+            storage.slot(0).set(Items.IRON_INGOT, 1);
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, 1));
-            assertFalse(group.extractOne(Items.GOLD_INGOT));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, 1));
+            assertFalse(storage.extractOne(Items.GOLD_INGOT));
 
-            assertFalse(group.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void extractionTag() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 1);
+            storage.slot(0).set(Items.GOLD_INGOT, 1);
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertFalse(group.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(storage.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
 
-            assertFalse(group.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void containedTag() {
-            group.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
+            storage.slot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertFalse(group.extractOne(Items.GOLD_INGOT, DataComponentPatch.EMPTY));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertFalse(storage.extractOne(Items.GOLD_INGOT, DataComponentPatch.EMPTY));
 
-            assertFalse(group.isEmpty());
+            assertFalse(storage.isEmpty());
         }
 
         @Test
         public void mismatchedTag() {
-            group.getSlot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
+            storage.slot(0).set(Items.GOLD_INGOT, Utils.generateComponents(), 1);
 
-            assertFalse(group.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertEquals(0, group.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
-            assertFalse(group.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
+            assertFalse(storage.canExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.tryExtract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertEquals(0, storage.extract(Items.GOLD_INGOT, Utils.generateComponents(), 1));
+            assertFalse(storage.extractOne(Items.GOLD_INGOT, Utils.generateComponents()));
 
-            assertFalse(group.isEmpty());
+            assertFalse(storage.isEmpty());
         }
     }
 
@@ -124,101 +124,101 @@ public class ItemStorageExtractionTests implements MinecraftTest {
     final class ExtractionSuccessTests {
         @Test
         public void exact_typed() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 1);
+            storage.slot(0).set(Items.GOLD_INGOT, 1);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, 1));
-            assertEquals(1, group.tryExtract(Items.GOLD_INGOT, 1));
-            assertEquals(1, group.extract(Items.GOLD_INGOT, 1));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, 1));
+            assertEquals(1, storage.tryExtract(Items.GOLD_INGOT, 1));
+            assertEquals(1, storage.extract(Items.GOLD_INGOT, 1));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void exact_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            group.getSlot(0).set(Items.GOLD_INGOT, components, 1);
+            storage.slot(0).set(Items.GOLD_INGOT, components, 1);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, components, 1));
-            assertEquals(1, group.tryExtract(Items.GOLD_INGOT, components, 1));
-            assertEquals(1, group.extract(Items.GOLD_INGOT, components, 1));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, components, 1));
+            assertEquals(1, storage.tryExtract(Items.GOLD_INGOT, components, 1));
+            assertEquals(1, storage.extract(Items.GOLD_INGOT, components, 1));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void exact_typed_emptyNbt() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 1);
+            storage.slot(0).set(Items.GOLD_INGOT, 1);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(1, group.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
-            assertEquals(1, group.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(1, storage.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
+            assertEquals(1, storage.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 1));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void excess_typed() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 48);
+            storage.slot(0).set(Items.GOLD_INGOT, 48);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, 16));
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, 16));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, 16));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, 16));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, 16));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, 16));
 
-            assertEquals(group.getAmount(0), 48 - 16);
+            assertEquals(storage.slot(0).getAmount(), 48 - 16);
         }
 
         @Test
         public void excess_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            group.getSlot(0).set(Items.GOLD_INGOT, components, 48);
+            storage.slot(0).set(Items.GOLD_INGOT, components, 48);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, components, 16));
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, components, 16));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, components, 16));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, components, 16));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, components, 16));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, components, 16));
 
-            assertEquals(group.getAmount(0), 48 - 16);
+            assertEquals(storage.slot(0).getAmount(), 48 - 16);
         }
 
         @Test
         public void excess_typed_emptyNbt() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 48);
+            storage.slot(0).set(Items.GOLD_INGOT, 48);
 
-            assertTrue(group.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertTrue(storage.canExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 16));
 
-            assertEquals(group.getAmount(0), 48 - 16);
+            assertEquals(storage.slot(0).getAmount(), 48 - 16);
         }
 
         @Test
         public void insufficient_typed() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 16);
+            storage.slot(0).set(Items.GOLD_INGOT, 16);
 
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, 64));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, 64));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, 64));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, 64));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void insufficient_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            group.getSlot(0).set(Items.GOLD_INGOT, components, 16);
+            storage.slot(0).set(Items.GOLD_INGOT, components, 16);
 
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, components, 64));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, components, 64));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, components, 64));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, components, 64));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
 
         @Test
         public void insufficient_typed_emptyNbt() {
-            group.getSlot(0).set(Items.GOLD_INGOT, 16);
+            storage.slot(0).set(Items.GOLD_INGOT, 16);
 
-            assertEquals(16, group.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
-            assertEquals(16, group.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
+            assertEquals(16, storage.tryExtract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
+            assertEquals(16, storage.extract(Items.GOLD_INGOT, DataComponentPatch.EMPTY, 64));
 
-            assertTrue(group.isEmpty());
+            assertTrue(storage.isEmpty());
         }
     }
 }

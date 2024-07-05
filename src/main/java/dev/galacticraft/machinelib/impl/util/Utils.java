@@ -20,15 +20,36 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.compat.transfer;
+package dev.galacticraft.machinelib.impl.util;
 
-import dev.galacticraft.machinelib.api.compat.transfer.ExposedSlot;
-import dev.galacticraft.machinelib.api.misc.Modifiable;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import dev.galacticraft.machinelib.impl.MachineLib;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class RecipeBiasedExposedStorage extends ExposedStorageImpl<Item, ItemVariant> {
-    public RecipeBiasedExposedStorage(Modifiable modifiable, ExposedSlot<Item, ItemVariant>[] slots) {
-        super(modifiable, slots);
+public final class Utils {
+    private Utils() {
+    }
+
+    @Contract(pure = true)
+    public static boolean itemsEqual(@Nullable Item a, @NotNull Item b) {
+        return a == b || (a == null && b == Items.AIR);
+    }
+
+    /**
+     * {@return the short string representation of the given id}
+     * Should only be used to serialize packets and other short-lived data.
+     * If the namespace matches "minecraft", only the path is returned.
+     * @param id the id to shorten
+     */
+    public static String getShortId(ResourceLocation id) {
+        return id.getNamespace().equals("minecraft") ? id.getPath() : id.toString();
+    }
+
+    public static void breakpointMe(String s) {
+        MachineLib.LOGGER.error(s);
     }
 }

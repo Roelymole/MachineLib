@@ -117,7 +117,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
     }
 
     private boolean transform(MachineRenderData renderData, @NotNull BlockState state, @NotNull MutableQuadView quad) {
-        BlockFace face = BlockFace.toFace(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
+        BlockFace face = BlockFace.from(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
         assert face != null;
 
         IOFace machineFace = renderData == null ? new IOFace() : renderData.getIOConfig().get(face);
@@ -130,7 +130,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
     }
 
     private boolean transformItem(IOConfig config, @NotNull MutableQuadView quad) {
-        BlockFace face = BlockFace.toFace(Direction.NORTH, quad.nominalFace());
+        BlockFace face = BlockFace.from(Direction.NORTH, quad.nominalFace());
         IOFace IOFace = config.get(face);
         assert face != null;
         quad.spriteBake(getSprite(face,

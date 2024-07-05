@@ -28,6 +28,7 @@ package dev.galacticraft.machinelib.api.misc;
 public interface Modifiable {
     /**
      * {@return the number of times this object has been modified}
+     * Note that the number may decrease should a transaction be aborted. This could cause numbers to be reused.
      */
     long getModifications();
 }

@@ -27,6 +27,7 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.lookup.v1.item.ItemApiLookup;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -52,10 +53,10 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     private final @Nullable ItemSlotDisplay display;
     private long cachedExpiry = -1;
 
+    private @Nullable Set<ResourceLocation> recipes = null;
     private @Nullable SingleSlotStorage<ItemVariant> cachedStorage = null;
     private @Nullable ItemApiLookup<?, ContainerItemContext> cachedLookup = null;
     private @Nullable Object cachedApi = null;
-    private @Nullable Set<ResourceLocation> recipes;
 
     public ItemResourceSlotImpl(@NotNull InputType inputType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> externalFilter, int capacity) {
         super(inputType, externalFilter, capacity);
@@ -142,11 +143,20 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     @Override
     public @NotNull CompoundTag createTag() {
         CompoundTag tag = new CompoundTag();
+
+        // If the slot is empty, return an empty tag
         if (this.isEmpty()) return tag;
+
         tag.putString(RESOURCE_KEY, BuiltInRegistries.ITEM.getKey(this.resource).toString());
         tag.putInt(AMOUNT_KEY, (int) this.amount);
-        if (!this.components.isEmpty()) tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, this.components).getOrThrow());
-        if (this.recipes != null) {
+
+        // Only write the components if we have components
+        if (!this.components.isEmpty()) {
+            tag.put(COMPONENTS_KEY, DataComponentPatch.CODEC.encodeStart(NbtOps.INSTANCE, this.components).getOrThrow());
+        }
+
+        // Only write the recipes if we have recipes
+        if (this.inputType() == InputType.RECIPE_OUTPUT && this.recipes != null) {
             ListTag recipeTag = new ListTag();
             for (ResourceLocation entry : this.recipes) {
                 recipeTag.add(StringTag.valueOf(entry.toString()));
@@ -160,29 +170,32 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     public void readTag(@NotNull CompoundTag tag) {
         if (tag.isEmpty()) {
             this.setEmpty();
-        } else {
-            this.set(BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))), tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : DataComponentPatch.EMPTY, tag.getInt(AMOUNT_KEY));
-            if (this.inputType() == InputType.RECIPE_OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
-                ListTag list = tag.getList(RECIPES_KEY, Tag.TAG_STRING);
-                if (!list.isEmpty()) {
-                    if (this.recipes == null) {
-                        this.recipes = new HashSet<>();
-                    } else {
-                        this.recipes.clear();
-                    }
-                    for (int i = 0; i < list.size(); i++) {
-                        this.recipes.add(new ResourceLocation(list.getString(i)));
-                    }
+            return;
+        }
+
+        this.set(
+                BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))),
+                tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : DataComponentPatch.EMPTY,
+                tag.getInt(AMOUNT_KEY)
+        );
+
+        if (this.inputType() == InputType.RECIPE_OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
+            ListTag list = tag.getList(RECIPES_KEY, Tag.TAG_STRING);
+            if (!list.isEmpty()) {
+                this.recipes = new HashSet<>(list.size());
+                for (int i = 0; i < list.size(); i++) {
+                    this.recipes.add(new ResourceLocation(list.getString(i)));
                 }
             }
         }
+
     }
 
     @Override
     public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         if (this.amount > 0) {
             buf.writeInt((int) this.amount);
-            buf.writeUtf(BuiltInRegistries.ITEM.getKey(this.resource).toString());
+            buf.writeUtf(Utils.getShortId(BuiltInRegistries.ITEM.getKey(this.resource)));
             DataComponentPatch.STREAM_CODEC.encode(buf, this.components);
         } else {
             buf.writeInt(0);
@@ -205,8 +218,8 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     public <A> @Nullable A find(ItemApiLookup<A, ContainerItemContext> lookup) {
         if (this.cachedExpiry != this.getModifications() || this.cachedLookup != lookup) {
             this.cachedExpiry = this.getModifications();
-            this.cachedApi = ItemResourceSlot.super.find(lookup);
             this.cachedLookup = lookup;
+            this.cachedApi = ItemResourceSlot.super.find(lookup);
         }
         return (A) this.cachedApi;
     }
@@ -214,42 +227,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     @Override
     public SingleSlotStorage<ItemVariant> getMainSlot() {
         if (this.cachedStorage == null) {
-            this.cachedStorage = new SingleSlotStorage<>() {
-                @Override
-                public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-                    return ItemResourceSlotImpl.this.insert(resource.getItem(), resource.getComponents(), maxAmount, transaction);
-                }
-
-                @Override
-                public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-                    return ItemResourceSlotImpl.this.extract(resource.getItem(), resource.getComponents(), maxAmount, transaction);
-                }
-
-                @Override
-                public boolean isResourceBlank() {
-                    return ItemResourceSlotImpl.this.isEmpty();
-                }
-
-                @Override
-                public ItemVariant getResource() {
-                    return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
-                }
-
-                @Override
-                public long getAmount() {
-                    return ItemResourceSlotImpl.this.getAmount();
-                }
-
-                @Override
-                public long getCapacity() {
-                    return ItemResourceSlotImpl.this.getRealCapacity();
-                }
-
-                @Override
-                public long getVersion() {
-                    return ItemResourceSlotImpl.this.getModifications();
-                }
-            };
+            this.cachedStorage = new InnerSingleSlotStorage();
         }
         return this.cachedStorage;
     }
@@ -298,7 +276,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
 
     @Override
     public boolean isSane() {
-        return super.isSane() && this.resource != Items.AIR;
+        return super.isSane() && this.resource != Items.AIR && this.amount <= Integer.MAX_VALUE;
     }
 
     @Override
@@ -318,5 +296,47 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
             }
         }
         this.recipes.add(id);
+    }
+
+    /**
+     * A {@link SingleSlotStorage} implementation for this slot.
+     * Used for fabric-api compatibility.
+     * ItemResourceSlotImpl can't implement {@link SingleSlotStorage} directly due to conflicting methods.
+     */
+    private class InnerSingleSlotStorage implements SingleSlotStorage<ItemVariant> {
+        @Override
+        public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+            return ItemResourceSlotImpl.this.insert(resource.getItem(), resource.getComponents(), maxAmount, transaction);
+        }
+
+        @Override
+        public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+            return ItemResourceSlotImpl.this.extract(resource.getItem(), resource.getComponents(), maxAmount, transaction);
+        }
+
+        @Override
+        public boolean isResourceBlank() {
+            return ItemResourceSlotImpl.this.isEmpty();
+        }
+
+        @Override
+        public ItemVariant getResource() {
+            return ItemResourceSlotImpl.this.isEmpty() ? ItemVariant.blank() : ItemVariant.of(Objects.requireNonNull(ItemResourceSlotImpl.this.resource), ItemResourceSlotImpl.this.components);
+        }
+
+        @Override
+        public long getAmount() {
+            return ItemResourceSlotImpl.this.getAmount();
+        }
+
+        @Override
+        public long getCapacity() {
+            return ItemResourceSlotImpl.this.getRealCapacity();
+        }
+
+        @Override
+        public long getVersion() {
+            return ItemResourceSlotImpl.this.getModifications();
+        }
     }
 }

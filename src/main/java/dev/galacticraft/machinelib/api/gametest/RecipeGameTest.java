@@ -73,12 +73,15 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
     }
 
     protected boolean anyRecipeCrafted(@NotNull MachineItemStorage storage) {
-        return !storage.isEmpty(this.outputSlotsStart, this.outputSlotsLength);
+        for (int i = 0; i < this.outputSlotsLength; i++) {
+            if (!storage.slot(this.outputSlotsStart + i).isEmpty()) return true;
+        }
+        return false;
     }
 
     protected void fillOutputSlots(@NotNull MachineItemStorage storage) {
         for (int i = 0; i < this.outputSlotsLength; i++) {
-            storage.getSlot(this.outputSlotsStart + i).set(Items.BARRIER, 1);
+            storage.slot(this.outputSlotsStart + i).set(Items.BARRIER, 1);
         }
     }
 

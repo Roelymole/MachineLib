@@ -29,7 +29,7 @@ import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
 import dev.galacticraft.machinelib.test.MinecraftTest;
-import dev.galacticraft.machinelib.test.Utils;
+import dev.galacticraft.machinelib.test.util.Utils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluids;
@@ -50,7 +50,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
     @AfterEach
     public void verify() {
-        assertTrue(((ResourceSlotImpl<?>) this.storage.getSlot(0)).isSane());
+        assertTrue(((ResourceSlotImpl<?>) this.storage.slot(0)).isSane());
     }
 
     @Nested
@@ -76,7 +76,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void incorrectType() {
-            storage.getSlot(0).set(Fluids.LAVA, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.LAVA, FluidConstants.BUCKET);
 
             assertFalse(storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
             assertEquals(0, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
@@ -88,7 +88,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void extractionTag() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
             assertFalse(storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
             assertEquals(0, storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
@@ -100,7 +100,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void containedTag() {
-            storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
             assertFalse(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
             assertEquals(0, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
@@ -112,7 +112,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void mismatchedTag() {
-            storage.getSlot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET);
 
             assertFalse(storage.canExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
             assertEquals(0, storage.tryExtract(Fluids.WATER, Utils.generateComponents(), FluidConstants.BUCKET));
@@ -127,7 +127,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
     final class ExtractionSuccessTests {
         @Test
         public void exact_typed() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
@@ -139,7 +139,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
         @Test
         public void exact_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, components, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
@@ -150,7 +150,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void exact_typed_emptyNbt() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BUCKET, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
@@ -161,41 +161,41 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void excess_typed() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, FluidConstants.BOTTLE));
 
-            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.slot(0).getAmount(), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void excess_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, components, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, components, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, components, FluidConstants.BOTTLE));
 
-            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.slot(0).getAmount(), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void excess_typed_emptyNbt() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BUCKET);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BUCKET);
 
             assertTrue(storage.canExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BOTTLE));
 
-            assertEquals(storage.getAmount(0), FluidConstants.BUCKET - FluidConstants.BOTTLE);
+            assertEquals(storage.slot(0).getAmount(), FluidConstants.BUCKET - FluidConstants.BOTTLE);
         }
 
         @Test
         public void insufficient_typed() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
 
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, FluidConstants.BUCKET));
@@ -206,7 +206,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
         @Test
         public void insufficient_typed_nbt() {
             DataComponentPatch components = Utils.generateComponents();
-            storage.getSlot(0).set(Fluids.WATER, components, FluidConstants.BOTTLE);
+            storage.slot(0).set(Fluids.WATER, components, FluidConstants.BOTTLE);
 
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, components, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, components, FluidConstants.BUCKET));
@@ -216,7 +216,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
         @Test
         public void insufficient_typed_emptyNbt() {
-            storage.getSlot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
+            storage.slot(0).set(Fluids.WATER, FluidConstants.BOTTLE);
 
             assertEquals(FluidConstants.BOTTLE, storage.tryExtract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));
             assertEquals(FluidConstants.BOTTLE, storage.extract(Fluids.WATER, DataComponentPatch.EMPTY, FluidConstants.BUCKET));

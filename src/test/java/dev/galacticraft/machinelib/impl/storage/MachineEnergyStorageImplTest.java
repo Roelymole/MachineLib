@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.storage;
 
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.test.MinecraftTest;
-import dev.galacticraft.machinelib.test.Utils;
+import dev.galacticraft.machinelib.test.util.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;

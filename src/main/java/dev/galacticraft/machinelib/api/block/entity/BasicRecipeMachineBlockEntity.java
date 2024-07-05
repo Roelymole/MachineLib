@@ -24,8 +24,11 @@ package dev.galacticraft.machinelib.api.block.entity;
 
 import dev.galacticraft.machinelib.api.machine.MachineType;
 import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
+import dev.galacticraft.machinelib.api.storage.SlottedStorageAccess;
+import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -46,10 +49,8 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      */
     protected final @NotNull C craftingInv;
 
-    protected final int inputSlots;
-    protected final int inputSlotsLen;
-    protected final int outputSlots;
-    protected final int outputSlotsLen;
+    protected final SlottedStorageAccess<Item, ItemResourceSlot> inputSlots;
+    protected final SlottedStorageAccess<Item, ItemResourceSlot> outputSlots;
 
     /**
      * Constructs a new machine block entity that processes recipes.
@@ -98,10 +99,8 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
                                             @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType, int inputSlots, int inputSlotsLen, int outputSlots, int outputSlotsLen) {
         super(type, pos, state, recipeType);
 
-        this.inputSlots = inputSlots;
-        this.inputSlotsLen = inputSlotsLen;
-        this.outputSlots = outputSlots;
-        this.outputSlotsLen = outputSlotsLen;
+        this.inputSlots = this.itemStorage().subStorage(inputSlots, inputSlotsLen);
+        this.outputSlots = this.itemStorage().subStorage(outputSlots, outputSlotsLen);
 
         this.craftingInv = this.createCraftingInv();
     }
@@ -128,7 +127,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
     @Override
     protected void outputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
-        this.itemStorage().insertMatching(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
+        this.outputSlots.insertMatching(assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
     /**
@@ -140,7 +139,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
     @Override
     protected boolean canOutputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
-        return this.itemStorage().canInsert(this.outputSlots, this.outputSlotsLen, assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
+        return this.inputSlots.canInsert(assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
     /**
@@ -150,8 +149,8 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      */
     @Override
     protected void extractCraftingMaterials(@NotNull RecipeHolder<R> recipe) {
-        for (int i = 0; i < this.inputSlotsLen; i++) {
-            this.itemStorage().consumeOne(this.inputSlots + i);
+        for (ItemResourceSlot slot : this.inputSlots) {
+            slot.consumeOne();
         }
     }
 }

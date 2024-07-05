@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.impl.compat.transfer;
 
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
+import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.level.material.Fluid;
@@ -30,12 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ExposedFluidSlotImpl extends ExposedSlotImpl<Fluid, FluidVariant> {
-    public ExposedFluidSlotImpl(@NotNull ResourceSlot<Fluid> slot, boolean insertion, boolean extraction) {
-        super(slot, insertion, extraction);
+    public ExposedFluidSlotImpl(@NotNull ResourceSlot<Fluid> slot, @NotNull ResourceFlow flow) {
+        super(slot, flow);
     }
 
     @Override
-    protected @NotNull FluidVariant createVariant(@Nullable Fluid fluid, @Nullable DataComponentPatch components) {
+    protected @NotNull FluidVariant createVariant(@Nullable Fluid fluid, @NotNull DataComponentPatch components) {
         return fluid != null ? FluidVariant.of(fluid, components) : FluidVariant.blank();
     }
 }
