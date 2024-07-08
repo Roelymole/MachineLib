@@ -50,4 +50,9 @@ public record LongPacketSerializable(LongSupplier getter,
     public void writePacket(@NotNull ByteBuf buf) {
         buf.writeLong(this.getter.getAsLong());
     }
+
+    @Override
+    public long[] createEquivalent() {
+        return new long[1];
+    }
 }

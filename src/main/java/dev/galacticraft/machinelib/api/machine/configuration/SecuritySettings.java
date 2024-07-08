@@ -191,6 +191,11 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
     }
 
     @Override
+    public SecuritySettings createEquivalent() {
+        return new SecuritySettings();
+    }
+
+    @Override
     public boolean hasChanged(SecuritySettings previous) {
         return !Objects.equals(previous.owner, this.owner) || previous.accessLevel != this.accessLevel;
     }

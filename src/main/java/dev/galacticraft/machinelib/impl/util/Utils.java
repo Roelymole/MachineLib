@@ -23,6 +23,9 @@
 package dev.galacticraft.machinelib.impl.util;
 
 import dev.galacticraft.machinelib.impl.MachineLib;
+import io.netty.buffer.ByteBufAllocator;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -31,6 +34,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class Utils {
+    /**
+     * A codec that copies the contents of a buffer.
+     */
+    public static final StreamCodec<RegistryFriendlyByteBuf, RegistryFriendlyByteBuf> BUF_IDENTITY_CODEC = new StreamCodec<>() {
+        @Override
+        public void encode(RegistryFriendlyByteBuf src, RegistryFriendlyByteBuf dst) {
+            src.writeBytes(dst);
+        }
+
+        @Override
+        public @NotNull RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
+            RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(src.capacity()), src.registryAccess());
+            buf.writeBytes(src);
+            return buf;
+        }
+    };
+
     private Utils() {
     }
 

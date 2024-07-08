@@ -27,7 +27,7 @@ import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
@@ -39,7 +39,7 @@ import java.util.Objects;
 /**
  * Stores the state of a machine.
  */
-public class MachineState implements Serializable<CompoundTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, MachineState> {
+public class MachineState implements Serializable<ByteTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, MachineState> {
     /**
      * The current status of the machine.
      */
@@ -59,10 +59,13 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     }
 
     @Override
-    public @NotNull CompoundTag createTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putBoolean(Constant.Nbt.POWERED, this.powered);
-        return tag;
+    public @NotNull ByteTag createTag() {
+        return ByteTag.valueOf(this.powered);
+    }
+
+    @Override
+    public void readTag(@NotNull ByteTag tag) {
+        this.powered = tag.getAsByte() != 0;
     }
 
     @Override
@@ -80,11 +83,6 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     public void copyInto(MachineState other) {
         other.status = this.status;
         other.powered = this.powered;
-    }
-
-    @Override
-    public void readTag(@NotNull CompoundTag tag) {
-        this.powered = tag.getBoolean(Constant.Nbt.POWERED);
     }
 
     @Override
@@ -135,5 +133,10 @@ public class MachineState implements Serializable<CompoundTag>, DeltaPacketSeria
     @ApiStatus.Internal
     public void setPowered(boolean powered) {
         this.powered = powered;
+    }
+
+    @Override
+    public MachineState createEquivalent() {
+        return new MachineState();
     }
 }

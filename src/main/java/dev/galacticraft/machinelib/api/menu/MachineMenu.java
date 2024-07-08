@@ -47,11 +47,10 @@ import dev.galacticraft.machinelib.client.impl.menu.MachineMenuDataClient;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
 import dev.galacticraft.machinelib.impl.menu.MachineMenuDataImpl;
-import io.netty.buffer.ByteBufAllocator;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -79,23 +78,6 @@ import java.util.function.Supplier;
  * @param <Machine> The type of machine block entity this menu is linked to.
  */
 public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractContainerMenu {
-    /**
-     * A codec that copies the contents of a buffer.
-     */
-    public static final StreamCodec<RegistryFriendlyByteBuf, RegistryFriendlyByteBuf> BUF_IDENTITY_CODEC = new StreamCodec<>() {
-        @Override
-        public void encode(RegistryFriendlyByteBuf src, RegistryFriendlyByteBuf dst) {
-            src.writeBytes(dst);
-        }
-
-        @Override
-        public @NotNull RegistryFriendlyByteBuf decode(RegistryFriendlyByteBuf src) {
-            RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(ByteBufAllocator.DEFAULT.buffer(src.capacity()), src.registryAccess());
-            buf.writeBytes(src);
-            return buf;
-        }
-    };
-
     /**
      * The machine type associated with this menu.
      */
@@ -165,7 +147,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
     /**
      * The redstone mode of the machine associated with this menu.
      */
-    public @NotNull RedstoneMode redstoneMode;
+    public @NotNull RedstoneMode redstoneMode = RedstoneMode.IGNORE;
 
     /**
      * Array of {@link MachineItemStorage item storage}-backed slots.
@@ -199,7 +181,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         assert !Objects.requireNonNull(machine.getLevel()).isClientSide;
         this.type = machine.getMachineType();
         this.machine = machine;
-        this.data = new MachineMenuDataImpl(player);
+        this.data = new MachineMenuDataImpl(player, syncId);
         this.server = true;
 
         this.player = player;
@@ -248,7 +230,6 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
         this.addPlayerInventorySlots(player.getInventory(), 0, 0); // never displayed on the server.
         this.registerData(this.data);
-        this.data.synchronizeFull();
     }
 
     /**
@@ -265,28 +246,21 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
         this.type = type;
         this.server = false;
-        this.data = new MachineMenuDataClient();
+        this.data = new MachineMenuDataClient(syncId);
         this.player = inventory.player;
         this.playerInventory = inventory;
         this.playerUUID = inventory.player.getUUID();
 
         BlockPos blockPos = buf.readBlockPos();
-        this.machine = (Machine) inventory.player.level().getBlockEntity(blockPos); //todo: actually stop using the BE on the client side
+        this.machine = (Machine) inventory.player.level().getBlockEntity(blockPos);
         this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), blockPos);
-        this.configuration = new IOConfig();
-        this.configuration.readPacket(buf);
-        this.security = new SecuritySettings();
-        this.security.readPacket(buf);
-        this.redstoneMode = RedstoneMode.readPacket(buf);
+        this.configuration = this.machine.getIOConfig();
+        this.security = this.machine.getSecurity();
 
-        this.state = new MachineState();
-        this.state.readPacket(buf);
-        this.energyStorage = type.createEnergyStorage();
-        this.energyStorage.readPacket(buf);
-        this.itemStorage = type.createItemStorage();
-        this.itemStorage.readPacket(buf);
-        this.fluidStorage = type.createFluidStorage();
-        this.fluidStorage.readPacket(buf);
+        this.state = this.machine.getState();
+        this.energyStorage = this.machine.energyStorage();
+        this.itemStorage = this.machine.itemStorage();
+        this.fluidStorage = this.machine.fluidStorage();
 
         this.machineSlots = new StorageSlot[this.itemStorage.size()];
 
@@ -316,6 +290,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
 
         this.addPlayerInventorySlots(inventory, invX, invY);
         this.registerData(this.data);
+        this.data.handleInitial(buf);
     }
 
     /**
@@ -329,7 +304,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static <Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> @NotNull MenuType<Menu> createType(@NotNull MachineMenuFactory<Machine, Menu> factory, Supplier<MachineType<Machine, Menu>> typeSupplier) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> factory.create(syncId, inventory, buf, typeSupplier.get()), BUF_IDENTITY_CODEC);
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> factory.create(syncId, inventory, buf, typeSupplier.get()), Utils.BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -342,7 +317,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_ -> new", pure = true)
     public static <Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> @NotNull MenuType<Menu> createType(@NotNull BasicMachineMenuFactory<Machine, Menu> factory) {
-        return new ExtendedScreenHandlerType<>(factory::create, BUF_IDENTITY_CODEC);
+        return new ExtendedScreenHandlerType<>(factory::create, Utils.BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -356,7 +331,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static <Machine extends MachineBlockEntity> @NotNull MenuType<MachineMenu<Machine>> createSimple(int invX, int invY, Supplier<MachineType<Machine, MachineMenu<Machine>>> typeSupplier) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new MachineMenu<>(syncId, inventory, buf, invX, invY, typeSupplier.get()), BUF_IDENTITY_CODEC);
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new MachineMenu<>(syncId, inventory, buf, invX, invY, typeSupplier.get()), Utils.BUF_IDENTITY_CODEC);
     }
 
     /**
@@ -389,13 +364,13 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
      */
     @MustBeInvokedByOverriders
     public void registerData(MachineMenuData data) {
-        data.register(this.itemStorage, new long[this.itemStorage.size()]); //todo: probably synced by vanilla - is this necessary?
-        data.register(this.fluidStorage, new long[this.fluidStorage.size()]);
-        data.register(this.energyStorage, new long[1]);
-        data.register(this.configuration, new IOConfig());
-        data.register(this.security, new SecuritySettings());
+        data.register(this.itemStorage); //todo: probably synced by vanilla - is this necessary?
+        data.register(this.fluidStorage);
+        data.register(this.energyStorage);
+        data.register(this.configuration);
+        data.register(this.security);
         data.registerEnum(RedstoneMode.values(), () -> this.redstoneMode, mode -> this.redstoneMode = mode);
-        data.register(this.state, new MachineState());
+        data.register(this.state);
     }
 
     /**
@@ -634,14 +609,9 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends AbstractCon
         return bits;
     }
 
-    /**
-     * Receives and deserializes sync packets from the server (called on the client).
-     *
-     * @param buf The packet buffer.
-     */
     @ApiStatus.Internal
-    public void receiveState(@NotNull RegistryFriendlyByteBuf buf) {
-        this.data.handle(buf);
+    public MachineMenuData getData() {
+        return data;
     }
 
     /**

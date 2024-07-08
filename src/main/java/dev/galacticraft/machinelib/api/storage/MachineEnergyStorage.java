@@ -42,7 +42,7 @@ import team.reborn.energy.api.EnergyStorage;
 
 /**
  * A simple energy storage implementation.
- * The flow of energy is not restricted here, use {@link #getExposedStorage(ResourceFlow)} if you need filtering.
+ * The flow of energy is not restricted here, use {@link #createExposedStorage(ResourceFlow)} if you need filtering.
  *
  * @see ExposedEnergyStorage
  * @see EnergyStorage
@@ -184,7 +184,7 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
      *
      * @param flow The resource flow
      */
-    @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow);
+    @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow);
 
     /**
      * {@return whether exposed storages can be inserted into}

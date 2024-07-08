@@ -366,7 +366,6 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         return this.disableDrops;
     }
 
-
     /**
      * {@return whether the current machine is enabled}
      * @see RedstoneMode
@@ -475,7 +474,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
      */
     @ApiStatus.Internal
     private @Nullable EnergyStorage getExposedEnergyStorage(@Nullable BlockFace face) {
-        if (face == null) return this.energyStorage.getExposedStorage(ResourceFlow.BOTH);
+        if (face == null) return this.energyStorage.createExposedStorage(ResourceFlow.BOTH);
         return this.configuration.get(face).getExposedEnergyStorage(this.energyStorage);
     }
 
@@ -529,14 +528,14 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
         super.loadAdditional(tag, lookup);
-        if (tag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND))
-            this.configuration.readTag(tag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
+        if (tag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_LIST))
+            this.configuration.readTag(tag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_BYTE));
         if (tag.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND))
             this.security.readTag(tag.getCompound(Constant.Nbt.SECURITY));
         if (tag.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE))
             this.redstone = RedstoneMode.readTag(tag.get(Constant.Nbt.REDSTONE_MODE));
-        if (tag.contains(Constant.Nbt.STATE, Tag.TAG_COMPOUND))
-            this.state.readTag(tag.getCompound(Constant.Nbt.STATE));
+        if (tag.contains(Constant.Nbt.STATE, Tag.TAG_BYTE))
+            this.state.readTag((ByteTag) tag.get(Constant.Nbt.STATE));
         if (tag.contains(Constant.Nbt.ENERGY_STORAGE, Tag.TAG_LONG))
             this.energyStorage.readTag(Objects.requireNonNull(((LongTag) tag.get(Constant.Nbt.ENERGY_STORAGE))));
         if (tag.contains(Constant.Nbt.ITEM_STORAGE, Tag.TAG_LIST))
@@ -546,7 +545,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         this.disableDrops = tag.getBoolean(Constant.Nbt.DISABLE_DROPS);
 
         if (this.level != null && this.level.isClientSide()) {
-            this.level.sendBlockUpdated(worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
+            this.level.sendBlockUpdated(this.worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
         }
     }
 
@@ -694,14 +693,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         }
 
         buf.writeBlockPos(this.getBlockPos());
-        this.configuration.writePacket(buf);
-        this.security.writePacket(buf);
-        this.redstone.writePacket(buf);
-        this.state.writePacket(buf);
-        this.energyStorage.writePacket(buf);
-        this.itemStorage.writePacket(buf);
-        this.fluidStorage.writePacket(buf);
-
+        ((MachineMenu<?>) player.containerMenu).getData().synchronizeInitial(buf);
         return buf;
     }
 
@@ -871,7 +863,7 @@ public abstract class MachineBlockEntity extends BlockEntity implements Extended
         public @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage) {
             if (this.type.willAcceptResource(ResourceType.ENERGY)) {
                 if (this.cachedEnergyStorage == null) {
-                    this.cachedEnergyStorage = storage.getExposedStorage(this.flow);
+                    this.cachedEnergyStorage = storage.createExposedStorage(this.flow);
                 }
                 return this.cachedEnergyStorage;
             }

@@ -51,7 +51,7 @@ public interface MachineType<Machine extends MachineBlockEntity, Menu extends Ma
 
     @Contract(value = "_, _, _, _, _, _ -> new", pure = true)
     static <Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> @NotNull MachineType<Machine, Menu> create(@NotNull Block block, @NotNull BlockEntityType<Machine> blockEntityType, @NotNull MenuType<Menu> menuType,  @NotNull Supplier<MachineEnergyStorage> energySupplier, @NotNull Supplier<MachineItemStorage> itemSupplier, @NotNull Supplier<MachineFluidStorage> fluidSupplier) {
-        return new MachineTypeImpl<>(block, blockEntityType, menuType,  energySupplier, itemSupplier, fluidSupplier);
+        return new MachineTypeImpl<>(block, blockEntityType, menuType, energySupplier, itemSupplier, fluidSupplier);
     }
 
     /**

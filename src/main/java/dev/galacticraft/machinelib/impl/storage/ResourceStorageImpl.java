@@ -175,6 +175,11 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     }
 
     @Override
+    public long[] createEquivalent() {
+        return new long[this.slots.length];
+    }
+
+    @Override
     public boolean hasChanged(long @NotNull [] previous) {
         for (int i = 0; i < this.slots.length; i++) {
             if (this.slots[i].getModifications() != previous[i]) {

@@ -42,8 +42,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemContext, FakeRecipeHolder {
     @Contract("_ -> new")
-    static @NotNull Builder builder(InputType inputType) {
-        return new Builder(inputType);
+    static @NotNull Spec builder(InputType inputType) {
+        return new Spec(inputType);
     }
 
     @Contract("_, _, _ -> new")
@@ -127,7 +127,7 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
     @Override
     long getAmount();
 
-    final class Builder {
+    final class Spec {
         private final InputType inputType;
 
         private boolean hidden = false;
@@ -139,12 +139,12 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
         private int capacity = 64;
 
         @Contract(pure = true)
-        private Builder(InputType inputType) {
+        private Spec(InputType inputType) {
             this.inputType = inputType;
         }
 
         @Contract("_, _ -> this")
-        public @NotNull Builder pos(int x, int y) {
+        public @NotNull Spec pos(int x, int y) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.x = x;
             this.y = y;
@@ -152,40 +152,40 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
         }
 
         @Contract(value = "-> this", mutates = "this")
-        public @NotNull Builder hidden() {
+        public @NotNull Spec hidden() {
             this.hidden = true;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull Builder x(int x) {
+        public @NotNull Spec x(int x) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.x = x;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull Builder y(int y) {
+        public @NotNull Spec y(int y) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.y = y;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull Builder icon(@Nullable Pair<ResourceLocation, ResourceLocation> icon) {
+        public @NotNull Spec icon(@Nullable Pair<ResourceLocation, ResourceLocation> icon) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.icon = icon;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull Builder filter(@NotNull ResourceFilter<Item> filter) {
+        public @NotNull Spec filter(@NotNull ResourceFilter<Item> filter) {
             this.filter = filter;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull Builder capacity(int capacity) {
+        public @NotNull Spec capacity(int capacity) {
             this.capacity = capacity;
             return this;
         }

@@ -265,8 +265,8 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     }
 
     @Override
-    public long insertOverflow(ItemVariant itemVariant, long maxAmount, TransactionContext transactionContext) {
-        return 0;
+    public long insertOverflow(ItemVariant itemVariant, long maxAmount, TransactionContext context) {
+        return this.parent.insert(itemVariant.getItem(), itemVariant.getComponents(), maxAmount, context);
     }
 
     @Override

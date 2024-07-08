@@ -29,14 +29,31 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MachineMenuDataImpl extends MachineMenuData {
     private final ServerPlayer player;
+    /**
+     * The delta values of the data to be synchronized. Indices correspond to the data list.
+     */
+    private final List<? super Object> delta;
 
-    public MachineMenuDataImpl(ServerPlayer player) {
+    public MachineMenuDataImpl(ServerPlayer player, int syncId) {
+        super(syncId);
         this.player = player;
+        this.delta = new ArrayList<>();
     }
 
+    @Override
+    public <T> void register(@NotNull DeltaPacketSerializable<? super RegistryFriendlyByteBuf, T> datum) {
+        super.register(datum);
+        this.delta.add(datum.createEquivalent());
+    }
+
+    @Override
     public void synchronize() {
         int size = this.data.size();
 
@@ -53,6 +70,7 @@ public class MachineMenuDataImpl extends MachineMenuData {
 
         if (n > 0) {
             RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), this.player.registryAccess());
+            buf.writeVarInt(this.syncId);
             buf.writeByte(n);
 
             for (int i = 0; i < size; i++) {
@@ -73,6 +91,7 @@ public class MachineMenuDataImpl extends MachineMenuData {
     @Override
     public void synchronizeFull() {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), this.player.registryAccess());
+        buf.writeVarInt(this.syncId);
         buf.writeByte(this.data.size());
         for (int i = 0; i < this.data.size(); i++) {
             var datum = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(i);
@@ -84,8 +103,21 @@ public class MachineMenuDataImpl extends MachineMenuData {
     }
 
     @Override
+    public void synchronizeInitial(RegistryFriendlyByteBuf buf) {
+        for (int i = 0; i < this.data.size(); i++) {
+            var datum = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(i);
+            datum.writePacket(buf);
+            datum.copyInto(this.delta.get(i));
+        }
+    }
+
+    @Override
     public void handle(RegistryFriendlyByteBuf buf) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void handleInitial(RegistryFriendlyByteBuf buf) {
+        throw new UnsupportedOperationException();
+    }
 }

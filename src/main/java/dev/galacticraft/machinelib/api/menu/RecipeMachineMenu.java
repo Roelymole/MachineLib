@@ -24,6 +24,7 @@ package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.MachineType;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,13 +81,6 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
      */
     protected RecipeMachineMenu(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY, @NotNull MachineType<Machine, ? extends MachineMenu<Machine>> type) {
         super(syncId, inventory, buf, invX, invY, type);
-
-        this.maxProgress = buf.readInt();
-        if (this.maxProgress > 0) {
-            this.progress = buf.readInt();
-        } else {
-            this.progress = 0;
-        }
     }
 
     /**
@@ -131,7 +125,7 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static <C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> @NotNull MenuType<RecipeMachineMenu<C, R, Machine>> createType(@NotNull Supplier<MachineType<Machine, ? extends RecipeMachineMenu<C, R, Machine>>> selfReference, int invX, int invY) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new RecipeMachineMenu<>(syncId, inventory, buf, invX, invY, selfReference.get()), MachineMenu.BUF_IDENTITY_CODEC);
+        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new RecipeMachineMenu<>(syncId, inventory, buf, invX, invY, selfReference.get()), Utils.BUF_IDENTITY_CODEC);
     }
 
     @Override

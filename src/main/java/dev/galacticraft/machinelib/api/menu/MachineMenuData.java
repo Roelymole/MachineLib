@@ -38,7 +38,7 @@ import java.util.function.*;
 
 /**
  * A class that manages the synchronization of machine menu data between the client and server.
- * Use {@link #register(DeltaPacketSerializable, Object)} to register
+ * Use {@link #register(DeltaPacketSerializable)} to register
  * a new piece of interior-mutable data to be synchronized.
  * Use the other methods to register field-mutable, but interior-immutable data.
  *
@@ -49,27 +49,21 @@ public abstract class MachineMenuData {
      * The data to be synchronized.
      */
     protected final List<DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ?>> data;
+    protected final int syncId;
 
-    /**
-     * The delta values of the data to be synchronized. Indices correspond to the data list.
-     */
-    protected final List<? super Object> delta;
-
-    protected MachineMenuData() {
+    protected MachineMenuData(int syncId) {
+        this.syncId = syncId;
         this.data = new ArrayList<>();
-        this.delta = new ArrayList<>();
     }
 
     /**
      * Registers a new piece of data to be synchronized.
      *
-     * @param serializable the data to be synchronized
-     * @param value the initial value of the data
+     * @param datum the data to be synchronized
      * @param <T> the type of the data
      */
-    public <T> void register(@NotNull DeltaPacketSerializable<? super RegistryFriendlyByteBuf, T> serializable, T value) {
-        this.data.add(serializable);
-        this.delta.add(value);
+    public <T> void register(@NotNull DeltaPacketSerializable<? super RegistryFriendlyByteBuf, T> datum) {
+        this.data.add(datum);
     }
 
     /**
@@ -81,8 +75,7 @@ public abstract class MachineMenuData {
      * @param <T> the type of the data
      */
     public <T> void register(StreamCodec<? super RegistryFriendlyByteBuf, T> codec, Supplier<T> getter, Consumer<T> setter) {
-        this.data.add(new StreamCodecPacketSerializable<>(codec, getter, setter));
-        this.delta.add(null);
+        this.register(new StreamCodecPacketSerializable<>(codec, getter, setter));
     }
 
     /**
@@ -92,8 +85,7 @@ public abstract class MachineMenuData {
      * @param setter sets the value of the data
      */
     public void registerInt(IntSupplier getter, IntConsumer setter) {
-        this.data.add(new IntPacketSerializable(getter, setter));
-        this.delta.add(new int[1]);
+        this.register(new IntPacketSerializable(getter, setter));
     }
 
     /**
@@ -105,8 +97,7 @@ public abstract class MachineMenuData {
      * @param <E> the type of the enum
      */
     public <E extends Enum<E>> void registerEnum(E[] world, Supplier<E> getter, Consumer<E> setter) {
-        this.data.add(new EnumPacketSerializable<>(world, getter, setter));
-        this.delta.add(null);
+        this.register(new EnumPacketSerializable<>(world, getter, setter));
     }
 
     /**
@@ -116,8 +107,7 @@ public abstract class MachineMenuData {
      * @param setter sets the value of the data
      */
     public void registerLong(LongSupplier getter, LongConsumer setter) {
-        this.data.add(new LongPacketSerializable(getter, setter));
-        this.delta.add(new long[1]);
+        this.register(new LongPacketSerializable(getter, setter));
     }
 
     @ApiStatus.Internal
@@ -127,6 +117,11 @@ public abstract class MachineMenuData {
     public abstract void synchronizeFull();
 
     @ApiStatus.Internal
+    public abstract void synchronizeInitial(RegistryFriendlyByteBuf buf);
+
+    @ApiStatus.Internal
     public abstract void handle(RegistryFriendlyByteBuf buf);
 
+    @ApiStatus.Internal
+    public abstract void handleInitial(RegistryFriendlyByteBuf buf);
 }

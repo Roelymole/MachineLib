@@ -153,6 +153,11 @@ public final class IOConfig implements Serializable<ListTag>, MachineRenderData,
     }
 
     @Override
+    public IOConfig createEquivalent() {
+        return new IOConfig();
+    }
+
+    @Override
     public void copyInto(@NotNull IOConfig other) {
         for (int i = 0; i < this.faces.length; i++) {
             this.faces[i].copyInto(other.faces[i]);

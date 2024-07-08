@@ -35,8 +35,8 @@ import org.jetbrains.annotations.Nullable;
 
 public interface FluidResourceSlot extends ResourceSlot<Fluid> {
     @Contract("_ -> new")
-    static @NotNull Builder builder(@NotNull InputType inputType) {
-        return new Builder(inputType);
+    static @NotNull Spec builder(@NotNull InputType inputType) {
+        return new Spec(inputType);
     }
 
     @Contract("_, _, _, _ -> new")
@@ -55,7 +55,7 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
      */
     @Nullable TankDisplay getDisplay();
 
-    final class Builder {
+    final class Spec {
         private final InputType inputType;
 
         private boolean hidden = false;
@@ -69,59 +69,59 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
         private long capacity = FluidConstants.BUCKET;
 
         @Contract(pure = true)
-        private Builder(@NotNull InputType inputType) {
+        private Spec(@NotNull InputType inputType) {
             this.inputType = inputType;
         }
 
         @Contract("_, _ -> this")
-        public @NotNull FluidResourceSlot.Builder pos(int x, int y) {
+        public @NotNull Spec pos(int x, int y) {
             this.x(x);
             this.y(y);
             return this;
         }
 
         @Contract(value = "-> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder hidden() {
+        public @NotNull Spec hidden() {
             this.hidden = true;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder x(int x) {
+        public @NotNull Spec x(int x) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.x = x;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder y(int y) {
+        public @NotNull Spec y(int y) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.y = y;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder width(int width) {
+        public @NotNull Spec width(int width) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.width = width;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder height(int height) {
+        public @NotNull Spec height(int height) {
             if (this.hidden) throw new UnsupportedOperationException("hidden");
             this.height = height;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder filter(@NotNull ResourceFilter<Fluid> filter) {
+        public @NotNull Spec filter(@NotNull ResourceFilter<Fluid> filter) {
             this.filter = filter;
             return this;
         }
 
         @Contract(value = "_ -> this", mutates = "this")
-        public @NotNull FluidResourceSlot.Builder capacity(long capacity) {
+        public @NotNull Spec capacity(long capacity) {
             this.capacity = capacity;
             return this;
         }

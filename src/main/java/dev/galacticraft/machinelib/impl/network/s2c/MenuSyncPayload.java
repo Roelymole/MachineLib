@@ -24,6 +24,8 @@ package dev.galacticraft.machinelib.impl.network.s2c;
 
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.impl.Constant;
+import dev.galacticraft.machinelib.impl.MachineLib;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -32,7 +34,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public record MenuSyncPayload(RegistryFriendlyByteBuf buf) implements CustomPacketPayload {
     public static final Type<MenuSyncPayload> TYPE = new Type<>(Constant.id("menu_sync"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, MenuSyncPayload> CODEC = MachineMenu.BUF_IDENTITY_CODEC.map(MenuSyncPayload::new, MenuSyncPayload::buf);
+    public static final StreamCodec<RegistryFriendlyByteBuf, MenuSyncPayload> CODEC = Utils.BUF_IDENTITY_CODEC.map(MenuSyncPayload::new, MenuSyncPayload::buf);
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -40,9 +42,14 @@ public record MenuSyncPayload(RegistryFriendlyByteBuf buf) implements CustomPack
     }
 
     public void apply(ClientPlayNetworking.Context context) {
+        int syncId = this.buf.readVarInt();
         LocalPlayer player = context.player();
-        if (player != null && player.containerMenu instanceof MachineMenu<?> menu) {
-            menu.receiveState(buf);
+        if (player != null) {
+            if (player.containerMenu instanceof MachineMenu<?> menu && syncId == menu.containerId) {
+                menu.getData().handle(this.buf);
+            } else {
+                MachineLib.LOGGER.warn("Received menu sync packet for invalid menu ID: {} (active: {})", syncId, player.containerMenu.containerId);
+            }
         }
     }
 }

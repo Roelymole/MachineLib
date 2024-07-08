@@ -26,6 +26,7 @@ import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.misc.MutableModifiable;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
+import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import net.minecraft.core.component.DataComponentPatch;
@@ -155,5 +156,5 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
      * @param parent The parent to set.
      */
     @ApiStatus.Internal
-    void _setParent(MutableModifiable parent);
+    void _setParent(ResourceStorage<Resource, ?> parent);
 }

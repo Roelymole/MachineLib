@@ -34,22 +34,22 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ItemResourceSlotBuilderTest implements MinecraftTest {
-    ItemResourceSlot.Builder builder;
+class ItemResourceSlotSpecTest implements MinecraftTest {
+    ItemResourceSlot.Spec spec;
     
     @BeforeEach
     void setup() {
-        this.builder = ItemResourceSlot.builder(InputType.STORAGE);
+        this.spec = ItemResourceSlot.builder(InputType.STORAGE);
     }
 
     @Test
     void invalidCapacity() {
-        assertThrows(IllegalArgumentException.class, () -> builder.capacity(0).build());
+        assertThrows(IllegalArgumentException.class, () -> spec.capacity(0).build());
     }
 
     @Test
     void capacity() {
-        ItemResourceSlot slot = builder.capacity(32).build();
+        ItemResourceSlot slot = spec.capacity(32).build();
 
         assertEquals(32, slot.getCapacity());
     }
@@ -57,14 +57,14 @@ class ItemResourceSlotBuilderTest implements MinecraftTest {
     @Test
     void icon() {
         Pair<ResourceLocation, ResourceLocation> icon = new Pair<>(new ResourceLocation("null"), new ResourceLocation("null"));
-        ItemResourceSlot slot = builder.icon(icon).build();
+        ItemResourceSlot slot = spec.icon(icon).build();
 
         assertEquals(icon, slot.getDisplay().icon());
     }
 
     @Test
     void displayPosition() {
-        ItemResourceSlot slot = builder.pos(11, 43).build();
+        ItemResourceSlot slot = spec.pos(11, 43).build();
 
         assertEquals(11, slot.getDisplay().x());
         assertEquals(43, slot.getDisplay().y());
@@ -72,7 +72,7 @@ class ItemResourceSlotBuilderTest implements MinecraftTest {
 
     @Test
     void displayPositionXY() {
-        ItemResourceSlot slot = builder.x(5).y(7).build();
+        ItemResourceSlot slot = spec.x(5).y(7).build();
 
         assertEquals(5, slot.getDisplay().x());
         assertEquals(7, slot.getDisplay().y());
@@ -81,32 +81,32 @@ class ItemResourceSlotBuilderTest implements MinecraftTest {
 
     @Test
     void hidden() {
-        ItemResourceSlot slot = builder.hidden().build();
+        ItemResourceSlot slot = spec.hidden().build();
 
-        assertThrows(UnsupportedOperationException.class, () -> builder.x(0));
-        assertThrows(UnsupportedOperationException.class, () -> builder.y(0));
-        assertThrows(UnsupportedOperationException.class, () -> builder.icon(null));
+        assertThrows(UnsupportedOperationException.class, () -> spec.x(0));
+        assertThrows(UnsupportedOperationException.class, () -> spec.y(0));
+        assertThrows(UnsupportedOperationException.class, () -> spec.icon(null));
 
         assertNull(slot.getDisplay());
     }
 
     @Test
     void hiddenPost() {
-        builder.x(10).hidden();
+        spec.x(10).hidden();
 
-        assertThrows(UnsupportedOperationException.class, () -> builder.build());
+        assertThrows(UnsupportedOperationException.class, () -> spec.build());
     }
 
     @Test
     void defaultFilter() {
-        ItemResourceSlot slot = builder.build();
+        ItemResourceSlot slot = spec.build();
 
         assertSame(ResourceFilters.any(), slot.getFilter());
     }
 
     @Test
     void filter() {
-        ItemResourceSlot slot = builder.filter(ResourceFilters.none()).build();
+        ItemResourceSlot slot = spec.filter(ResourceFilters.none()).build();
 
         assertSame(ResourceFilters.none(), slot.getFilter());
         assertEquals(1, slot.insert(Items.DIRT, 1)); // filters only affect players

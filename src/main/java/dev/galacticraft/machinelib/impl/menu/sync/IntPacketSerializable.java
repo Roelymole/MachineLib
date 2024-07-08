@@ -50,4 +50,9 @@ public record IntPacketSerializable(IntSupplier getter,
     public void writePacket(@NotNull ByteBuf buf) {
         buf.writeInt(this.getter.getAsInt());
     }
+
+    @Override
+    public int[] createEquivalent() {
+        return new int[1];
+    }
 }

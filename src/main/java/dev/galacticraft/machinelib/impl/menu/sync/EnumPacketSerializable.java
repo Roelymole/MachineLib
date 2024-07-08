@@ -71,4 +71,9 @@ public final class EnumPacketSerializable<E extends Enum<E>> implements DeltaPac
             buf.writeByte(value.ordinal());
         }
     }
+
+    @Override
+    public Void createEquivalent() {
+        return null;
+    }
 }

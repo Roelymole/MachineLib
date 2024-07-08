@@ -24,6 +24,7 @@ package dev.galacticraft.machinelib.api.misc;
 
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents an object that can be (de)serialized from a packet.
@@ -54,4 +55,6 @@ public interface DeltaPacketSerializable<B extends ByteBuf, T> extends Equivalen
     default void writeDeltaPacket(@NotNull B buf, T previous) {
         this.writePacket(buf);
     }
+
+    @Nullable T createEquivalent();
 }

@@ -51,7 +51,7 @@ public class RecipeOutputStorageSlot extends StorageSlot {
     @Override
     public void onTake(Player player, ItemStack itemStack) {
         super.onTake(player, itemStack);
-        if (player.getUUID() == this.player.getUUID()) this.checkTakeAchievements(itemStack);
+        if (this.player.getUUID().equals(player.getUUID())) this.checkTakeAchievements(itemStack);
     }
 
     @Override

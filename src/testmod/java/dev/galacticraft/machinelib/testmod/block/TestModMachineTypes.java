@@ -47,7 +47,7 @@ public class TestModMachineTypes {
             TestModBlockEntityTypes.GENERATOR,
             TestModMenuTypes.GENERATOR,
             () -> MachineEnergyStorage.create(30000, 300, 300, false, true),
-            MachineItemStorage.of(
+            MachineItemStorage.spec(
                     ItemResourceSlot.builder(InputType.TRANSFER)
                             .pos(8, 62)
                             .filter(ResourceFilters.CAN_INSERT_ENERGY)
@@ -67,7 +67,7 @@ public class TestModMachineTypes {
             TestModBlockEntityTypes.MIXER,
             TestModMenuTypes.MIXER,
             () -> MachineEnergyStorage.create(30000, 300, 300, true, false),
-            MachineItemStorage.of(
+            MachineItemStorage.spec(
                     ItemResourceSlot.builder(InputType.TRANSFER)
                             .pos(8, 8)
                             .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
@@ -99,7 +99,7 @@ public class TestModMachineTypes {
             TestModBlockEntityTypes.MELTER,
             TestModMenuTypes.MELTER,
             () -> MachineEnergyStorage.create(30000, 300, 300, true, false),
-            MachineItemStorage.of(
+            MachineItemStorage.spec(
                     ItemResourceSlot.builder(InputType.TRANSFER)
                             .pos(8, 8)
                             .filter(ResourceFilters.CAN_EXTRACT_ENERGY)

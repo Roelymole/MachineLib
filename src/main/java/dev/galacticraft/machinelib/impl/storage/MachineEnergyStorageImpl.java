@@ -184,7 +184,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow) {
+    public @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow) {
         switch (flow) {
             case INPUT -> {
                 if (this.insert) {
@@ -272,5 +272,10 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     @Override
     public void copyInto(long[] other) {
         other[0] = this.amount;
+    }
+
+    @Override
+    public long @Nullable [] createEquivalent() {
+        return new long[1];
     }
 }

@@ -30,9 +30,7 @@ import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Recipe;
@@ -249,19 +247,6 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
             return this.cachedRecipe;
         }
         return level.getRecipeManager().getRecipeFor(this.getRecipeType(), this.craftingInv(), level).orElse(null);
-    }
-
-    @Override
-    public RegistryFriendlyByteBuf getScreenOpeningData(ServerPlayer player) {
-        RegistryFriendlyByteBuf buf = super.getScreenOpeningData(player);
-        if (this.activeRecipe != null) {
-            buf.writeInt(this.getProcessingTime(this.activeRecipe));
-            buf.writeInt(this.progress);
-        } else {
-            buf.writeInt(0);
-        }
-
-        return buf;
     }
 
     /**

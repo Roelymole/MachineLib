@@ -49,7 +49,7 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
         return new MachineItemStorageImpl(slots);
     }
 
-    static @NotNull Supplier<MachineItemStorage> of(ItemResourceSlot.Builder @NotNull ... slots) {
+    static @NotNull Supplier<MachineItemStorage> spec(ItemResourceSlot.Spec @NotNull ... slots) {
         if (slots.length == 0) return MachineItemStorage::empty;
         return () -> {
             ItemResourceSlot[] slots1 = new ItemResourceSlot[slots.length];
@@ -61,8 +61,8 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
     }
 
     @Contract(" -> new")
-    static @NotNull MachineItemStorage.Builder builder() {
-        return new Builder();
+    static @NotNull MachineItemStorage.Spec builder() {
+        return new Spec();
     }
 
     @Contract(pure = true)
@@ -70,10 +70,9 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
         return MachineItemStorageImpl.EMPTY;
     }
 
+    // overridden to set the variant type
     @Override
     @Nullable ExposedStorage<Item, ItemVariant> createExposedStorage(@NotNull ResourceFlow flow);
-
-    // ITEM EXTENSIONS
 
     boolean consumeOne(@NotNull Item resource);
 
@@ -83,49 +82,25 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
 
     long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
-    // SLOT METHODS
+    final class Spec implements Supplier<MachineItemStorage> {
+        private final List<ItemResourceSlot.Spec> slots = new ArrayList<>();
 
-    @Nullable Item consumeOne(int slot);
-
-    boolean consumeOne(int slot, @NotNull Item resource);
-
-    boolean consumeOne(int slot, @NotNull Item resource, @Nullable DataComponentPatch components);
-
-    long consume(int slot, long amount);
-
-    long consume(int slot, @NotNull Item resource, long amount);
-
-    long consume(int slot, @NotNull Item resource, @Nullable DataComponentPatch components, long amount);
-
-    // RANGE METHODS
-
-    boolean consumeOne(int start, int len, @NotNull Item resource);
-
-    boolean consumeOne(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components);
-
-    long consume(int start, int len, @NotNull Item resource, long amount);
-
-    long consume(int start, int len, @NotNull Item resource, @Nullable DataComponentPatch components, long amount);
-
-    final class Builder implements Supplier<MachineItemStorage> {
-        private final List<ItemResourceSlot.Builder> slots = new ArrayList<>();
-
-        private Builder() {
+        private Spec() {
         }
 
         @Contract("_ -> this")
-        public @NotNull Builder add(ItemResourceSlot.Builder slot) {
+        public @NotNull MachineItemStorage.Spec add(ItemResourceSlot.Spec slot) {
             this.slots.add(slot);
             return this;
         }
 
         @Contract("_, _, _ -> this")
-        public @NotNull Builder add3x3Grid(InputType type, int xOffset, int yOffset) {
+        public @NotNull MachineItemStorage.Spec add3x3Grid(InputType type, int xOffset, int yOffset) {
             return this.addGrid(type, xOffset, yOffset, 3, 3);
         }
 
         @Contract("_, _, _, _, _ -> this")
-        public @NotNull Builder addGrid(InputType type, int xOffset, int yOffset, int width, int height) {
+        public @NotNull MachineItemStorage.Spec addGrid(InputType type, int xOffset, int yOffset, int width, int height) {
             assert width > 0 && height > 0;
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
@@ -135,18 +110,14 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
             return this;
         }
 
-        public @NotNull MachineItemStorage build() {
+        @Override
+        public MachineItemStorage get() {
             if (this.slots.isEmpty()) return empty();
             ItemResourceSlot[] slots1 = new ItemResourceSlot[slots.size()];
             for (int i = 0; i < slots.size(); i++) {
                 slots1[i] = slots.get(i).build();
             }
             return new MachineItemStorageImpl(slots1);
-        }
-
-        @Override
-        public MachineItemStorage get() {
-            return this.build();
         }
     }
 }

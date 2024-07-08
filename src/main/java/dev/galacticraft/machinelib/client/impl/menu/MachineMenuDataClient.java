@@ -27,6 +27,10 @@ import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
 public class MachineMenuDataClient extends MachineMenuData {
+    public MachineMenuDataClient(int syncId) {
+        super(syncId);
+    }
+
     @Override
     public void synchronize() {
         throw new UnsupportedOperationException();
@@ -34,6 +38,11 @@ public class MachineMenuDataClient extends MachineMenuData {
 
     @Override
     public void synchronizeFull() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void synchronizeInitial(RegistryFriendlyByteBuf buf) {
         throw new UnsupportedOperationException();
     }
 
@@ -52,6 +61,14 @@ public class MachineMenuDataClient extends MachineMenuData {
                 var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) this.data.get(index);
                 key.readDeltaPacket(buf);
             }
+        }
+    }
+
+    @Override
+    public void handleInitial(RegistryFriendlyByteBuf buf) {
+        for (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ?> datum : this.data) {
+            var key = (DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ? super Object>) datum;
+            key.readPacket(buf);
         }
     }
 }

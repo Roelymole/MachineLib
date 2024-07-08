@@ -44,7 +44,7 @@ public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourc
         return new MachineFluidStorageImpl(slots);
     }
 
-    static @NotNull Supplier<MachineFluidStorage> of(FluidResourceSlot.Builder @NotNull ... slots) {
+    static @NotNull Supplier<MachineFluidStorage> of(FluidResourceSlot.Spec @NotNull ... slots) {
         if (slots.length == 0) return MachineFluidStorage::empty;
         return () -> {
             FluidResourceSlot[] slots1 = new FluidResourceSlot[slots.length];
@@ -55,6 +55,7 @@ public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourc
         };
     }
 
+    // overridden to set the variant type
     @Override
     @Nullable ExposedStorage<Fluid, FluidVariant> createExposedStorage(@NotNull ResourceFlow flow);
 

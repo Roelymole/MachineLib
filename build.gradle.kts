@@ -47,7 +47,7 @@ plugins {
     id("fabric-loom") version("1.7-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
     id("org.ajoberstar.grgit") version("5.2.2")
-    id("dev.galacticraft.mojarn") version("0.3.0+8")
+    id("dev.galacticraft.mojarn") version("0.4.0+9")
 }
 
 group = "dev.galacticraft"

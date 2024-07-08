@@ -48,5 +48,10 @@ public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> 
      */
     void setListener(Runnable listener);
 
+    /**
+     * Create an exposed storage for this storage.
+     * @param flow the flow of resources in the exposed storage.
+     * @return the exposed storage, or {@code null} if this storage cannot be exposed in the given way.
+     */
     @Nullable ExposedStorage<Resource, ?> createExposedStorage(@NotNull ResourceFlow flow);
 }

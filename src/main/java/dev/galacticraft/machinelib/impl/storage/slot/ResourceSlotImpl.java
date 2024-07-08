@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
-import dev.galacticraft.machinelib.api.misc.MutableModifiable;
+import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
@@ -47,7 +47,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     private final InputType inputType;
     private final ResourceFilter<Resource> externalFilter;
     protected final long capacity;
-    private MutableModifiable parent;
+    protected ResourceStorage<Resource, ?> parent;
 
     protected @Nullable Resource resource = null;
     protected @NotNull DataComponentPatch components = DataComponentPatch.EMPTY;
@@ -317,7 +317,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
-    public void _setParent(MutableModifiable parent) {
+    public void _setParent(ResourceStorage<Resource, ?> parent) {
         assert this.parent == null;
         this.parent = parent;
     }

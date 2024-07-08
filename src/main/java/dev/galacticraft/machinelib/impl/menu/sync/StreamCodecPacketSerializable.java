@@ -26,6 +26,7 @@ import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -61,5 +62,10 @@ public final class StreamCodecPacketSerializable<T> implements DeltaPacketSerial
     @Override
     public void writePacket(@NotNull RegistryFriendlyByteBuf buf) {
         this.codec.encode(buf, this.getter.get());
+    }
+
+    @Override
+    public @Nullable Void createEquivalent() {
+        return null;
     }
 }

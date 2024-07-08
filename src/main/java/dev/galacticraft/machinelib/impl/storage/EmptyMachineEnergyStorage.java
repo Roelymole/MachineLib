@@ -123,7 +123,7 @@ public class EmptyMachineEnergyStorage implements MachineEnergyStorage {
     }
 
     @Override
-    public @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow) {
+    public @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow) {
         return null;
     }
 
@@ -170,5 +170,10 @@ public class EmptyMachineEnergyStorage implements MachineEnergyStorage {
 
     @Override
     public void writePacket(@NotNull ByteBuf buf) {
+    }
+
+    @Override
+    public long @Nullable [] createEquivalent() {
+        return null;
     }
 }
