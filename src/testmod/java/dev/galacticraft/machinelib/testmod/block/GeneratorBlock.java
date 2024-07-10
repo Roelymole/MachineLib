@@ -22,18 +22,34 @@
 
 package dev.galacticraft.machinelib.testmod.block;
 
+import com.mojang.serialization.MapCodec;
 import dev.galacticraft.machinelib.api.block.MachineBlock;
-import dev.galacticraft.machinelib.testmod.Constant;
+import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.testmod.block.entity.GeneratorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class GeneratorBlock extends MachineBlock<GeneratorBlockEntity> {
+public class GeneratorBlock extends MachineBlock {
+    private static final MapCodec<GeneratorBlock> CODEC = simpleCodec(GeneratorBlock::new);
+
     public GeneratorBlock(Properties settings) {
-        super(settings, Constant.id(Constant.GENERATOR));
+        super(settings);
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public @Nullable MachineBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new GeneratorBlockEntity(pos, state);
     }
 
     @Override

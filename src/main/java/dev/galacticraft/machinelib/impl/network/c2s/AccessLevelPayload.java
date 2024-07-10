@@ -43,7 +43,7 @@ public record AccessLevelPayload(AccessLevel level) implements CustomPacketPaylo
 
     public void apply(ServerPlayNetworking.Context context) {
         if (context.player().containerMenu instanceof MachineMenu<?> menu) {
-            MachineBlockEntity machine = menu.machine;
+            MachineBlockEntity machine = menu.be;
             if (machine.getSecurity().isOwner(context.player())) {
                 machine.getSecurity().setAccessLevel(level);
             }

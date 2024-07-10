@@ -23,11 +23,17 @@
 package dev.galacticraft.machinelib.testmod.block.entity;
 
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineStatuses;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
+import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
+import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.testmod.block.TestModMachineTypes;
+import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.util.EnergySource;
+import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +41,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -47,12 +52,28 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
     public static final int FUEL_SLOT = 1;
 
     public static final int GENERATION_RATE = 250;
+
+    public static final StorageSpec STORAGE_SPEC = StorageSpec.of(
+            MachineItemStorage.spec(
+                    ItemResourceSlot.builder(InputType.TRANSFER)
+                            .pos(8, 62)
+                            .filter(ResourceFilters.CAN_INSERT_ENERGY)
+                            .capacity(32),
+                    ItemResourceSlot.builder(InputType.INPUT)
+                            .pos(80, 49)
+                            .filter((item, tag) -> {
+                                Integer time = FuelRegistry.INSTANCE.get(item);
+                                return time != null && time > 0;
+                            })
+            ),
+            MachineEnergyStorage.spec(30000, 0, GENERATION_RATE + GENERATION_RATE / 2)
+    );
     private final ItemResourceSlot fuelInput;
+    private final EnergySource energySource = new EnergySource(this);
     private int burnTime = 0;
 
-
     public GeneratorBlockEntity(@NotNull BlockPos pos, BlockState state) {
-        super(TestModMachineTypes.GENERATOR, pos, state);
+        super(TestModBlockEntityTypes.GENERATOR, pos, state, STORAGE_SPEC);
         this.fuelInput = this.itemStorage().slot(FUEL_SLOT);
     }
 
@@ -62,7 +83,7 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
         profiler.push("power_drain");
         this.drainPowerToSlot(BATTERY_SLOT);
         profiler.pop();
-        this.trySpreadEnergy(level, state);
+        this.energySource.trySpreadEnergy(level, pos, state);
     }
 
     @Override
@@ -89,9 +110,8 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
         return MachineStatuses.ACTIVE;
     }
 
-    @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-        return new MachineMenu<>(syncId, ((ServerPlayer) player), this);
+    public @Nullable MachineMenu<GeneratorBlockEntity> openMenu(int syncId, Inventory inventory, Player player) {
+        return new MachineMenu<>(TestModMenuTypes.GENERATOR, syncId, (ServerPlayer) player, this);
     }
 }

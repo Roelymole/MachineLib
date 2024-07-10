@@ -48,7 +48,7 @@ public interface MachineModelRegistry {
     /**
      * Registers a sprite provider for a block.
      *
-     * @param id       The id to register the provider for.
+     * @param id The id to register the provider for.
      * @param factory The provider to register.
      */
     static void register(@NotNull ResourceLocation id, @NotNull SpriteProviderFactory factory) {
@@ -96,10 +96,11 @@ public interface MachineModelRegistry {
     @FunctionalInterface
     interface SpriteProvider {
         /**
-         * @param face    The face that is being textured.
+         * @param face The face that is being textured.
          * @return The appropriate sprite to render for the given face.
          */
         @Contract(pure = true)
-        @NotNull TextureAtlasSprite getSpritesForState(@Nullable MachineRenderData data, @NotNull BlockFace face);
+        @NotNull
+        TextureAtlasSprite getSpritesForState(@Nullable MachineRenderData data, @NotNull BlockFace face);
     }
 }

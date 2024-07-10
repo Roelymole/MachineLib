@@ -70,6 +70,11 @@ public class StorageSlot extends Slot {
     }
 
     @Override
+    public boolean allowModification(Player player) {
+        return super.allowModification(player);
+    }
+
+    @Override
     public @NotNull ItemStack getItem() {
         if (this.watchModCount != this.slot.getModifications()) {
             this.watchModCount = this.slot.getModifications();
@@ -113,11 +118,6 @@ public class StorageSlot extends Slot {
     @Override
     public int getMaxStackSize() {
         return Math.toIntExact(this.slot.getCapacity());
-    }
-
-    @Override
-    public int getMaxStackSize(ItemStack stack) {
-        return (int) Math.min(stack.getMaxStackSize(), this.slot.getCapacity());
     }
 
     @Override

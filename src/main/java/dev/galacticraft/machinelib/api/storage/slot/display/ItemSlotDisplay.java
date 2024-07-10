@@ -48,8 +48,8 @@ public interface ItemSlotDisplay {
     /**
      * Creates a new slot display with the specified coordinates and icon.
      *
-     * @param x    the x-coordinate of the item slot display
-     * @param y    the y-coordinate of the item slot display
+     * @param x the x-coordinate of the item slot display
+     * @param y the y-coordinate of the item slot display
      * @param icon the icon of the item slot display (can be null)
      * @return a new slot display
      */
@@ -72,5 +72,6 @@ public interface ItemSlotDisplay {
      * {@return The icon for this slot or {@code null} if no icon is assigned to this slot}
      * The first ID represents the texture atlas, while the second ID is the sprite (on the atlas).
      */
-    @Nullable Pair<ResourceLocation, ResourceLocation> icon();
+    @Nullable
+    Pair<ResourceLocation, ResourceLocation> icon();
 }

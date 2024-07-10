@@ -22,10 +22,8 @@
 
 package dev.galacticraft.machinelib.api.block;
 
-import com.google.common.base.Suppliers;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
@@ -40,13 +38,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -81,53 +77,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 /**
  * The base block for all machines.
- *
- * @param <Machine> The machine block entity attached to this block.
  */
-public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntityBlock {
-    public static final MapCodec<MachineBlock<? extends MachineBlockEntity>> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            propertiesCodec(),
-            ResourceLocation.CODEC.fieldOf("factory").forGetter(machineBlock -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(machineBlock.factory.get()))
-    ).apply(instance, MachineBlock::new));
-
+public abstract class MachineBlock extends BaseBlock {
     /**
      * Represents a boolean property for specifying the active state of the machine.
+     *
      * @see MachineBlockEntity#isActive() for the definition of 'active'
      */
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
     /**
      * Tooltip prompt text. Shown instead of the long-form description when shift is not pressed.
-     *
-     * @see #shiftDescription(ItemStack, TooltipContext, TooltipFlag)
      */
     private static final Component PRESS_SHIFT = Component.translatable(Constant.TranslationKey.PRESS_SHIFT).setStyle(Constant.Text.DARK_GRAY_STYLE);
-
-    /**
-     * Factory that constructs the relevant machine block entity for this block.
-     */
-    private final Supplier<BlockEntityType<Machine>> factory;
-
-    /**
-     * The line-wrapped long description of this machine.
-     *
-     * @see #shiftDescription(ItemStack, TooltipContext, TooltipFlag)
-     */
-    private List<Component> description = null;
 
     /**
      * Creates a new machine block.
      *
      * @param settings The settings for the block.
-     * @param factoryId the machine block entity factory
      */
-    public MachineBlock(Properties settings, ResourceLocation factoryId) {
+    public MachineBlock(Properties settings) {
         super(settings);
-        this.factory = Suppliers.memoize(() -> (BlockEntityType<Machine>) BuiltInRegistries.BLOCK_ENTITY_TYPE.get(factoryId));
         this.registerDefaultState(this.getStateDefinition().any().setValue(ACTIVE, false));
     }
 
@@ -153,15 +126,47 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
         return state.getValue(ACTIVE);
     }
 
+    protected static void appendBlockEntityTooltip(ItemStack stack, List<Component> tooltip) {
+        if (stack != null) {
+            CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+            if (!data.isEmpty()) {
+                CompoundTag nbt = data.getUnsafe();
+                tooltip.add(Component.empty());
+                if (nbt.contains(Constant.Nbt.ENERGY, Tag.TAG_INT))
+                    tooltip.add(Component.translatable(Constant.TranslationKey.CURRENT_ENERGY, Component.literal(String.valueOf(nbt.getInt(Constant.Nbt.ENERGY))).setStyle(Constant.Text.BLUE_STYLE)).setStyle(Constant.Text.GOLD_STYLE));
+                if (nbt.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND)) {
+                    CompoundTag security = nbt.getCompound(Constant.Nbt.SECURITY);
+                    if (security.contains(Constant.Nbt.OWNER, Tag.TAG_COMPOUND)) {
+                        GameProfile profile = ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, security.getCompound(Constant.Nbt.OWNER)).getOrThrow().gameProfile();
+                        if (profile != null) {
+                            MutableComponent owner = Component.translatable(Constant.TranslationKey.OWNER, Component.literal(profile.getName()).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
+                            if (Screen.hasControlDown()) {
+                                owner.append(Component.literal(" (" + profile.getId().toString() + ")").setStyle(Constant.Text.AQUA_STYLE));
+                            }
+                            tooltip.add(owner);
+                        } else {
+                            tooltip.add(Component.translatable(Constant.TranslationKey.OWNER, Component.translatable(Constant.TranslationKey.UNKNOWN).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE));
+                        }
+                        tooltip.add(Component.translatable(Constant.TranslationKey.ACCESS_LEVEL, AccessLevel.fromString(security.getString(Constant.Nbt.ACCESS_LEVEL)).getName()).setStyle(Constant.Text.GREEN_STYLE));
+                    }
+                }
+
+                if (nbt.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE)) {
+                    tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag(Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
+                }
+            }
+        }
+    }
+
+    protected abstract @NotNull MapCodec<? extends BaseEntityBlock> codec();
+
+    @Override
+    public abstract @Nullable MachineBlockEntity newBlockEntity(BlockPos pos, BlockState state);
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BlockStateProperties.HORIZONTAL_FACING, ACTIVE);
-    }
-
-    @Override
-    public Machine newBlockEntity(BlockPos pos, BlockState state) {
-        return this.factory.get().create(pos, state);
     }
 
     @Override
@@ -200,65 +205,23 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
     public @NotNull RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
-    /**
-     * @see #shiftDescription
-     */
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
-        Component text = this.shiftDescription(stack, context, flag);
-        if (text != null) {
-            if (Screen.hasShiftDown()) {
-                if (this.description == null) {
-                    this.description = DisplayUtil.wrapText(text, 128);
-                }
-                tooltip.addAll(this.description);
-            } else {
-                tooltip.add(PRESS_SHIFT);
-            }
+        if (Screen.hasShiftDown()) {
+            tooltip.addAll(DisplayUtil.wrapText(Component.translatable(this.getDescriptionId() + ".description"), 128));
+        } else {
+            tooltip.add(PRESS_SHIFT);
         }
 
-        if (stack != null) {
-            CustomData data = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-            if (!data.isEmpty()) {
-                CompoundTag nbt = data.getUnsafe();
-                tooltip.add(Component.empty());
-                if (nbt.contains(Constant.Nbt.ENERGY, Tag.TAG_INT))
-                    tooltip.add(Component.translatable(Constant.TranslationKey.CURRENT_ENERGY, Component.literal(String.valueOf(nbt.getInt(Constant.Nbt.ENERGY))).setStyle(Constant.Text.BLUE_STYLE)).setStyle(Constant.Text.GOLD_STYLE));
-                if (nbt.contains(Constant.Nbt.SECURITY, Tag.TAG_COMPOUND)) {
-                    CompoundTag security = nbt.getCompound(Constant.Nbt.SECURITY);
-                    if (security.contains(Constant.Nbt.OWNER, Tag.TAG_COMPOUND)) {
-                        GameProfile profile = ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, security.getCompound(Constant.Nbt.OWNER)).getOrThrow().gameProfile();
-                        if (profile != null) {
-                            MutableComponent owner = Component.translatable(Constant.TranslationKey.OWNER, Component.literal(profile.getName()).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
-                            if (Screen.hasControlDown()) {
-                                owner.append(Component.literal(" (" + profile.getId().toString() + ")").setStyle(Constant.Text.AQUA_STYLE));
-                            }
-                            tooltip.add(owner);
-                        } else {
-                            tooltip.add(Component.translatable(Constant.TranslationKey.OWNER, Component.translatable(Constant.TranslationKey.UNKNOWN).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE));
-                        }
-                        tooltip.add(Component.translatable(Constant.TranslationKey.ACCESS_LEVEL, AccessLevel.fromString(security.getString(Constant.Nbt.ACCESS_LEVEL)).getName()).setStyle(Constant.Text.GREEN_STYLE));
-                    }
-                }
-
-                if (nbt.contains(Constant.Nbt.REDSTONE_MODE, Tag.TAG_BYTE)) {
-                    tooltip.add(Component.translatable(Constant.TranslationKey.REDSTONE_MODE, RedstoneMode.readTag(Objects.requireNonNull(nbt.get(Constant.Nbt.REDSTONE_MODE))).getName()).setStyle(Constant.Text.DARK_RED_STYLE));
-                }
-            }
-        }
+        appendBlockEntityTooltip(stack, tooltip);
     }
 
     @Override
-    public final @NotNull InteractionResult useWithoutItem(BlockState state, @NotNull Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public @NotNull InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof MachineBlockEntity machine) {
@@ -325,16 +288,5 @@ public class MachineBlock<Machine extends MachineBlockEntity> extends BaseEntity
     @Override
     public <B extends BlockEntity> BlockEntityTicker<B> getTicker(Level level, BlockState state, BlockEntityType<B> type) {
         return !level.isClientSide ? MachineBlockEntityTicker.getInstance() : null;
-    }
-
-    /**
-     * {@return this machine's detailed tooltip description} Shown when left shift is pressed.
-     *
-     * @param stack The item stack (the contained item is this block).
-     * @param context The context of the tooltip.
-     * @param flag Flags to determine if extra information should be added
-     */
-    public @Nullable Component shiftDescription(ItemStack stack, TooltipContext context, TooltipFlag flag) {
-        return Component.translatable(this.getDescriptionId() + ".description");
     }
 }

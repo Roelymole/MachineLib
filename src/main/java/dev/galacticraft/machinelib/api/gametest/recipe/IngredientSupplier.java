@@ -28,6 +28,7 @@ import net.minecraft.world.item.crafting.Recipe;
 
 /**
  * A functional interface for fulfilling the run requirements of a machine.
+ *
  * @param <C> the type of container
  * @param <R> the type of recipe
  * @param <Machine> the type of machine
@@ -37,6 +38,7 @@ public interface IngredientSupplier<C extends Container, R extends Recipe<C>, Ma
     /**
      * Fulfills a single run requirement of a machine (energy, item, fluid, etc.).
      * It is best to split requirements to test as many edge cases as possible.
+     *
      * @param machine the machine to supply an ingredient to
      */
     void supplyIngredient(Machine machine);

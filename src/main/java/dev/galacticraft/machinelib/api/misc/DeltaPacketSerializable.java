@@ -56,5 +56,6 @@ public interface DeltaPacketSerializable<B extends ByteBuf, T> extends Equivalen
         this.writePacket(buf);
     }
 
-    @Nullable T createEquivalent();
+    @Nullable
+    T createEquivalent();
 }

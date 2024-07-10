@@ -43,7 +43,7 @@ public record RedstoneModePayload(RedstoneMode mode) implements CustomPacketPayl
 
     public void apply(ServerPlayNetworking.Context context) {
         if (context.player().containerMenu instanceof MachineMenu<?> menu) {
-            MachineBlockEntity machine = menu.machine;
+            MachineBlockEntity machine = menu.be;
             machine.setRedstoneMode(mode);
         }
     }

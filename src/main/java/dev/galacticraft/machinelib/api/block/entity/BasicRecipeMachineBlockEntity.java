@@ -22,9 +22,8 @@
 
 package dev.galacticraft.machinelib.api.block.entity;
 
-import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
 import dev.galacticraft.machinelib.api.storage.SlottedStorageAccess;
+import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -33,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -55,49 +55,49 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
     /**
      * Constructs a new machine block entity that processes recipes.
      *
-     * @param type       The type of block entity.
-     * @param pos        The position of the machine in the level.
-     * @param state      The block state of the machine.
+     * @param type The type of block entity.
+     * @param pos The position of the machine in the level.
+     * @param state The block state of the machine.
      * @param recipeType The type of recipe to be processed.
-     * @param inputSlot  The index of the recipe input slot.
+     * @param inputSlot The index of the recipe input slot.
      * @param outputSlot The index of the recipe output slot.
      */
-    protected BasicRecipeMachineBlockEntity(@NotNull MachineType<? extends BasicRecipeMachineBlockEntity<C, R>, ? extends RecipeMachineMenu<C, R, ? extends BasicRecipeMachineBlockEntity<C, R>>> type,
-                                            @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType, int inputSlot, int outputSlot) {
-        this(type, pos, state, recipeType, inputSlot, 1, outputSlot);
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+                                            BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlot, int outputSlot) {
+        this(type, pos, state, recipeType, spec, inputSlot, 1, outputSlot);
     }
 
     /**
      * Constructs a new machine block entity that processes recipes.
      *
-     * @param type          The type of block entity.
-     * @param pos           The position of the machine in the level.
-     * @param state         The block state of the machine.
-     * @param recipeType    The type of recipe to be processed.
-     * @param inputSlots    The index of the first recipe input slot.
+     * @param type The type of block entity.
+     * @param pos The position of the machine in the level.
+     * @param state The block state of the machine.
+     * @param recipeType The type of recipe to be processed.
+     * @param inputSlots The index of the first recipe input slot.
      * @param inputSlotsLen The number of recipe input slots.
-     * @param outputSlot    The index of the recipe output slot.
+     * @param outputSlot The index of the recipe output slot.
      */
-    protected BasicRecipeMachineBlockEntity(@NotNull MachineType<? extends BasicRecipeMachineBlockEntity<C, R>, ? extends RecipeMachineMenu<C, R, ? extends BasicRecipeMachineBlockEntity<C, R>>> type,
-                                            @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType, int inputSlots, int inputSlotsLen, int outputSlot) {
-        this(type, pos, state, recipeType, inputSlots, inputSlotsLen, outputSlot, 1);
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+                                            BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlots, int inputSlotsLen, int outputSlot) {
+        this(type, pos, state, recipeType, spec, inputSlots, inputSlotsLen, outputSlot, 1);
     }
 
     /**
      * Constructs a new machine block entity that processes recipes.
      *
-     * @param type           The type of block entity.
-     * @param pos            The position of the machine in the level.
-     * @param state          The block state of the machine.
-     * @param recipeType     The type of recipe to be processed.
-     * @param inputSlots     The index of the first recipe input slot.
-     * @param inputSlotsLen  The number of recipe input slots.
-     * @param outputSlots    The index of the first recipe output slot.
+     * @param type The type of block entity.
+     * @param pos The position of the machine in the level.
+     * @param state The block state of the machine.
+     * @param recipeType The type of recipe to be processed.
+     * @param inputSlots The index of the first recipe input slot.
+     * @param inputSlotsLen The number of recipe input slots.
+     * @param outputSlots The index of the first recipe output slot.
      * @param outputSlotsLen The number of recipe output slots.
      */
-    protected BasicRecipeMachineBlockEntity(@NotNull MachineType<? extends BasicRecipeMachineBlockEntity<C, R>, ? extends RecipeMachineMenu<C, R, ? extends BasicRecipeMachineBlockEntity<C, R>>> type,
-                                            @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType, int inputSlots, int inputSlotsLen, int outputSlots, int outputSlotsLen) {
-        super(type, pos, state, recipeType);
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+                                            BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlots, int inputSlotsLen, int outputSlots, int outputSlotsLen) {
+        super(type, pos, state, recipeType, spec);
 
         this.inputSlots = this.itemStorage().subStorage(inputSlots, inputSlotsLen);
         this.outputSlots = this.itemStorage().subStorage(outputSlots, outputSlotsLen);

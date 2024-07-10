@@ -60,7 +60,8 @@ public final class DisplayUtil {
         NUMBER_FORMAT.setGroupingUsed(true);
     }
 
-    private DisplayUtil() {}
+    private DisplayUtil() {
+    }
 
     public static String truncateDecimal(double d, int places) {
         NUMBER_FORMAT.setMaximumFractionDigits(places);
@@ -80,7 +81,7 @@ public final class DisplayUtil {
     @Contract(pure = true, value = "_, _ -> new")
     public static @NotNull MutableComponent formatFluid(long amount, boolean forceDetail) {
         if (!forceDetail && MachineLib.CONFIG.fluidUnits() == Config.FluidUnits.MILLIBUCKET) {
-            return Component.literal(truncateDecimal((double) amount / ((double)(FluidConstants.BUCKET / 1000)), 0)).append(Component.translatable(Constant.TranslationKey.UNIT_MILLIBUCKET));
+            return Component.literal(truncateDecimal((double) amount / ((double) (FluidConstants.BUCKET / 1000)), 0)).append(Component.translatable(Constant.TranslationKey.UNIT_MILLIBUCKET));
         }
         return Component.literal(String.valueOf(amount));
     }

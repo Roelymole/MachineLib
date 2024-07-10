@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FluidResourceSlotBuilderTest implements MinecraftTest {
     FluidResourceSlot.Spec spec;
-    
+
     @BeforeEach
     void setup() {
         this.spec = FluidResourceSlot.builder(InputType.STORAGE);
@@ -43,12 +43,12 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
 
     @Test
     void invalidCapacity() {
-        assertThrows(IllegalArgumentException.class, () -> spec.capacity(0).build());
+        assertThrows(IllegalArgumentException.class, () -> spec.capacity(0).create());
     }
 
     @Test
     void capacity() {
-        FluidResourceSlot slot = spec.capacity(FluidConstants.BUCKET * 64).build();
+        FluidResourceSlot slot = spec.capacity(FluidConstants.BUCKET * 64).create();
 
         assertEquals(FluidConstants.BUCKET * 64, slot.getCapacity());
     }
@@ -62,20 +62,20 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
         assertThrows(UnsupportedOperationException.class, () -> spec.width(0));
         assertThrows(UnsupportedOperationException.class, () -> spec.height(0));
 
-        assertNull(spec.build().getDisplay());
-        assertTrue(spec.build().isHidden());
+        assertNull(spec.create().getDisplay());
+        assertTrue(spec.create().isHidden());
     }
 
     @Test
     void hiddenPost() {
         spec.x(10).hidden();
 
-        assertThrows(UnsupportedOperationException.class, () -> spec.build());
+        assertThrows(UnsupportedOperationException.class, () -> spec.create());
     }
 
     @Test
     void height() {
-        FluidResourceSlot slot = spec.height(16).build();
+        FluidResourceSlot slot = spec.height(16).create();
 
         assertEquals(16, slot.getDisplay().height());
     }
@@ -84,12 +84,12 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
     void invalidHeight() {
         spec.height(-4);
 
-        assertThrows(IllegalArgumentException.class, () -> spec.build());
+        assertThrows(IllegalArgumentException.class, () -> spec.create());
     }
 
     @Test
     void width() {
-        FluidResourceSlot slot = spec.width(16).build();
+        FluidResourceSlot slot = spec.width(16).create();
 
         assertEquals(16, slot.getDisplay().width());
     }
@@ -98,12 +98,12 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
     void invalidWidth() {
         spec.width(-4);
 
-        assertThrows(IllegalArgumentException.class, () -> spec.build());
+        assertThrows(IllegalArgumentException.class, () -> spec.create());
     }
 
     @Test
     void displayPosition() {
-        FluidResourceSlot slot = spec.pos(11, 43).build();
+        FluidResourceSlot slot = spec.pos(11, 43).create();
 
         assertEquals(11, slot.getDisplay().x());
         assertEquals(43, slot.getDisplay().y());
@@ -111,7 +111,7 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
 
     @Test
     void displayPositionXY() {
-        FluidResourceSlot slot = spec.x(5).y(7).build();
+        FluidResourceSlot slot = spec.x(5).y(7).create();
 
         assertEquals(5, slot.getDisplay().x());
         assertEquals(7, slot.getDisplay().y());
@@ -119,14 +119,14 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
 
     @Test
     void defaultFilter() {
-        FluidResourceSlot slot = spec.build();
+        FluidResourceSlot slot = spec.create();
 
         assertSame(ResourceFilters.any(), slot.getFilter());
     }
 
     @Test
     void filter() {
-        FluidResourceSlot slot = spec.filter(ResourceFilters.none()).build();
+        FluidResourceSlot slot = spec.filter(ResourceFilters.none()).create();
 
         assertSame(ResourceFilters.none(), slot.getFilter());
         assertEquals(1, slot.insert(Fluids.WATER, 1)); // filters only affect players

@@ -27,11 +27,17 @@ import io.netty.buffer.ByteBufAllocator;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 
 public final class Utils {
     /**
@@ -54,6 +60,16 @@ public final class Utils {
     private Utils() {
     }
 
+    public static void awardUsedRecipes(@NotNull ServerPlayer player, @NotNull Set<ResourceLocation> recipes) {
+        for (ResourceLocation id : recipes) {
+            Optional<RecipeHolder<?>> optional = player.serverLevel().getRecipeManager().byKey(id);
+            if (optional.isPresent()) {
+                player.awardRecipes(Collections.singleton(optional.get()));
+                player.triggerRecipeCrafted(optional.get(), Collections.emptyList());
+            }
+        }
+    }
+
     @Contract(pure = true)
     public static boolean itemsEqual(@Nullable Item a, @NotNull Item b) {
         return a == b || (a == null && b == Items.AIR);
@@ -63,6 +79,7 @@ public final class Utils {
      * {@return the short string representation of the given id}
      * Should only be used to serialize packets and other short-lived data.
      * If the namespace matches "minecraft", only the path is returned.
+     *
      * @param id the id to shorten
      */
     public static String getShortId(ResourceLocation id) {

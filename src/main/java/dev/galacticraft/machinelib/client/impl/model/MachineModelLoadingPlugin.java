@@ -38,8 +38,8 @@ import java.util.Map;
 
 public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<Map<ResourceLocation, JsonObject>>, ModelResolver {
     public static final MachineModelLoadingPlugin INSTANCE = new MachineModelLoadingPlugin();
-    private Map<ResourceLocation, JsonObject> data = null;
     private final Map<ResourceLocation, UnbakedModel> pendingItemModels = new HashMap<>();
+    private Map<ResourceLocation, JsonObject> data = null;
 
     @Override
     public @Nullable UnbakedModel resolveModel(ModelResolver.Context context) {

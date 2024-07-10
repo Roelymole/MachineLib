@@ -50,6 +50,7 @@ import java.lang.annotation.Target;
 public @interface BasicTest {
     /**
      * {@return the batch name of the test}
+     *
      * @see GameTest#batch()
      */
     String batch();
@@ -63,6 +64,7 @@ public @interface BasicTest {
     /**
      * {@return the structure to use for the test}
      * Defaults to an empty (all air) 3x3 structure.
+     *
      * @see GameTest#template()
      */
     String structure() default SimpleGameTest.STRUCTURE_3x3;

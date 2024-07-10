@@ -43,10 +43,9 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     protected static final String RESOURCE_KEY = "Resource";
     protected static final String AMOUNT_KEY = "Amount";
     protected static final String COMPONENTS_KEY = "Components";
-
+    protected final long capacity;
     private final InputType inputType;
     private final ResourceFilter<Resource> externalFilter;
-    protected final long capacity;
     protected ResourceStorage<Resource, ?> parent;
 
     protected @Nullable Resource resource = null;
@@ -349,7 +348,8 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
         return 0;
     }
 
-    protected record Snapshot<Resource>(@Nullable Resource resource, long amount, @NotNull DataComponentPatch components, long modifications) {
+    protected record Snapshot<Resource>(@Nullable Resource resource, long amount,
+                                        @NotNull DataComponentPatch components, long modifications) {
         @SuppressWarnings("ProtectedMemberInFinalClass") // can't be private
         protected Snapshot {
             assert (resource == null && components.isEmpty() && amount == 0) || (resource != null && amount > 0);

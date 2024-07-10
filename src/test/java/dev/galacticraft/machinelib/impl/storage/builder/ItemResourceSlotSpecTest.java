@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ItemResourceSlotSpecTest implements MinecraftTest {
     ItemResourceSlot.Spec spec;
-    
+
     @BeforeEach
     void setup() {
         this.spec = ItemResourceSlot.builder(InputType.STORAGE);
@@ -44,12 +44,12 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
 
     @Test
     void invalidCapacity() {
-        assertThrows(IllegalArgumentException.class, () -> spec.capacity(0).build());
+        assertThrows(IllegalArgumentException.class, () -> spec.capacity(0).create());
     }
 
     @Test
     void capacity() {
-        ItemResourceSlot slot = spec.capacity(32).build();
+        ItemResourceSlot slot = spec.capacity(32).create();
 
         assertEquals(32, slot.getCapacity());
     }
@@ -57,14 +57,14 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
     @Test
     void icon() {
         Pair<ResourceLocation, ResourceLocation> icon = new Pair<>(new ResourceLocation("null"), new ResourceLocation("null"));
-        ItemResourceSlot slot = spec.icon(icon).build();
+        ItemResourceSlot slot = spec.icon(icon).create();
 
         assertEquals(icon, slot.getDisplay().icon());
     }
 
     @Test
     void displayPosition() {
-        ItemResourceSlot slot = spec.pos(11, 43).build();
+        ItemResourceSlot slot = spec.pos(11, 43).create();
 
         assertEquals(11, slot.getDisplay().x());
         assertEquals(43, slot.getDisplay().y());
@@ -72,7 +72,7 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
 
     @Test
     void displayPositionXY() {
-        ItemResourceSlot slot = spec.x(5).y(7).build();
+        ItemResourceSlot slot = spec.x(5).y(7).create();
 
         assertEquals(5, slot.getDisplay().x());
         assertEquals(7, slot.getDisplay().y());
@@ -81,7 +81,7 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
 
     @Test
     void hidden() {
-        ItemResourceSlot slot = spec.hidden().build();
+        ItemResourceSlot slot = spec.hidden().create();
 
         assertThrows(UnsupportedOperationException.class, () -> spec.x(0));
         assertThrows(UnsupportedOperationException.class, () -> spec.y(0));
@@ -94,19 +94,19 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
     void hiddenPost() {
         spec.x(10).hidden();
 
-        assertThrows(UnsupportedOperationException.class, () -> spec.build());
+        assertThrows(UnsupportedOperationException.class, () -> spec.create());
     }
 
     @Test
     void defaultFilter() {
-        ItemResourceSlot slot = spec.build();
+        ItemResourceSlot slot = spec.create();
 
         assertSame(ResourceFilters.any(), slot.getFilter());
     }
 
     @Test
     void filter() {
-        ItemResourceSlot slot = spec.filter(ResourceFilters.none()).build();
+        ItemResourceSlot slot = spec.filter(ResourceFilters.none()).create();
 
         assertSame(ResourceFilters.none(), slot.getFilter());
         assertEquals(1, slot.insert(Items.DIRT, 1)); // filters only affect players

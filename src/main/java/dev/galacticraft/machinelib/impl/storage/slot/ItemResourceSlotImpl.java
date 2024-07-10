@@ -74,7 +74,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     public long getCapacityFor(@NotNull Item item, @NotNull DataComponentPatch components) {
         Optional<? extends Integer> optional = components.get(DataComponents.MAX_STACK_SIZE);
         if (optional != null && optional.isPresent()) {
-           return optional.get();
+            return optional.get();
         }
         return Math.min(this.capacity, item.getDefaultMaxStackSize());
     }

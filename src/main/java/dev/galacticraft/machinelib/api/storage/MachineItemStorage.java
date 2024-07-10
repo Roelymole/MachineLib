@@ -37,10 +37,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Represents a storage for items in a machine.
+ *
  * @see ResourceStorage
  */
 public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSlot>, Container {
@@ -49,15 +49,9 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
         return new MachineItemStorageImpl(slots);
     }
 
-    static @NotNull Supplier<MachineItemStorage> spec(ItemResourceSlot.Spec @NotNull ... slots) {
-        if (slots.length == 0) return MachineItemStorage::empty;
-        return () -> {
-            ItemResourceSlot[] slots1 = new ItemResourceSlot[slots.length];
-            for (int i = 0; i < slots.length; i++) {
-                slots1[i] = slots[i].build();
-            }
-            return new MachineItemStorageImpl(slots1);
-        };
+    static @NotNull MachineItemStorage.Spec spec(ItemResourceSlot.Spec @NotNull ... slots) {
+        if (slots.length == 0) throw new IllegalArgumentException("Cannot create a storage with no slots");
+        return new Spec(List.of(slots));
     }
 
     @Contract(" -> new")
@@ -72,7 +66,8 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
 
     // overridden to set the variant type
     @Override
-    @Nullable ExposedStorage<Item, ItemVariant> createExposedStorage(@NotNull ResourceFlow flow);
+    @Nullable
+    ExposedStorage<Item, ItemVariant> getExposedStorage(@NotNull ResourceFlow flow);
 
     boolean consumeOne(@NotNull Item resource);
 
@@ -82,10 +77,15 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
 
     long consume(@NotNull Item resource, @Nullable DataComponentPatch components, long amount);
 
-    final class Spec implements Supplier<MachineItemStorage> {
-        private final List<ItemResourceSlot.Spec> slots = new ArrayList<>();
+    final class Spec {
+        private final List<ItemResourceSlot.Spec> slots;
 
         private Spec() {
+            this(new ArrayList<>());
+        }
+
+        private Spec(List<ItemResourceSlot.Spec> slots) {
+            this.slots = slots;
         }
 
         @Contract("_ -> this")
@@ -110,12 +110,11 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
             return this;
         }
 
-        @Override
-        public MachineItemStorage get() {
+        public MachineItemStorage create() {
             if (this.slots.isEmpty()) return empty();
             ItemResourceSlot[] slots1 = new ItemResourceSlot[slots.size()];
             for (int i = 0; i < slots.size(); i++) {
-                slots1[i] = slots.get(i).build();
+                slots1[i] = slots.get(i).create();
             }
             return new MachineItemStorageImpl(slots1);
         }

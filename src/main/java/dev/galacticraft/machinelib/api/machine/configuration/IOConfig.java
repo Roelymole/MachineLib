@@ -60,6 +60,7 @@ public final class IOConfig implements Serializable<ListTag>, MachineRenderData,
 
     /**
      * Creates a new I/O configuration with the given faces.
+     *
      * @param faces the faces to use
      */
     public IOConfig(IOFace[] faces) {
@@ -130,8 +131,9 @@ public final class IOConfig implements Serializable<ListTag>, MachineRenderData,
     @Override
     public void readDeltaPacket(@NotNull ByteBuf buf) {
         byte n = buf.readByte();
-        for (int i = 0; i < n; i++) {
-            this.faces[buf.readByte()].readPacket(buf);
+        for (int j = 0; j < n; j++) {
+            byte i = buf.readByte();
+            this.faces[i].readPacket(buf);
         }
     }
 

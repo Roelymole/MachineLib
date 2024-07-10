@@ -38,7 +38,7 @@ public class MachineLibREIClientPlugin implements REIClientPlugin {
     @Override
     public void registerScreens(ScreenRegistry registry) {
         registry.registerFocusedStack((screen, mouse) -> {
-            if (screen instanceof MachineScreen<?,?> machineScreen) {
+            if (screen instanceof MachineScreen<?, ?> machineScreen) {
                 if (machineScreen.hoveredTank != null && !machineScreen.hoveredTank.isEmpty()) {
                     return CompoundEventResult.interruptTrue(EntryStacks.of(machineScreen.hoveredTank.getFluid(), machineScreen.hoveredTank.getAmount()));
                 }

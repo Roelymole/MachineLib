@@ -22,10 +22,10 @@
 
 package dev.galacticraft.machinelib.impl.compat.vanilla;
 
-import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
 import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.impl.util.Utils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -39,13 +39,11 @@ import java.util.Set;
 @ApiStatus.Internal
 public class RecipeOutputStorageSlot extends StorageSlot {
     private final Player player;
-    private final MachineBlockEntity machine;
 
-    public RecipeOutputStorageSlot(@NotNull Container group, @NotNull ItemResourceSlot slot, @NotNull ItemSlotDisplay display, int index, @NotNull Player player, MachineBlockEntity machine) {
+    public RecipeOutputStorageSlot(@NotNull Container group, @NotNull ItemResourceSlot slot, @NotNull ItemSlotDisplay display, int index, @NotNull Player player) {
         super(group, slot, display, index, player.getUUID());
         if (slot.inputType() != InputType.RECIPE_OUTPUT) throw new UnsupportedOperationException();
         this.player = player;
-        this.machine = machine;
     }
 
     @Override
@@ -61,7 +59,7 @@ public class RecipeOutputStorageSlot extends StorageSlot {
         Set<ResourceLocation> recipes = this.getSlot().takeRecipes();
         if (recipes != null) {
             if (this.player instanceof ServerPlayer serverPlayer) {
-                this.machine.awardUsedRecipes(serverPlayer, recipes);
+                Utils.awardUsedRecipes(serverPlayer, recipes);
             }
         }
     }

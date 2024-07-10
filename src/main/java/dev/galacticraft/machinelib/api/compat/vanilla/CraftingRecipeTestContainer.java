@@ -54,6 +54,19 @@ public class CraftingRecipeTestContainer extends RecipeTestContainer implements 
     private final int height;
 
     /**
+     * Constructs a new RecipeTestContainer with the provided slots.
+     *
+     * @param width the width of the crafting grid
+     * @param height the height of the crafting grid
+     * @param slots the slots to be included in the container
+     */
+    private CraftingRecipeTestContainer(int width, int height, ItemResourceSlot[] slots) {
+        super(slots);
+        this.width = width;
+        this.height = height;
+    }
+
+    /**
      * Creates a new container with the given slots.
      *
      * @param width the width of the crafting grid
@@ -74,32 +87,17 @@ public class CraftingRecipeTestContainer extends RecipeTestContainer implements 
      * @param height the height of the crafting grid
      * @param access the storage access providing the slots
      * @param start the index of the first slot to include in the container
-     * @param len the number of slots to include in the container
      * @return a new test container
      */
-    @Contract(value = "_, _, _, _, _-> new", pure = true)
-    public static @NotNull CraftingRecipeTestContainer create(int width, int height, SlottedStorageAccess<Item, ItemResourceSlot> access, int start, int len) {
-        assert len == width * height;
+    @Contract(value = "_, _, _, _-> new", pure = true)
+    public static @NotNull CraftingRecipeTestContainer create(int width, int height, SlottedStorageAccess<Item, ItemResourceSlot> access, int start) {
         Iterator<ItemResourceSlot> iterator = access.iterator();
         Iterators.advance(iterator, start);
-        ItemResourceSlot[] slots = new ItemResourceSlot[len];
-        for (int i = 0; i < len; i++) {
+        ItemResourceSlot[] slots = new ItemResourceSlot[width * height];
+        for (int i = 0; i < width * height; i++) {
             slots[i] = iterator.next();
         }
         return new CraftingRecipeTestContainer(width, height, slots);
-    }
-
-    /**
-     * Constructs a new RecipeTestContainer with the provided slots.
-     *
-     * @param width  the width of the crafting grid
-     * @param height the height of the crafting grid
-     * @param slots  the slots to be included in the container
-     */
-    private CraftingRecipeTestContainer(int width, int height, ItemResourceSlot[] slots) {
-        super(slots);
-        this.width = width;
-        this.height = height;
     }
 
     @Override

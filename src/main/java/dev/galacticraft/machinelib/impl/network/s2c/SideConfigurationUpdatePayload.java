@@ -33,7 +33,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record SideConfigurationUpdatePayload(BlockPos pos, BlockFace face, ResourceType resource, ResourceFlow flow) implements CustomPacketPayload {
+public record SideConfigurationUpdatePayload(BlockPos pos, BlockFace face, ResourceType resource,
+                                             ResourceFlow flow) implements CustomPacketPayload {
     public static final Type<SideConfigurationUpdatePayload> TYPE = new Type<>(Constant.id("io_update"));
     public static final StreamCodec<ByteBuf, SideConfigurationUpdatePayload> CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC, p -> p.pos,

@@ -22,12 +22,12 @@
 
 package dev.galacticraft.machinelib.client.impl.menu;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenuData;
+import dev.galacticraft.machinelib.api.menu.MenuData;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 
-public class MachineMenuDataClient extends MachineMenuData {
-    public MachineMenuDataClient(int syncId) {
+public class MenuDataClient extends MenuData {
+    public MenuDataClient(int syncId) {
         super(syncId);
     }
 

@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Extension of a mutable object, allowing for the manual marking of modification.
+ *
  * @see Modifiable
  */
 @ApiStatus.Internal

@@ -23,8 +23,8 @@
 package dev.galacticraft.machinelib.testmod.menu;
 
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.menu.SynchronizedMenuType;
 import dev.galacticraft.machinelib.testmod.Constant;
-import dev.galacticraft.machinelib.testmod.block.TestModMachineTypes;
 import dev.galacticraft.machinelib.testmod.block.entity.GeneratorBlockEntity;
 import dev.galacticraft.machinelib.testmod.block.entity.MelterBlockEntity;
 import dev.galacticraft.machinelib.testmod.block.entity.MixerBlockEntity;
@@ -33,9 +33,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 
 public class TestModMenuTypes {
-    public static final MenuType<MachineMenu<GeneratorBlockEntity>> GENERATOR = MachineMenu.createSimple(() -> TestModMachineTypes.GENERATOR);
-    public static final MenuType<MachineMenu<MixerBlockEntity>> MIXER = MachineMenu.createSimple(() -> TestModMachineTypes.MIXER);
-    public static final MenuType<MachineMenu<MelterBlockEntity>> MELTER = MachineMenu.createSimple(() -> TestModMachineTypes.MELTER);
+    public static final MenuType<MachineMenu<GeneratorBlockEntity>> GENERATOR = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<MixerBlockEntity>> MIXER = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<MachineMenu<MelterBlockEntity>> MELTER = SynchronizedMenuType.createSimple(MachineMenu::new);
 
     public static void register() {
         Registry.register(BuiltInRegistries.MENU, Constant.id(Constant.GENERATOR), GENERATOR);

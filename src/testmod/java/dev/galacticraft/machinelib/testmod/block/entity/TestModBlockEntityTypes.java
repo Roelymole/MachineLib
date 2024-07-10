@@ -25,23 +25,22 @@ package dev.galacticraft.machinelib.testmod.block.entity;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.block.TestModBlocks;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class TestModBlockEntityTypes {
-    public static final BlockEntityType<GeneratorBlockEntity> GENERATOR = FabricBlockEntityTypeBuilder.create(GeneratorBlockEntity::new, TestModBlocks.GENERATOR).build();
-    public static final BlockEntityType<MixerBlockEntity> MIXER = FabricBlockEntityTypeBuilder.create(MixerBlockEntity::new, TestModBlocks.MIXER).build();
-    public static final BlockEntityType<MelterBlockEntity> MELTER = FabricBlockEntityTypeBuilder.create(MelterBlockEntity::new, TestModBlocks.MELTER).build();
-
     public static void register() {
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Constant.id(Constant.GENERATOR), TestModBlockEntityTypes.GENERATOR);
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Constant.id(Constant.MIXER), TestModBlockEntityTypes.MIXER);
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Constant.id(Constant.MELTER), TestModBlockEntityTypes.MELTER);
 
-        MachineBlockEntity.registerComponents(TestModBlocks.GENERATOR);
-        MachineBlockEntity.registerComponents(TestModBlocks.MIXER);
-        MachineBlockEntity.registerComponents(TestModBlocks.MELTER);
-    }
+        MachineBlockEntity.registerProviders(GENERATOR);
+        MachineBlockEntity.registerProviders(MIXER);
+        MachineBlockEntity.registerProviders(MELTER);
+    }    public static final BlockEntityType<GeneratorBlockEntity> GENERATOR = BlockEntityType.Builder.of(GeneratorBlockEntity::new, TestModBlocks.GENERATOR).build(null);
+    public static final BlockEntityType<MixerBlockEntity> MIXER = BlockEntityType.Builder.of(MixerBlockEntity::new, TestModBlocks.MIXER).build(null);
+    public static final BlockEntityType<MelterBlockEntity> MELTER = BlockEntityType.Builder.of(MelterBlockEntity::new, TestModBlocks.MELTER).build(null);
+
+
 }

@@ -74,7 +74,7 @@ import java.util.function.Supplier;
 public final class MachineBakedModel implements FabricBakedModel, BakedModel {
     public static final Material MACHINE = new Material(TextureAtlas.LOCATION_BLOCKS, Constant.id("block/machine"));
     public static final Material MACHINE_SIDE = new Material(TextureAtlas.LOCATION_BLOCKS, Constant.id("block/machine_side"));
-    
+
     public static final Material MACHINE_ENERGY_IN = new Material(TextureAtlas.LOCATION_BLOCKS, Constant.id("block/machine_power_input"));
     public static final Material MACHINE_ENERGY_OUT = new Material(TextureAtlas.LOCATION_BLOCKS, Constant.id("block/machine_power_output"));
     public static final Material MACHINE_ENERGY_BOTH = new Material(TextureAtlas.LOCATION_BLOCKS, Constant.id("block/machine_power_both"));
@@ -194,7 +194,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
                 }
             }
         }
-        
+
         return this.provider.getSpritesForState(renderData, face);
     }
 

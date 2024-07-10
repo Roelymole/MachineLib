@@ -66,6 +66,7 @@ public enum AccessLevel implements StringRepresentable {
 
     /**
      * Constructs a new access level.
+     *
      * @param name the name of the access level
      */
     @Contract(pure = true)

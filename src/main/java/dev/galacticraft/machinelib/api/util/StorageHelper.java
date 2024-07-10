@@ -59,11 +59,11 @@ public final class StorageHelper {
 
     /**
      * Calculates the capacity for a specific variant in a storage.
+     *
      * @param variant the variant to calculate the capacity for
      * @param storage the storage to calculate the capacity in
      * @param context the transaction context to use
      * @param <Variant> the type of variant
-     *
      * @return the capacity of the resource in the storage
      */
     public static <Variant extends TransferVariant<?>> long capacity(@NotNull Variant variant, @NotNull Storage<Variant> storage, @Nullable TransactionContext context) {
@@ -350,7 +350,8 @@ public final class StorageHelper {
 
     @Contract("_, null, _, _, _ -> false; _, !null, null, _, _ -> false")
     public static <Resource, Variant extends TransferVariant<Resource>> boolean moveAll(@NotNull ResourceFilter<Resource> filter, @Nullable Storage<Variant> from, @Nullable Storage<Variant> to, long maxAmount, @Nullable TransactionContext context) {
-        if (from == null || to == null || maxAmount == 0 || !from.supportsExtraction() || !to.supportsInsertion()) return false;
+        if (from == null || to == null || maxAmount == 0 || !from.supportsExtraction() || !to.supportsInsertion())
+            return false;
         boolean changed = false;
         StoragePreconditions.notNegative(maxAmount);
 
@@ -380,7 +381,8 @@ public final class StorageHelper {
 
     @Contract("null, _, _, _ -> false; !null, null, _, _ -> false")
     public static <Resource, Variant extends TransferVariant<Resource>> boolean moveAll(@Nullable Storage<Variant> from, @Nullable Storage<Variant> to, long maxAmount, @Nullable TransactionContext context) {
-        if (from == null || to == null || maxAmount == 0 || !from.supportsExtraction() || !to.supportsInsertion()) return false;
+        if (from == null || to == null || maxAmount == 0 || !from.supportsExtraction() || !to.supportsInsertion())
+            return false;
         boolean changed = false;
         StoragePreconditions.notNegative(maxAmount);
 
@@ -408,11 +410,12 @@ public final class StorageHelper {
 
     /**
      * Finds a variant in the storage that is compatible with the given filter.
+     *
      * @param filter the filter to test the variants against
      * @param storage the storage to search in
-     * @return a variant that is compatible with the filter, or {@code null} if none was found
      * @param <Resource> the type of resource
      * @param <Variant> the type of variant
+     * @return a variant that is compatible with the filter, or {@code null} if none was found
      */
     public static <Resource, Variant extends TransferVariant<Resource>> @Nullable Variant findCompatibleVariant(@NotNull ResourceFilter<Resource> filter, @NotNull Storage<Variant> storage) {
         for (StorageView<Variant> view : storage.nonEmptyViews()) {
@@ -430,15 +433,16 @@ public final class StorageHelper {
      * @param filter the filter to test the variants against
      * @param storage the storage to search in
      * @param slot the slot to test the variants against
-     * @return a variant that is compatible with the filter and slot, or {@code null} if none was found
      * @param <Resource> the type of resource
      * @param <Variant> the type of variant
+     * @return a variant that is compatible with the filter and slot, or {@code null} if none was found
      */
     public static <Resource, Variant extends TransferVariant<Resource>> @Nullable Variant findCompatibleVariant(@NotNull ResourceFilter<Resource> filter, @NotNull Storage<Variant> storage, ResourceSlot<Resource> slot) {
         if (!slot.isEmpty()) {
             for (StorageView<Variant> view : storage.nonEmptyViews()) {
                 Variant resource = view.getResource();
-                if (resource.getObject() == slot.getResource() && resource.getComponents().equals(slot.getComponents())) return resource;
+                if (resource.getObject() == slot.getResource() && resource.getComponents().equals(slot.getComponents()))
+                    return resource;
             }
         } else {
             for (StorageView<Variant> view : storage.nonEmptyViews()) {

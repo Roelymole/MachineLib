@@ -39,18 +39,18 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     public final long capacity;
     private final long maxInput;
     private final long maxOutput;
-    private final boolean insert;
-    private final boolean extract;
-
+    private final @Nullable EnergyStorage[] exposedStorages = new EnergyStorage[3];
     public long amount = 0;
     private Runnable listener;
 
-    public MachineEnergyStorageImpl(long capacity, long maxInput, long maxOutput, boolean insert, boolean extract) {
+    public MachineEnergyStorageImpl(long capacity, long maxInput, long maxOutput) {
         this.capacity = capacity;
         this.maxInput = maxInput;
         this.maxOutput = maxOutput;
-        this.insert = insert;
-        this.extract = extract;
+
+        this.exposedStorages[ResourceFlow.INPUT.ordinal()] = this.maxInput > 0 ? ExposedEnergyStorage.create(this, this.maxInput, 0) : null;
+        this.exposedStorages[ResourceFlow.OUTPUT.ordinal()] = this.maxOutput > 0 ? ExposedEnergyStorage.create(this, 0, this.maxOutput) : null;
+        this.exposedStorages[ResourceFlow.BOTH.ordinal()] = this.maxInput > 0 || this.maxOutput > 0 ? ExposedEnergyStorage.create(this, this.maxInput, this.maxOutput) : null;
     }
 
     @Override
@@ -184,44 +184,18 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow) {
-        switch (flow) {
-            case INPUT -> {
-                if (this.insert) {
-                    return ExposedEnergyStorage.create(this, this.maxInput, 0);
-                }
-                return null;
-            }
-            case OUTPUT -> {
-                if (this.extract) {
-                    return ExposedEnergyStorage.create(this, 0, this.maxOutput);
-                }
-                return null;
-            }
-            case BOTH -> {
-                if (this.insert) {
-                    if (this.extract) {
-                        return ExposedEnergyStorage.create(this, this.maxInput, this.maxOutput);
-                    } else {
-                        return ExposedEnergyStorage.create(this, this.maxInput, 0);
-                    }
-                } else if (this.extract) {
-                    return ExposedEnergyStorage.create(this, 0, this.maxOutput);
-                }
-                return null;
-            }
-        }
-        return null;
+    public @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow) {
+        return this.exposedStorages[flow.ordinal()];
     }
 
     @Override
-    public boolean canExposedInsert() {
-        return this.insert;
+    public long externalInsertionRate() {
+        return this.maxInput;
     }
 
     @Override
-    public boolean canExposedExtract() {
-        return this.extract;
+    public long externalExtractionRate() {
+        return this.maxOutput;
     }
 
     @Override

@@ -25,7 +25,6 @@ package dev.galacticraft.machinelib.api.gametest;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
 import dev.galacticraft.machinelib.api.gametest.annotation.BasicTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.MachineTest;
-import dev.galacticraft.machinelib.api.machine.MachineType;
 import dev.galacticraft.machinelib.impl.gametest.GameTestUtils;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
@@ -35,6 +34,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -51,11 +51,10 @@ import java.util.List;
  */
 public abstract class MachineGameTest<Machine extends MachineBlockEntity> extends SimpleGameTest {
     public static final BlockPos MACHINE_POS = new BlockPos(1, 2, 1);
+    private final Block block;
 
-    private final MachineType<Machine, ?> type;
-
-    protected MachineGameTest(MachineType<Machine, ?> type) {
-        this.type = type;
+    protected MachineGameTest(Block block) {
+        this.block = block;
     }
 
     @GameTestGenerator
@@ -162,11 +161,12 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
 
     /**
      * Creates a machine at the {@link #MACHINE_POS} position.
+     *
      * @param helper the game test helper
      * @return the newly created machine
      */
     protected Machine createMachine(GameTestHelper helper) {
-        helper.setBlock(MACHINE_POS, this.type.getBlock());
+        helper.setBlock(MACHINE_POS, this.block);
         return (Machine) helper.getBlockEntity(MACHINE_POS);
     }
 }

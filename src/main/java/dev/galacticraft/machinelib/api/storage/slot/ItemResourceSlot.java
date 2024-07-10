@@ -63,7 +63,8 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
      *
      * @return the item that was consumed, or {@code null} if the slot was empty
      */
-    @Nullable Item consumeOne();
+    @Nullable
+    Item consumeOne();
 
     /**
      * Consumes one item of the specified type from the slot.
@@ -121,7 +122,8 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
     /**
      * {@return the display properties of this slot, or {@code null} if hidden}
      */
-    @Nullable ItemSlotDisplay getDisplay();
+    @Nullable
+    ItemSlotDisplay getDisplay();
 
     // required to merge ContainerItemContext#getAmount with ResourceSlot#getAmount
     @Override
@@ -191,10 +193,11 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
         }
 
         @Contract(pure = true)
-        public @NotNull ItemResourceSlot build() {
+        public @NotNull ItemResourceSlot create() {
             if (this.capacity <= 0) throw new IllegalArgumentException("capacity <= 0!");
             if (this.hidden) {
-                if (this.x != 0 || this.y != 0 || this.icon != null) throw new UnsupportedOperationException("Display prop while hidden");
+                if (this.x != 0 || this.y != 0 || this.icon != null)
+                    throw new UnsupportedOperationException("Display prop while hidden");
             }
 
             return ItemResourceSlot.create(this.inputType, this.hidden ? null : ItemSlotDisplay.create(this.x, this.y, this.icon), this.filter, this.capacity);

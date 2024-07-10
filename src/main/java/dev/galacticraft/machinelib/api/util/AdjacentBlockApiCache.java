@@ -70,7 +70,7 @@ public interface AdjacentBlockApiCache<Api> {
      * Attempt to retrieve an API from an adjacent block.
      *
      * @param direction the direction to search in.
-     * @param state     The block state at the target position, or null if unknown.
+     * @param state The block state at the target position, or null if unknown.
      * @return The retrieved API, or {@code null} if no API was found.
      */
     @Contract(mutates = "this")

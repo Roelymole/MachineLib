@@ -27,8 +27,6 @@ import dev.galacticraft.machinelib.api.transfer.InputType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class FluidResourceSlotImplTest extends ResourceSlotImplTest<Fluid, FluidResourceSlotImpl> {
     FluidResourceSlotImplTest() {
         super(Fluids.WATER, Fluids.LAVA);

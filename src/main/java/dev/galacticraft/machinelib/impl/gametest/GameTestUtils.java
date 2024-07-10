@@ -71,7 +71,7 @@ public class GameTestUtils {
                 inner = inner.getCause();
             }
 
-            if (t.getCause() instanceof RuntimeException rt){
+            if (t.getCause() instanceof RuntimeException rt) {
                 throw rt;
             } else {
                 throw new RuntimeException(t);

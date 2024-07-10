@@ -62,7 +62,8 @@ public interface SlottedStorageAccess<Resource, Slot extends StorageAccess<Resou
     /**
      * {@return the slot at the given index}
      */
-    @NotNull Slot slot(int slot);
+    @NotNull
+    Slot slot(int slot);
 
     @Override
     long getModifications();

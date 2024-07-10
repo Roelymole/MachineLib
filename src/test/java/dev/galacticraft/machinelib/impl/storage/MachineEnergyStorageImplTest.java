@@ -42,7 +42,7 @@ class MachineEnergyStorageImplTest implements MinecraftTest {
 
     @BeforeEach
     void setup() {
-        this.storage = new MachineEnergyStorageImpl(CAPACITY, 0, 0, true, true);
+        this.storage = new MachineEnergyStorageImpl(CAPACITY, 0, 0);
     }
 
     @Test

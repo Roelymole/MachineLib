@@ -22,7 +22,7 @@
 
 package dev.galacticraft.machinelib.impl.menu;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenuData;
+import dev.galacticraft.machinelib.api.menu.MenuData;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
 import dev.galacticraft.machinelib.impl.network.s2c.MenuSyncPayload;
 import io.netty.buffer.Unpooled;
@@ -34,14 +34,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MachineMenuDataImpl extends MachineMenuData {
+public class MenuDataImpl extends MenuData {
     private final ServerPlayer player;
     /**
      * The delta values of the data to be synchronized. Indices correspond to the data list.
      */
     private final List<? super Object> delta;
 
-    public MachineMenuDataImpl(ServerPlayer player, int syncId) {
+    public MenuDataImpl(ServerPlayer player, int syncId) {
         super(syncId);
         this.player = player;
         this.delta = new ArrayList<>();

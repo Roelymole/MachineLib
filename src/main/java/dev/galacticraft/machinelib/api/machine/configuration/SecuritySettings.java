@@ -41,17 +41,15 @@ import java.util.UUID;
  * Represents a security setting of a machine.
  */
 public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketSerializable<FriendlyByteBuf, SecuritySettings> {
-    StreamCodec<FriendlyByteBuf, SecuritySettings> CODEC = PacketSerializable.createCodec(SecuritySettings::new);
-
     /**
      * The profile of the player who owns the linked machine.
      */
     protected @Nullable UUID owner = null;
-
     /**
      * The access level of the linked machine.
      */
     protected @NotNull AccessLevel accessLevel = AccessLevel.PUBLIC;
+    StreamCodec<FriendlyByteBuf, SecuritySettings> CODEC = PacketSerializable.createCodec(SecuritySettings::new);
 
     /**
      * Updates the owner of the linked machine if it is not already set.
@@ -71,7 +69,7 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
      */
     @Contract(pure = true)
     public boolean isOwner(@NotNull Player player) {
-        return player.getUUID() == this.owner;
+        return player.getUUID().equals(this.owner);
     }
 
     /**

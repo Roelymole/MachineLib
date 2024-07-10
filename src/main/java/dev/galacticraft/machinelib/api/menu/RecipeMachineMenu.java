@@ -23,9 +23,6 @@
 package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.impl.util.Utils;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -33,20 +30,17 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Supplier;
 
 /**
  * A simple menu that keeps track of recipe progress
  *
  * @param <Machine> The type of machine block entity
- * @param <R>       The type of recipe the machine processes
- * @param <C>       The type of storage the recipe uses
+ * @param <R> The type of recipe the machine processes
+ * @param <C> The type of storage the recipe uses
  * @see MachineMenu
  */
-public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> extends MachineMenu<Machine> {
+public abstract class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> extends MachineMenu<Machine> {
     /**
      * The amount of progress the machine has made in crafting a recipe.
      * Counts from zero to {@link #maxProgress}, if {@link #maxProgress} > 0.
@@ -61,81 +55,34 @@ public class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine
     /**
      * Constructs a new recipe menu.
      *
-     * @param syncId  The sync id for this menu.
-     * @param player  The player who is interacting with this menu.
+     * @param syncId The sync id for this menu.
+     * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
      */
-    public RecipeMachineMenu(int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
-        super(syncId, player, machine);
+    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<C, R, Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
+        super(type, syncId, player, machine);
     }
 
     /**
      * Constructs a new recipe menu for a machine.
      *
-     * @param syncId    The sync id for this menu.
+     * @param syncId The sync id for this menu.
      * @param inventory The inventory of the player interacting with this menu.
-     * @param buf       The data buffer containing the information needed to initialize the menu.
-     * @param invX      The x-coordinate of the top-left player inventory slot.
-     * @param invY      The y-coordinate of the top-left player inventory slot.
-     * @param type      The type of machine associated with this menu.
+     * @param buf The data buffer containing the information needed to initialize the menu.
+     * @param type The type of machine associated with this menu.
      */
-    protected RecipeMachineMenu(int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY, @NotNull MachineType<Machine, ? extends MachineMenu<Machine>> type) {
-        super(syncId, inventory, buf, invX, invY, type);
-    }
-
-    /**
-     * Creates a new menu type.
-     *
-     * @param selfReference A supplier that provides the machine type associated with this menu.
-     * @return The created menu type.
-     * @param <C> The container associated with the machine's recipe type.
-     * @param <R> The recipe type associated with the machine.
-     * @param <Machine> The type of machine associated with this menu.
-     */
-    @Contract(value = "_ -> new", pure = true)
-    public static <C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> @NotNull MenuType<RecipeMachineMenu<C, R, Machine>> createType(@NotNull Supplier<MachineType<Machine, ? extends RecipeMachineMenu<C, R, Machine>>> selfReference) {
-        return createType(selfReference, 84);
-    }
-
-    /**
-     * Creates a new menu type with the specified inventory Y coordinate.
-     *
-     * @param selfReference A supplier that provides the machine type associated with this menu.
-     * @param invY The y-coordinate of the top-left player inventory slot.
-     * @return The created menu type.
-     * @param <C> The container associated with the machine's recipe type.
-     * @param <R> The recipe type associated with the machine.
-     * @param <Machine> The type of machine associated with this menu.
-     */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static <C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> @NotNull MenuType<RecipeMachineMenu<C, R, Machine>> createType(@NotNull Supplier<MachineType<Machine, ? extends RecipeMachineMenu<C, R, Machine>>> selfReference, int invY) {
-        return createType(selfReference, 8, invY);
-    }
-
-    /**
-     * Creates a new menu type with the specified inventory X and Y coordinates.
-     *
-     * @param selfReference A supplier that provides the machine type associated with this menu.
-     * @param invX The x-coordinate of the top-left player inventory slot.
-     * @param invY The y-coordinate of the top-left player inventory slot.
-     * @return The created menu type.
-     * @param <C> The container associated with the machine's recipe type.
-     * @param <R> The recipe type associated with the machine.
-     * @param <Machine> The type of machine associated with this menu.
-     */
-    @Contract(value = "_, _, _ -> new", pure = true)
-    public static <C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> @NotNull MenuType<RecipeMachineMenu<C, R, Machine>> createType(@NotNull Supplier<MachineType<Machine, ? extends RecipeMachineMenu<C, R, Machine>>> selfReference, int invX, int invY) {
-        return new ExtendedScreenHandlerType<>((syncId, inventory, buf) -> new RecipeMachineMenu<>(syncId, inventory, buf, invX, invY, selfReference.get()), Utils.BUF_IDENTITY_CODEC);
+    protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<C, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
+        super(type, syncId, inventory, buf);
     }
 
     @Override
-    public void registerData(MachineMenuData data) {
+    public void registerData(@NotNull MenuData data) {
         super.registerData(data);
 
-        data.registerInt(this::getProgress, this::setProgress);
+        data.registerInt(this.be::getProgress, this::setProgress);
         data.registerInt(() -> {
-            RecipeHolder<R> recipe = this.machine.getActiveRecipe();
-            return recipe != null ? this.machine.getProcessingTime(recipe) : 0;
+            RecipeHolder<R> recipe = this.be.getActiveRecipe();
+            return recipe != null ? this.be.getProcessingTime(recipe) : 0;
         }, this::setMaxProgress);
     }
 

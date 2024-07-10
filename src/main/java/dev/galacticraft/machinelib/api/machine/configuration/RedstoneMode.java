@@ -73,14 +73,6 @@ public enum RedstoneMode implements StringRepresentable {
         this.name = name;
     }
 
-    public boolean isActive(boolean powered) {
-        return switch (this) {
-            case IGNORE -> true;
-            case LOW -> !powered;
-            case HIGH -> powered;
-        };
-    }
-
     /**
      * Deserializes an redstone level from NBT.
      *
@@ -95,12 +87,25 @@ public enum RedstoneMode implements StringRepresentable {
 
     /**
      * Deserializes a redstone level from a packet.
+     *
      * @param buf the buffer to read from
      * @return the redstone level
      * @see #writePacket(FriendlyByteBuf)
      */
     public static @NotNull RedstoneMode readPacket(@NotNull FriendlyByteBuf buf) {
         return VALUES[buf.readByte()];
+    }
+
+    public static RedstoneMode byName(String name) {
+        return CODEC.byName(name, IGNORE);
+    }
+
+    public boolean isActive(boolean powered) {
+        return switch (this) {
+            case IGNORE -> true;
+            case LOW -> !powered;
+            case HIGH -> powered;
+        };
     }
 
     /**
@@ -123,6 +128,7 @@ public enum RedstoneMode implements StringRepresentable {
 
     /**
      * Serializes this state as a NBT.
+     *
      * @return this redstone level as a tag.
      * @see #readTag(Tag)
      */
@@ -132,14 +138,11 @@ public enum RedstoneMode implements StringRepresentable {
 
     /**
      * Serializes this state to a packet.
+     *
      * @param buf the buffer to write to
      * @see #readPacket(FriendlyByteBuf)
      */
     public void writePacket(@NotNull FriendlyByteBuf buf) {
         buf.writeByte(this.ordinal());
-    }
-
-    public static RedstoneMode byName(String name) {
-        return CODEC.byName(name, IGNORE);
     }
 }

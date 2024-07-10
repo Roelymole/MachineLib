@@ -47,6 +47,15 @@ public class RecipeTestContainer implements Container {
     protected final ItemResourceSlot[] slots;
 
     /**
+     * Constructs a new RecipeTestContainer with the provided slots.
+     *
+     * @param slots the slots to be included in the container
+     */
+    RecipeTestContainer(ItemResourceSlot[] slots) {
+        this.slots = slots;
+    }
+
+    /**
      * Creates a new container with the given slots.
      *
      * @param slots the slots to use
@@ -75,15 +84,6 @@ public class RecipeTestContainer implements Container {
             slots[i] = iterator.next();
         }
         return new RecipeTestContainer(slots);
-    }
-
-    /**
-     * Constructs a new RecipeTestContainer with the provided slots.
-     *
-     * @param slots the slots to be included in the container
-     */
-    RecipeTestContainer(ItemResourceSlot[] slots) {
-        this.slots = slots;
     }
 
     @Override
@@ -138,5 +138,6 @@ public class RecipeTestContainer implements Container {
     }
 
     @Override
-    public void clearContent() {}
+    public void clearContent() {
+    }
 }

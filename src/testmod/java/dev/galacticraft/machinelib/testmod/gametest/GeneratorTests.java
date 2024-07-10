@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.testmod.gametest;
 import dev.galacticraft.machinelib.api.gametest.MachineGameTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.MachineTest;
 import dev.galacticraft.machinelib.api.gametest.annotation.TestSuite;
-import dev.galacticraft.machinelib.testmod.block.TestModMachineTypes;
+import dev.galacticraft.machinelib.testmod.block.TestModBlocks;
 import dev.galacticraft.machinelib.testmod.block.entity.GeneratorBlockEntity;
 import dev.galacticraft.machinelib.testmod.item.TestModItems;
 import net.minecraft.gametest.framework.GameTestAssertException;
@@ -39,7 +39,7 @@ import java.util.List;
 @TestSuite("generator")
 public class GeneratorTests extends MachineGameTest<GeneratorBlockEntity> {
     public GeneratorTests() {
-        super(TestModMachineTypes.GENERATOR);
+        super(TestModBlocks.GENERATOR);
     }
 
     @MachineTest(workTime = 10)

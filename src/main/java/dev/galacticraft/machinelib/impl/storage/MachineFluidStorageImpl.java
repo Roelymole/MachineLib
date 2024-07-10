@@ -35,17 +35,27 @@ import org.jetbrains.annotations.Nullable;
 
 public class MachineFluidStorageImpl extends ResourceStorageImpl<Fluid, FluidResourceSlot> implements MachineFluidStorage {
     public static final MachineFluidStorageImpl EMPTY = new MachineFluidStorageImpl(new FluidResourceSlot[0]);
+    private final ExposedStorage<Fluid, FluidVariant>[] exposedStorages = new ExposedStorage[3];
 
     public MachineFluidStorageImpl(@NotNull FluidResourceSlot @NotNull [] slots) {
         super(slots);
+        for (int i = 0; i < 3; i++) {
+            this.exposedStorages[i] = this.createExposedStorage(ResourceFlow.values()[i]);
+        }
+    }
+
+    protected @Nullable ExposedStorage<Fluid, FluidVariant> createExposedStorage(@NotNull ResourceFlow flow) {
+        ExposedFluidSlotImpl[] slots = new ExposedFluidSlotImpl[this.size()];
+        boolean support = false;
+        for (int i = 0; i < slots.length; i++) {
+            slots[i] = new ExposedFluidSlotImpl(this.getSlots()[i], flow);
+            support |= slots[i].supportsInsertion() || slots[i].supportsExtraction();
+        }
+        return support ? new ExposedStorageImpl<>(this, slots) : null;
     }
 
     @Override
-    public @Nullable ExposedStorage<Fluid, FluidVariant> createExposedStorage(@NotNull ResourceFlow flow) {
-        ExposedFluidSlotImpl[] slots = new ExposedFluidSlotImpl[this.size()];
-        for (int i = 0; i < slots.length; i++) {
-            slots[i] = new ExposedFluidSlotImpl(this.getSlots()[i], flow);
-        }
-        return new ExposedStorageImpl<>(this, slots);
+    public @Nullable ExposedStorage<Fluid, FluidVariant> getExposedStorage(@NotNull ResourceFlow flow) {
+        return this.exposedStorages[flow.ordinal()];
     }
 }

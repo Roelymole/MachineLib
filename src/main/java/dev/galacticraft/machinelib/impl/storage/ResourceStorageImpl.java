@@ -33,8 +33,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Resource>> extends BaseSlottedStorage<Resource, Slot> implements ResourceStorage<Resource, Slot>, TransactionContext.CloseCallback {
-    private long modifications = 1;
     private final LongList transactions = new LongArrayList();
+    private long modifications = 1;
     private Runnable listener;
 
     public ResourceStorageImpl(@NotNull Slot @NotNull [] slots) {

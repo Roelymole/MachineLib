@@ -33,16 +33,15 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
 public record SideConfigurationClickPayload(BlockFace face, Action action) implements CustomPacketPayload {
-    public SideConfigurationClickPayload(BlockFace face, boolean reverse, boolean reset) {
-        this(face, reset ? Action.RESET : reverse ? Action.PREVIOUS : Action.NEXT);
-    }
-
     public static final CustomPacketPayload.Type<SideConfigurationClickPayload> TYPE = new CustomPacketPayload.Type<>(Constant.id("io_click"));
     public static final StreamCodec<ByteBuf, SideConfigurationClickPayload> CODEC = StreamCodec.composite(
             BlockFace.CODEC, p -> p.face,
             Action.CODEC, p -> p.action,
             SideConfigurationClickPayload::new
     );
+    public SideConfigurationClickPayload(BlockFace face, boolean reverse, boolean reset) {
+        this(face, reset ? Action.RESET : reverse ? Action.PREVIOUS : Action.NEXT);
+    }
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

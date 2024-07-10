@@ -49,6 +49,7 @@ import java.util.List;
 public interface Tank {
     /**
      * Creates a new tank.
+     *
      * @param slot the slot that this tank is associated with
      * @param display the display properties of the tank
      * @param inputType the input type of the tank
@@ -64,12 +65,14 @@ public interface Tank {
     /**
      * {@return the resource that is currently in this tank}
      */
-    @Nullable Fluid getFluid();
+    @Nullable
+    Fluid getFluid();
 
     /**
      * {@return the components of the fluid in the tank}
      */
-    @NotNull DataComponentPatch getComponents();
+    @NotNull
+    DataComponentPatch getComponents();
 
     /**
      * {@return the amount of fluid in the tank}

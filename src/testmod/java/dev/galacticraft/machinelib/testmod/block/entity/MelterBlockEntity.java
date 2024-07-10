@@ -23,12 +23,19 @@
 package dev.galacticraft.machinelib.testmod.block.entity;
 
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
+import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineStatuses;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
+import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
+import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
+import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.testmod.block.TestModMachineTypes;
+import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.util.FluidSource;
+import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -36,7 +43,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,13 +60,35 @@ public class MelterBlockEntity extends MachineBlockEntity {
     public static final long ENERGY_USAGE = 250;
     public static final int PROCESSING_TIME = 200;
 
+    private static final StorageSpec STORAGE_SPEC = StorageSpec.of(
+            MachineItemStorage.spec(
+                    ItemResourceSlot.builder(InputType.TRANSFER)
+                            .pos(8, 8)
+                            .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
+                            .capacity(32),
+                    ItemResourceSlot.builder(InputType.INPUT)
+                            .pos(59, 42)
+                            .filter(ResourceFilters.ofResource(Items.COBBLESTONE)),
+                    ItemResourceSlot.builder(InputType.TRANSFER)
+                            .pos(152, 62)
+                            .filter(ResourceFilters.canInsertFluid(Fluids.LAVA))
+            ),
+            MachineEnergyStorage.spec(30000, ENERGY_USAGE * 2, 0),
+            MachineFluidStorage.spec(FluidResourceSlot.builder(InputType.RECIPE_OUTPUT)
+                    .pos(152, 8)
+                    .capacity(FluidConstants.BUCKET * 16)
+                    .filter(ResourceFilters.ofResource(Fluids.LAVA))
+            )
+    );
+
     private final ItemResourceSlot itemInput;
     private final FluidResourceSlot fluidOutput;
+    private final FluidSource fluidSource = new FluidSource(this);
 
     private int progress = 0;
 
     public MelterBlockEntity(@NotNull BlockPos pos, BlockState state) {
-        super(TestModMachineTypes.MELTER, pos, state);
+        super(TestModBlockEntityTypes.MELTER, pos, state, STORAGE_SPEC);
         this.itemInput = this.itemStorage().slot(INPUT_SLOT);
         this.fluidOutput = this.fluidStorage().slot(LAVA_TANK);
     }
@@ -72,7 +100,7 @@ public class MelterBlockEntity extends MachineBlockEntity {
         this.chargeFromSlot(BATTERY_SLOT);
         this.drainFluidToSlot(LAVA_OUTPUT_SLOT, LAVA_TANK);
         profiler.pop();
-        this.trySpreadFluids(level, state);
+        this.fluidSource.trySpreadFluids(level, pos, state);
     }
 
     @Override
@@ -103,7 +131,7 @@ public class MelterBlockEntity extends MachineBlockEntity {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-        return new MachineMenu<>(syncId, ((ServerPlayer) player), this);
+    public MachineMenu<MelterBlockEntity> openMenu(int syncId, Inventory inv, Player player) {
+        return new MachineMenu<>(TestModMenuTypes.MELTER, syncId, ((ServerPlayer) player), this);
     }
 }

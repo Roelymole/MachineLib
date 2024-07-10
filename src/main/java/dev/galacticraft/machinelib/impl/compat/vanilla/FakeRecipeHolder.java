@@ -28,11 +28,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-/**
- * @see net.minecraft.world.inventory.RecipeHolder
- */
 public interface FakeRecipeHolder {
-    @Nullable Set<ResourceLocation> takeRecipes();
+    @Nullable
+    Set<ResourceLocation> takeRecipes();
 
     void recipeCrafted(@NotNull ResourceLocation id);
 }

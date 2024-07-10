@@ -31,7 +31,8 @@ import net.minecraft.util.FastColor;
 import net.minecraft.world.level.material.Fluids;
 
 public final class GraphicsUtil {
-    private GraphicsUtil() {}
+    private GraphicsUtil() {
+    }
 
     public static void drawFluid(GuiGraphics graphics, int x, int y, int width, int height, long capacity, FluidVariant variant, long available) {
         if (variant.isBlank()) return;
@@ -51,9 +52,9 @@ public final class GraphicsUtil {
         int fluidHeight = (int) (((double) available / (double) capacity) * height);
         int startY = fillFromTop ? y : y + (height - fluidHeight);
 
-        for (int splitX = 0; splitX < width; splitX += Math.min(width, 16)){
+        for (int splitX = 0; splitX < width; splitX += Math.min(width, 16)) {
             int realWidth = Math.min(width - splitX, 16);
-            for (int splitY = startY; splitY < startY + fluidHeight; splitY += realWidth){
+            for (int splitY = startY; splitY < startY + fluidHeight; splitY += realWidth) {
                 graphics.blit(x + splitX, splitY, 0, realWidth, Math.min(realWidth, startY + fluidHeight - splitY), sprite, r, g, b, 1.0f);
             }
         }

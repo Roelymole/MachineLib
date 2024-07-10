@@ -33,7 +33,6 @@ import team.reborn.energy.api.EnergyStorage;
  * @param parent The parent energy storage.
  * @param maxInsertion The maximum amount of energy that can be inserted in one transaction.
  * @param maxExtraction The maximum amount of energy that can be extracted in one transaction.
- *
  * @see EnergyStorage
  */
 public record ExposedEnergyStorageImpl(@NotNull EnergyStorage parent, long maxInsertion,

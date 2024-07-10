@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents the status of a machine.
+ *
  * @see MachineStatuses
  */
 public interface MachineStatus {
@@ -62,18 +63,9 @@ public interface MachineStatus {
         return create(Component.translatable(key).setStyle(Style.EMPTY.withColor(color)), type);
     }
 
-     /**
-     * {@return the name of the machine status}
-     */
-    @NotNull Component getText();
-
-    /**
-     * {@return the type of the machine status}
-     */
-    @NotNull MachineStatus.Type getType();
-
     /**
      * Serializes this machine status to a packet
+     *
      * @param buf the buffer to write to
      */
     static void writePacket(@Nullable MachineStatus status, @NotNull RegistryFriendlyByteBuf buf) {
@@ -87,6 +79,7 @@ public interface MachineStatus {
 
     /**
      * Deserializes this machine status form a packet, based on the machine in use
+     *
      * @param buf the buffer to write to
      * @return the deserialized machine status
      */
@@ -95,6 +88,18 @@ public interface MachineStatus {
         if (b == -1) return null;
         return MachineStatus.create(ComponentSerialization.TRUSTED_STREAM_CODEC.decode(buf), Type.values()[b]);
     }
+
+    /**
+     * {@return the name of the machine status}
+     */
+    @NotNull
+    Component getText();
+
+    /**
+     * {@return the type of the machine status}
+     */
+    @NotNull
+    MachineStatus.Type getType();
 
     /**
      * Represents the types of machine statuses.

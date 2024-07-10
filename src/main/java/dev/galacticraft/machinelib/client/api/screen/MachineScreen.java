@@ -64,6 +64,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -168,6 +169,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     private final @NotNull ResourceLocation texture;
     /**
+     * The skin of the owner of this machine.
+     * Defaults to steve if the skin cannot be found.
+     */
+    private final @NotNull CompletableFuture<PlayerSkin> ownerSkin;
+    private final @NotNull CompletableFuture<GameProfile> owner;
+    /**
      * The tank that is currently hovered over.
      */
     public @Nullable Tank hoveredTank = null;
@@ -183,23 +190,14 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * The height of the capacitor.
      */
     protected int capacitorHeight = 48;
-
-    /**
-     * The skin of the owner of this machine.
-     * Defaults to steve if the skin cannot be found.
-     */
-    private final @NotNull CompletableFuture<PlayerSkin> ownerSkin;
-    private final @NotNull CompletableFuture<GameProfile> owner;
-
-    private @Nullable MachineBakedModel model;
-
     protected @NotNull MachineRenderData renderData;
+    private @Nullable MachineBakedModel model;
 
     /**
      * Creates a new screen from the given screen handler.
      *
      * @param menu The screen handler to create the screen from.
-     * @param title   The title of the screen.
+     * @param title The title of the screen.
      * @param texture The texture of the background screen.
      */
     protected MachineScreen(@NotNull Menu menu, @NotNull Component title, @NotNull ResourceLocation texture) {
@@ -223,13 +221,17 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         return BuiltInRegistries.ITEM.getOptional(id).orElse(fallback);
     }
 
+    private static boolean mouseIn(double mouseX, double mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseY >= y && mouseX <= x + width && mouseY <= y + height;
+    }
+
     @Override
     protected void init() {
         super.init();
         assert this.minecraft != null;
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
 
-        if (this.minecraft.getModelManager().getBlockModelShaper().getBlockModel(this.menu.type.getBlock().defaultBlockState()) instanceof MachineBakedModel model) {
+        if (this.minecraft.getModelManager().getBlockModelShaper().getBlockModel(this.menu.be.getBlockState()) instanceof MachineBakedModel model) {
             this.model = model;
         }
     }
@@ -248,8 +250,8 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Draws the configuration panels and their contents.
      *
      * @param graphics The gui graphics.
-     * @param mouseX   The mouse's x-position.
-     * @param mouseY   The mouse's y-position.
+     * @param mouseX The mouse's x-position.
+     * @param mouseY The mouse's y-position.
      */
     protected void drawConfigurationPanels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         assert this.minecraft != null;
@@ -312,10 +314,10 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             poseStack.pushPose();
             poseStack.translate(this.imageWidth, SPACING, 0);
             graphics.renderFakeItem(ALUMINUM_WIRE, PANEL_ICON_X, PANEL_ICON_Y);
-            PlayerFaceRenderer.draw(graphics, this.ownerSkin.getNow(DefaultPlayerSkin.get(this.menu.security.getOwner() == null ? this.menu.playerUUID : this.menu.security.getOwner())), OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE);
+            PlayerFaceRenderer.draw(graphics, this.ownerSkin.getNow(DefaultPlayerSkin.get(this.menu.security.getOwner() == null ? this.menu.player.getUUID() : this.menu.security.getOwner())), OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.STATISTICS)
                     .setStyle(Constant.Text.GREEN_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
-            List<FormattedCharSequence> text = this.font.split(this.menu.type.getBlock().getName(), 64);
+            List<FormattedCharSequence> text = this.font.split(this.menu.be.getBlockState().getBlock().getName(), 64);
             int offsetY = 0;
             for (FormattedCharSequence orderedText : text) {
                 graphics.drawString(this.font, orderedText, 40, 22 + offsetY, 0xFFFFFFFF, false);
@@ -361,10 +363,10 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Draws the sprite of a given machine face.
      *
      * @param graphics the gui graphics
-     * @param x        the x position to draw at
-     * @param y        the y position to draw at
-     * @param data     the machine's extra render data
-     * @param face     the face to draw
+     * @param x the x position to draw at
+     * @param y the y position to draw at
+     * @param data the machine's extra render data
+     * @param face the face to draw
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull MachineRenderData data, @NotNull BlockFace face) {
         IOFace machineFace = menu.configuration.get(face);
@@ -378,11 +380,11 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * The button will be highlighted if the mouse is hovering over it.
      *
      * @param graphics the gui graphics instance
-     * @param x        the x-position to draw at
-     * @param y        the y-position to draw at
-     * @param mouseX   the mouse's x-position
-     * @param mouseY   the mouse's y-position
-     * @param pressed  whether the button is pressed
+     * @param x the x-position to draw at
+     * @param y the y-position to draw at
+     * @param mouseX the mouse's x-position
+     * @param mouseY the mouse's y-position
+     * @param pressed whether the button is pressed
      */
     public void drawButton(GuiGraphics graphics, int x, int y, double mouseX, double mouseY, boolean pressed) {
         if (pressed) {
@@ -565,8 +567,8 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Draws the tooltips of the configuration panel.
      *
      * @param graphics The gui graphics to use.
-     * @param mouseX   The mouse's x-position.
-     * @param mouseY   The mouse's y-position.
+     * @param mouseX The mouse's x-position.
+     * @param mouseY The mouse's y-position.
      */
     protected void drawConfigurationPanelTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         final int mX = mouseX, mY = mouseY;
@@ -682,9 +684,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Renders the tooltip for the given face.
      *
      * @param graphics The gui graphics
-     * @param face     The face to render the tooltip for
-     * @param mouseX   The mouse's x-position
-     * @param mouseY   The mouse's y-position
+     * @param face The face to render the tooltip for
+     * @param mouseX The mouse's x-position
+     * @param mouseY The mouse's y-position
      */
     protected void renderFaceTooltip(GuiGraphics graphics, @NotNull BlockFace face, int mouseX, int mouseY) {
         TOOLTIP_ARRAY.add(face.getName());
@@ -711,9 +713,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Renders the foreground of the screen.
      *
      * @param graphics The gui graphics
-     * @param mouseX   The mouse's x-position
-     * @param mouseY   The mouse's y-position
-     * @param delta    The delta time
+     * @param mouseX The mouse's x-position
+     * @param mouseY The mouse's y-position
+     * @param delta The delta time
      */
     protected void renderForeground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     }
@@ -734,8 +736,8 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * If the machine has no capacitor, this method does nothing.
      *
      * @param graphics The gui graphics
-     * @param mouseX   The mouse's x-position
-     * @param mouseY   The mouse's y-position
+     * @param mouseX The mouse's x-position
+     * @param mouseY The mouse's y-position
      */
     protected void drawCapacitor(GuiGraphics graphics, int mouseX, int mouseY) {
         long capacity = this.menu.energyStorage.getCapacity();
@@ -757,9 +759,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Draws the background of this machine.
      *
      * @param graphics The gui graphics
-     * @param mouseX   The mouse's x-position
-     * @param mouseY   The mouse's y-position
-     * @param delta    The delta time
+     * @param mouseX The mouse's x-position
+     * @param mouseY The mouse's y-position
+     * @param delta The delta time
      */
     protected void renderMachineBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
     }
@@ -768,8 +770,8 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * Draws the (fluid and gas) tanks of this machine.
      *
      * @param graphics The gui graphics
-     * @param mouseX   The mouse's x-position
-     * @param mouseY   The mouse's y-position
+     * @param mouseX The mouse's x-position
+     * @param mouseY The mouse's y-position
      */
     protected void drawTanks(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.pose().pushPose();
@@ -828,10 +830,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             if (config != null) {
                 ResourceType resource = config.getType();
                 if (resource.willAcceptResource(ResourceType.ITEM)) {
-                    for (StorageSlot slot : this.menu.machineSlots) {
-                        InputType type = slot.getSlot().inputType();
-                        if (type.getExternalFlow() != null && type.getExternalFlow().canFlowIn(config.getFlow())) {
-                            GraphicsUtil.highlightElement(graphics, this.leftPos, this.topPos, slot.x, slot.y, 16, 16, type.color());
+                    for (Slot slot : this.menu.slots) {
+                        if (slot instanceof StorageSlot slot1) {
+                            InputType type = slot1.getSlot().inputType();
+                            if (type.getExternalFlow() != null && type.getExternalFlow().canFlowIn(config.getFlow())) {
+                                GraphicsUtil.highlightElement(graphics, this.leftPos, this.topPos, slot.x, slot.y, 16, 16, type.color());
+                            }
                         }
                     }
                 }
@@ -881,10 +885,6 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     @Override
     protected final void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         this.drawTitle(graphics);
-    }
-
-    private static boolean mouseIn(double mouseX, double mouseY, int x, int y, int width, int height) {
-        return mouseX >= x && mouseY >= y && mouseX <= x + width && mouseY <= y + height;
     }
 
     /**

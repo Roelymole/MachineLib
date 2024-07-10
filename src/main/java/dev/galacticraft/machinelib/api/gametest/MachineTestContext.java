@@ -62,6 +62,7 @@ public class MachineTestContext {
 
     /**
      * Fails the test with the given message.
+     *
      * @param message the message to fail with
      * @param objects the objects to format the message with
      * @return a new {@link GameTestAssertPosException} with the given message

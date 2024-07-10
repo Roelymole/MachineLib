@@ -48,6 +48,7 @@ import java.lang.annotation.Target;
 public @interface MachineTest {
     /**
      * {@return the batch name of the test}
+     *
      * @see GameTest#batch()
      */
     String batch() default "";
@@ -60,6 +61,7 @@ public @interface MachineTest {
 
     /**
      * {@return the structure file to use for the test}
+     *
      * @see GameTest#template()
      */
     String structure() default SimpleGameTest.STRUCTURE_3x3;

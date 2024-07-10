@@ -65,6 +65,10 @@ public final class TankImpl implements Tank {
         this.height = height;
     }
 
+    private static boolean mouseIn(double mouseX, double mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseY >= y && mouseX <= x + width && mouseY <= y + height;
+    }
+
     @Override
     public @Nullable Fluid getFluid() {
         return this.slot.getResource();
@@ -173,9 +177,5 @@ public final class TankImpl implements Tank {
     @Override
     public InputType getInputType() {
         return this.inputType;
-    }
-
-    private static boolean mouseIn(double mouseX, double mouseY, int x, int y, int width, int height) {
-        return mouseX >= x && mouseY >= y && mouseX <= x + width && mouseY <= y + height;
     }
 }

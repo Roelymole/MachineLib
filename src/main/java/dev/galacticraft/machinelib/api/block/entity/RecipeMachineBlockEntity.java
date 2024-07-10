@@ -24,8 +24,7 @@ package dev.galacticraft.machinelib.api.block.entity;
 
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.machine.MachineStatuses;
-import dev.galacticraft.machinelib.api.machine.MachineType;
-import dev.galacticraft.machinelib.api.menu.RecipeMachineMenu;
+import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -37,6 +36,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -88,13 +88,14 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
     /**
      * Constructs a new machine block entity that processes recipes.
      *
-     * @param type       The type of block entity.
-     * @param pos        The position of the machine in the level.
-     * @param state      The block state of the machine.
+     * @param type The type of block entity.
+     * @param pos The position of the machine in the level.
+     * @param state The block state of the machine.
      * @param recipeType The type of recipe to be processed.
      */
-    protected RecipeMachineBlockEntity(@NotNull MachineType<? extends RecipeMachineBlockEntity<C, R>, ? extends RecipeMachineMenu<C, R, ? extends RecipeMachineBlockEntity<C, R>>> type, @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType) {
-        super(type, pos, state);
+    protected RecipeMachineBlockEntity(@NotNull BlockEntityType<? extends RecipeMachineBlockEntity<C, R>> type, @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType,
+                                       StorageSpec spec) {
+        super(type, pos, state, spec);
         this.recipeType = recipeType;
     }
 
@@ -216,7 +217,7 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
      * Crafts the given recipe.
      *
      * @param profiler The world profiler.
-     * @param recipe   The recipe to craft.
+     * @param recipe The recipe to craft.
      */
     protected void craft(@NotNull ProfilerFiller profiler, @NotNull RecipeHolder<R> recipe) {
         profiler.push("extract_materials");

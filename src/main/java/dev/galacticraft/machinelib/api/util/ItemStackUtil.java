@@ -34,7 +34,15 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ItemStackUtil {
     /**
+     * Prevent instantiation of this utility class.
+     */
+    private ItemStackUtil() {
+        throw new UnsupportedOperationException("This class cannot be instantiated.");
+    }
+
+    /**
      * Creates a new item stack from the contents of a slot.
+     *
      * @param slot the slot to read from
      * @return a new item stack
      */
@@ -69,12 +77,5 @@ public class ItemStackUtil {
         if (resource == null) return ItemStack.EMPTY;
         assert amount > 0;
         return new ItemStack(resource, amount);
-    }
-
-    /**
-     * Prevent instantiation of this utility class.
-     */
-    private ItemStackUtil() {
-        throw new UnsupportedOperationException("This class cannot be instantiated.");
     }
 }

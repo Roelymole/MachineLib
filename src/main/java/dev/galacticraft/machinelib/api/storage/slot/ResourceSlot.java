@@ -58,7 +58,8 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
     /**
      * {@return the resource stored in this slot} If the slot is empty, returns null.
      */
-    @Nullable Resource getResource();
+    @Nullable
+    Resource getResource();
 
     /**
      * {@return the amount of the resource stored in this slot} If the slot is empty, returns 0.
@@ -68,7 +69,8 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
     /**
      * {@return the components of the resource stored in this slot} If the slot is empty, returns an empty patch.
      */
-    @NotNull DataComponentPatch getComponents();
+    @NotNull
+    DataComponentPatch getComponents();
 
     /**
      * {@return the capacity of this slot} The real capacity may smaller if the resource stored has a smaller capacity.
@@ -95,7 +97,8 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
      *
      * @see ResourceFilter
      */
-    @NotNull ResourceFilter<Resource> getFilter();
+    @NotNull
+    ResourceFilter<Resource> getFilter();
 
     /**
      * {@return whether this slot contains more than the given amount of the resource}
@@ -116,7 +119,8 @@ public interface ResourceSlot<Resource> extends StorageAccess<Resource>, Mutable
      *
      * @return the extracted resource, or {@code null} if the slot is empty.
      */
-    @Nullable Resource extractOne();
+    @Nullable
+    Resource extractOne();
 
     /**
      * Extracts the given amount of resources from this slot. Note that the components of the resource are not returned.

@@ -52,15 +52,15 @@ public final class MachineLibClient implements ClientModInitializer {
             Map<ResourceLocation, JsonObject> map = new HashMap<>();
 
             entries.entrySet().parallelStream().map(entry -> CompletableFuture.supplyAsync(() -> {
-                JsonElement element;
-                try (JsonReader reader = new JsonReader(new InputStreamReader(entry.getValue().open(), Charsets.UTF_8))) {
-                    element = Streams.parse(reader);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                String path = entry.getKey().getPath();
-                return new Pair<>(new ResourceLocation(entry.getKey().getNamespace(), path.substring(path.indexOf('/')+1, path.lastIndexOf('.'))), element);
-            }, executor))
+                        JsonElement element;
+                        try (JsonReader reader = new JsonReader(new InputStreamReader(entry.getValue().open(), Charsets.UTF_8))) {
+                            element = Streams.parse(reader);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        String path = entry.getKey().getPath();
+                        return new Pair<>(new ResourceLocation(entry.getKey().getNamespace(), path.substring(path.indexOf('/') + 1, path.lastIndexOf('.'))), element);
+                    }, executor))
                     .map(CompletableFuture::join)
                     .filter(pair -> pair.getSecond().isJsonObject() && pair.getSecond().getAsJsonObject().has(MachineModelRegistry.MARKER))
                     .forEach(pair -> map.put(pair.getFirst(), pair.getSecond().getAsJsonObject()));

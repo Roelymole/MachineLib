@@ -75,7 +75,7 @@ public enum ResourceType implements StringRepresentable {
      */
     @Contract(pure = true)
     ResourceType(int id, @NotNull Component name) {
-        this.id = (byte)id;
+        this.id = (byte) id;
         this.name = name;
     }
 

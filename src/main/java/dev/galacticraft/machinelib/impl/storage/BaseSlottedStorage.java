@@ -187,7 +187,7 @@ public class BaseSlottedStorage<Resource, Slot extends ResourceSlot<Resource>> i
     @Override
     public SlottedStorageAccess<Resource, Slot> subStorage(int start, int len) {
         Slot[] slots1 = (Slot[]) Array.newInstance(this.slots.getClass().componentType(), len);
-        System.arraycopy(this.slots, start, slots1,  0, len);
+        System.arraycopy(this.slots, start, slots1, 0, len);
         return new BaseSlottedStorage<>(slots1);
     }
 

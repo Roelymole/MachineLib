@@ -30,8 +30,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Display information for an item slot.
  *
- * @param x    The x position of the slot.
- * @param y    The y position of the slot.
+ * @param x The x position of the slot.
+ * @param y The y position of the slot.
  * @param icon The icon to display in the slot.
  */
 public record ItemSlotDisplayImpl(int x, int y,

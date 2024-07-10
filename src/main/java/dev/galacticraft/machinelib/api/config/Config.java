@@ -40,6 +40,7 @@ public interface Config {
 
     /**
      * Loads a config from the provided file.
+     *
      * @param file the file to load the config from
      * @return the loaded config
      */
@@ -73,6 +74,7 @@ public interface Config {
 
     /**
      * Copies the state of the provided config into this config.
+     *
      * @param config the config to copy from
      */
     void copyFrom(Config config);
@@ -101,10 +103,12 @@ public interface Config {
 
         /**
          * Display fluids in 81000ths of a bucket.
+         *
          * @see net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants#BUCKET
          */
         @SerializedName("raw")
-        RAW(Component.translatable("ui.machinelib.config.fluid_display_mode.raw")),;
+        RAW(Component.translatable("ui.machinelib.config.fluid_display_mode.raw")),
+        ;
 
         /**
          * The name of this display mode.
@@ -113,6 +117,7 @@ public interface Config {
 
         /**
          * Creates a new display mode.
+         *
          * @param name the name of this display mode
          */
         FluidUnits(Component name) {

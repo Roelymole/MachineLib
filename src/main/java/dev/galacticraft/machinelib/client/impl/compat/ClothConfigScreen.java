@@ -47,7 +47,7 @@ public class ClothConfigScreen {
         general.addEntry(entryBuilder.startEnumSelector(Component.translatable("ui.machinelib.config.fluid_display_mode"), Config.FluidUnits.class, MachineLib.CONFIG.fluidUnits())
                 .setSaveConsumer(MachineLib.CONFIG::getFluidUnits)
                 .setDefaultValue(Config.DEFAULT.fluidUnits())
-                .setEnumNameProvider(v -> ((Config.FluidUnits)v).getName())
+                .setEnumNameProvider(v -> ((Config.FluidUnits) v).getName())
                 .build()
         );
 

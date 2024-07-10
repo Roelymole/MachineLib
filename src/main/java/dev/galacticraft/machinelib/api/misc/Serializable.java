@@ -74,7 +74,8 @@ public interface Serializable<T extends Tag> {
      * @return the created tag
      * @see #readTag(Tag)
      */
-    @NotNull T createTag();
+    @NotNull
+    T createTag();
 
     /**
      * Deserializes this object's state from a tag.

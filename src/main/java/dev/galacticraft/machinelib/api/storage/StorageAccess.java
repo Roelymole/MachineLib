@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Something that can contains resources.
+ *
  * @param <Resource> the type of resource this storage can contain. Must be comparable by identity.
  */
 public interface StorageAccess<Resource> {
@@ -51,14 +52,14 @@ public interface StorageAccess<Resource> {
      * {@return whether the storage can accept one of the specified resource}
      * This method is equivalent to {@link #canInsert(Resource, DataComponentPatch)}
      * except it assumes an empty component patch.
-     * 
+     *
      * @param resource the resource being tested
      * @see #canInsert(Resource, DataComponentPatch)
      */
     default boolean canInsert(@NotNull Resource resource) {
         return this.canInsert(resource, DataComponentPatch.EMPTY);
     }
-    
+
     /**
      * {@return whether the storage can accept one of the specified resource}
      *
@@ -101,7 +102,7 @@ public interface StorageAccess<Resource> {
     default long tryInsert(@NotNull Resource resource, long amount) {
         return this.tryInsert(resource, DataComponentPatch.EMPTY, amount);
     }
-    
+
     /**
      * {@return the amount of the specified resource that the storage can accept}
      * The storage is not modified.
@@ -119,8 +120,8 @@ public interface StorageAccess<Resource> {
      *
      * @param resource the resource being inserted
      * @param amount the amount of the resource being inserted
-     * @see #insert(Resource, DataComponentPatch, long)
      * @return the amount of the resource that was inserted
+     * @see #insert(Resource, DataComponentPatch, long)
      */
     default long insert(@NotNull Resource resource, long amount) {
         return this.insert(resource, DataComponentPatch.EMPTY, amount);
@@ -269,25 +270,27 @@ public interface StorageAccess<Resource> {
 
     /**
      * Inserts the specified amount of the resource into the storage.
-     * 
+     *
      * @param resource the resource being inserted
      * @param components the components of the resource
      * @param amount the amount of the resource being inserted
      * @param context the transaction context. If {@code null}, the operation will not be part of a transaction
      * @return the amount of the resource that was inserted
      */
-    @ApiStatus.Internal // required for transfer API support
+    // required for transfer API support
+    @ApiStatus.Internal
     long insert(@NotNull Resource resource, @NotNull DataComponentPatch components, long amount, @Nullable TransactionContext context);
 
     /**
      * Extracts the specified amount of the resource from the storage.
-     * 
+     *
      * @param resource the resource being extracted
      * @param components the components of the resource
      * @param amount the amount of the resource being extracted
      * @param context the transaction context. If {@code null}, the operation will not be part of a transaction
      * @return the amount of the resource that was extracted
      */
-    @ApiStatus.Internal // required for transfer API support
+    // required for transfer API support
+    @ApiStatus.Internal
     long extract(@NotNull Resource resource, @Nullable DataComponentPatch components, long amount, @Nullable TransactionContext context);
 }

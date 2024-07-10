@@ -123,18 +123,18 @@ public class EmptyMachineEnergyStorage implements MachineEnergyStorage {
     }
 
     @Override
-    public @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow) {
+    public @Nullable EnergyStorage getExposedStorage(@NotNull ResourceFlow flow) {
         return null;
     }
 
     @Override
-    public boolean canExposedInsert() {
-        return false;
+    public long externalInsertionRate() {
+        return 0;
     }
 
     @Override
-    public boolean canExposedExtract() {
-        return false;
+    public long externalExtractionRate() {
+        return 0;
     }
 
     @Override

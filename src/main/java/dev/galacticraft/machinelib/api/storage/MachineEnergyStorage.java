@@ -42,7 +42,7 @@ import team.reborn.energy.api.EnergyStorage;
 
 /**
  * A simple energy storage implementation.
- * The flow of energy is not restricted here, use {@link #createExposedStorage(ResourceFlow)} if you need filtering.
+ * The flow of energy is not restricted here, use {@link #getExposedStorage(ResourceFlow)} if you need filtering.
  *
  * @see ExposedEnergyStorage
  * @see EnergyStorage
@@ -62,13 +62,11 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
      *
      * @param energyCapacity The capacity of the energy storage
      * @param ioRate The maximum amount of energy that can be inserted or extracted per tick
-     * @param externalInsertion Whether the energy storage can be inserted into from outside
-     * @param externalExtraction Whether the energy storage can be extracted from outside
      * @return The newly created energy storage
      */
     @Contract(pure = true)
-    static @NotNull MachineEnergyStorage create(long energyCapacity, long ioRate, boolean externalInsertion, boolean externalExtraction) {
-        return create(energyCapacity, ioRate, ioRate, externalInsertion, externalExtraction);
+    static @NotNull MachineEnergyStorage create(long energyCapacity, long ioRate) {
+        return create(energyCapacity, ioRate, ioRate);
     }
 
     /**
@@ -77,19 +75,27 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
      * @param energyCapacity the capacity of the energy storage
      * @param insertion the maximum amount of energy that can be inserted per tick
      * @param extraction the maximum amount of energy that can be extracted per tick
-     * @param externalInsertion whether the energy storage can be inserted into from outside
-     * @param externalExtraction whether the energy storage can be extracted from outside
      * @return the newly created energy storage
      */
     @Contract(pure = true)
-    static @NotNull MachineEnergyStorage create(long energyCapacity, long insertion, long extraction, boolean externalInsertion, boolean externalExtraction) {
-        if (energyCapacity == 0 || insertion == 0 || extraction == 0) return empty();
+    static @NotNull MachineEnergyStorage create(long energyCapacity, long insertion, long extraction) {
+        if (energyCapacity == 0) return empty();
 
         StoragePreconditions.notNegative(energyCapacity);
         StoragePreconditions.notNegative(insertion);
         StoragePreconditions.notNegative(extraction);
 
-        return new MachineEnergyStorageImpl(energyCapacity, insertion, extraction, externalInsertion, externalExtraction);
+        return new MachineEnergyStorageImpl(energyCapacity, insertion, extraction);
+    }
+
+    @Contract(pure = true)
+    static @NotNull Spec spec(long energyCapacity, long io) {
+        return spec(energyCapacity, io, io);
+    }
+
+    @Contract(pure = true)
+    static @NotNull Spec spec(long energyCapacity, long insertion, long extraction) {
+        return new Spec(energyCapacity, insertion, extraction);
     }
 
     /**
@@ -167,7 +173,7 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
     /**
      * Sets the energy stored to the given amount.
      *
-     * @param amount  The amount of energy to set the energy stored to
+     * @param amount The amount of energy to set the energy stored to
      * @param context The transaction context
      */
     void setEnergy(long amount, @Nullable TransactionContext context);
@@ -184,21 +190,35 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
      *
      * @param flow The resource flow
      */
-    @Nullable EnergyStorage createExposedStorage(@NotNull ResourceFlow flow);
+    @Nullable
+    EnergyStorage getExposedStorage(@NotNull ResourceFlow flow);
 
     /**
-     * {@return whether exposed storages can be inserted into}
+     * {@return the rate that external storages can insert into this storage}
      */
-    boolean canExposedInsert();
+    long externalInsertionRate();
 
     /**
-     * {@return whether exposed storages can be extracted from}
+     * {@return the rate that external storages can extract from this storage}
      */
-    boolean canExposedExtract();
+    long externalExtractionRate();
 
     /**
      * Sets the listener (called when the energy storage changes). Internal use only.
      */
     @ApiStatus.Internal
     void setListener(Runnable listener);
+
+    record Spec(long capacity, long insertion, long extraction) {
+        public Spec {
+            StoragePreconditions.notNegative(capacity);
+            StoragePreconditions.notNegative(insertion);
+            StoragePreconditions.notNegative(extraction);
+        }
+
+        public MachineEnergyStorage create() {
+            if (this.capacity == 0) return empty();
+            return new MachineEnergyStorageImpl(this.capacity, this.insertion, this.extraction);
+        }
+    }
 }

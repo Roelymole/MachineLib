@@ -44,14 +44,14 @@ import java.util.function.*;
  *
  * @see DeltaPacketSerializable
  */
-public abstract class MachineMenuData {
+public abstract class MenuData {
     /**
      * The data to be synchronized.
      */
     protected final List<DeltaPacketSerializable<? super RegistryFriendlyByteBuf, ?>> data;
     protected final int syncId;
 
-    protected MachineMenuData(int syncId) {
+    protected MenuData(int syncId) {
         this.syncId = syncId;
         this.data = new ArrayList<>();
     }

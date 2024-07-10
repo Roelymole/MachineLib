@@ -49,13 +49,23 @@ public class MachineState implements Serializable<ByteTag>, DeltaPacketSerializa
      */
     protected boolean powered = false;
 
-    public MachineState() {}
+    public MachineState() {
+    }
 
     /**
      * {@return the current status of the machine} Can be null if not set.
      */
     public @Nullable MachineStatus getStatus() {
         return this.status;
+    }
+
+    /**
+     * Sets the status of the machine.
+     *
+     * @param status the status to set for the machine.
+     */
+    public void setStatus(@Nullable MachineStatus status) {
+        this.status = status;
     }
 
     @Override
@@ -96,15 +106,6 @@ public class MachineState implements Serializable<ByteTag>, DeltaPacketSerializa
      */
     public @NotNull Component getStatusText(@NotNull RedstoneMode activation) {
         return activation.isActive(this.powered) ? this.status != null ? this.status.getText() : Component.translatable(Constant.TranslationKey.UNKNOWN_STATUS).withStyle(ChatFormatting.GRAY) : Component.translatable(Constant.TranslationKey.DISABLED).withStyle(ChatFormatting.RED);
-    }
-
-    /**
-     * Sets the status of the machine.
-     *
-     * @param status the status to set for the machine.
-     */
-    public void setStatus(@Nullable MachineStatus status) {
-        this.status = status;
     }
 
     /**

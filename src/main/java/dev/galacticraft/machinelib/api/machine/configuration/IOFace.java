@@ -23,25 +23,16 @@
 package dev.galacticraft.machinelib.api.machine.configuration;
 
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.misc.Equivalent;
 import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
-import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
-import team.reborn.energy.api.EnergyStorage;
 
 /**
  * Represents a face of a {@link MachineBlockEntity} that has been configured to
@@ -68,6 +59,21 @@ public class IOFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf
         this.flow = flow;
     }
 
+    @VisibleForTesting
+    public static byte pack(ResourceType type, ResourceFlow flow) {
+        return (byte) (flow.getId() << 3 | type.getId());
+    }
+
+    @VisibleForTesting
+    public static ResourceFlow unpackFlow(byte packed) {
+        return ResourceFlow.getFromId((byte) (packed >> 3));
+    }
+
+    @VisibleForTesting
+    public static ResourceType unpackType(byte packed) {
+        return ResourceType.getFromId((byte) (packed & 0b111));
+    }
+
     /**
      * {@return the type of resource this face is configured to accept}
      */
@@ -85,33 +91,13 @@ public class IOFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf
 
     /**
      * Sets the type and flow of this face.
+     *
      * @param type the resource type to accept
      * @param flow the flow direction of this face
      */
     public void setOption(@NotNull ResourceType type, @NotNull ResourceFlow flow) {
         this.type = type;
         this.flow = flow;
-    }
-
-    /**
-     * {@return an exposed item storage configured for this face}
-     */
-    public @Nullable ExposedStorage<Item, ItemVariant> getExposedItemStorage(@NotNull StorageProvider<Item, ItemVariant> provider) {
-        return null;
-    }
-
-    /**
-     * {@return an exposed fluid storage configured for this face}
-     */
-    public @Nullable ExposedStorage<Fluid, FluidVariant> getExposedFluidStorage(@NotNull StorageProvider<Fluid, FluidVariant> provider) {
-        return null;
-    }
-
-    /**
-     * {@return an exposed energy storage configured for this face}
-     */
-    public @Nullable EnergyStorage getExposedEnergyStorage(@NotNull MachineEnergyStorage storage) {
-        return null;
     }
 
     @Override
@@ -148,25 +134,5 @@ public class IOFace implements Serializable<ByteTag>, PacketSerializable<ByteBuf
     public void copyInto(@NotNull IOFace other) {
         other.type = this.type;
         other.flow = this.flow;
-    }
-
-    @VisibleForTesting
-    public static byte pack(ResourceType type, ResourceFlow flow) {
-        return (byte) (flow.getId() << 3 | type.getId());
-    }
-
-    @VisibleForTesting
-    public static ResourceFlow unpackFlow(byte packed) {
-        return ResourceFlow.getFromId((byte) (packed >> 3));
-    }
-
-    @VisibleForTesting
-    public static ResourceType unpackType(byte packed) {
-        return ResourceType.getFromId((byte) (packed & 0b111));
-    }
-
-    @FunctionalInterface
-    public interface StorageProvider<Resource, Variant extends TransferVariant<Resource>> {
-        ExposedStorage<Resource, Variant> createExposedStorage(@NotNull ResourceFlow flow);
     }
 }

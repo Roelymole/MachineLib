@@ -23,7 +23,6 @@
 package dev.galacticraft.machinelib.testmod;
 
 import dev.galacticraft.machinelib.testmod.block.TestModBlocks;
-import dev.galacticraft.machinelib.testmod.block.TestModMachineTypes;
 import dev.galacticraft.machinelib.testmod.block.entity.TestModBlockEntityTypes;
 import dev.galacticraft.machinelib.testmod.item.TestModItems;
 import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
@@ -37,6 +36,5 @@ public class TestMod implements ModInitializer {
         TestModItems.register();
         TestModBlockEntityTypes.register();
         TestModMenuTypes.register();
-        TestModMachineTypes.initialize();
     }
 }

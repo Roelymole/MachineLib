@@ -32,10 +32,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a storage for fluids in a machine.
+ *
  * @see ResourceStorage
  */
 public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourceSlot> {
@@ -44,23 +46,47 @@ public interface MachineFluidStorage extends ResourceStorage<Fluid, FluidResourc
         return new MachineFluidStorageImpl(slots);
     }
 
-    static @NotNull Supplier<MachineFluidStorage> of(FluidResourceSlot.Spec @NotNull ... slots) {
-        if (slots.length == 0) return MachineFluidStorage::empty;
-        return () -> {
-            FluidResourceSlot[] slots1 = new FluidResourceSlot[slots.length];
-            for (int i = 0; i < slots.length; i++) {
-                slots1[i] = slots[i].build();
-            }
-            return new MachineFluidStorageImpl(slots1);
-        };
+    static @NotNull MachineFluidStorage.Spec spec(FluidResourceSlot.Spec @NotNull ... slots) {
+        if (slots.length == 0) throw new IllegalArgumentException("Cannot create a storage with no slots");
+        return new Spec(List.of(slots));
     }
 
-    // overridden to set the variant type
-    @Override
-    @Nullable ExposedStorage<Fluid, FluidVariant> createExposedStorage(@NotNull ResourceFlow flow);
+    static @NotNull Spec spec() {
+        return new Spec();
+    }
 
     @Contract(pure = true)
     static @NotNull MachineFluidStorage empty() {
         return MachineFluidStorageImpl.EMPTY;
+    }
+
+    // overridden to set the variant type
+    @Override
+    @Nullable
+    ExposedStorage<Fluid, FluidVariant> getExposedStorage(@NotNull ResourceFlow flow);
+
+    class Spec {
+        private final List<FluidResourceSlot.Spec> slots;
+
+        private Spec() {
+            this(new ArrayList<>());
+        }
+
+        public Spec(List<FluidResourceSlot.Spec> slots) {
+            this.slots = slots;
+        }
+
+        public Spec add(FluidResourceSlot.Spec slot) {
+            this.slots.add(slot);
+            return this;
+        }
+
+        public MachineFluidStorage create() {
+            FluidResourceSlot[] slots1 = new FluidResourceSlot[this.slots.size()];
+            for (int i = 0; i < this.slots.size(); i++) {
+                slots1[i] = this.slots.get(i).create();
+            }
+            return new MachineFluidStorageImpl(slots1);
+        }
     }
 }
