@@ -31,9 +31,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -46,10 +46,10 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A machine block entity that processes recipes.
  *
- * @param <C> The type of inventory the recipe type uses.
+ * @param <I> The type of inventory the recipe type uses.
  * @param <R> The type of recipe the machine uses.
  */
-public abstract class RecipeMachineBlockEntity<C extends Container, R extends Recipe<C>> extends MachineBlockEntity {
+public abstract class RecipeMachineBlockEntity<I extends RecipeInput, R extends Recipe<I>> extends MachineBlockEntity {
     /**
      * The type of recipe that this machine processes.
      */
@@ -93,7 +93,7 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
      * @param state The block state of the machine.
      * @param recipeType The type of recipe to be processed.
      */
-    protected RecipeMachineBlockEntity(@NotNull BlockEntityType<? extends RecipeMachineBlockEntity<C, R>> type, @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType,
+    protected RecipeMachineBlockEntity(@NotNull BlockEntityType<? extends RecipeMachineBlockEntity<I, R>> type, @NotNull BlockPos pos, BlockState state, @NotNull RecipeType<R> recipeType,
                                        StorageSpec spec) {
         super(type, pos, state, spec);
         this.recipeType = recipeType;
@@ -106,7 +106,7 @@ public abstract class RecipeMachineBlockEntity<C extends Container, R extends Re
      * @return The crafting inventory of the machine.
      */
     @Contract(pure = true)
-    protected abstract @NotNull C craftingInv();
+    protected abstract @NotNull I craftingInv();
 
     /**
      * Inserts the active recipe's output into the machine's inventory.

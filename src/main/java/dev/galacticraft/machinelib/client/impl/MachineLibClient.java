@@ -59,7 +59,7 @@ public final class MachineLibClient implements ClientModInitializer {
                             throw new RuntimeException(ex);
                         }
                         String path = entry.getKey().getPath();
-                        return new Pair<>(new ResourceLocation(entry.getKey().getNamespace(), path.substring(path.indexOf('/') + 1, path.lastIndexOf('.'))), element);
+                        return new Pair<>(ResourceLocation.fromNamespaceAndPath(entry.getKey().getNamespace(), path.substring(path.indexOf('/') + 1, path.lastIndexOf('.'))), element);
                     }, executor))
                     .map(CompletableFuture::join)
                     .filter(pair -> pair.getSecond().isJsonObject() && pair.getSecond().getAsJsonObject().has(MachineModelRegistry.MARKER))

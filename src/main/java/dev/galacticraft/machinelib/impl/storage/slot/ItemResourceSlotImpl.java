@@ -174,7 +174,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         }
 
         this.set(
-                BuiltInRegistries.ITEM.get(new ResourceLocation(tag.getString(RESOURCE_KEY))),
+                BuiltInRegistries.ITEM.get(ResourceLocation.parse(tag.getString(RESOURCE_KEY))),
                 tag.contains(COMPONENTS_KEY) ? DataComponentPatch.CODEC.parse(NbtOps.INSTANCE, tag.get(COMPONENTS_KEY)).getOrThrow() : DataComponentPatch.EMPTY,
                 tag.getInt(AMOUNT_KEY)
         );
@@ -184,7 +184,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
             if (!list.isEmpty()) {
                 this.recipes = new HashSet<>(list.size());
                 for (int i = 0; i < list.size(); i++) {
-                    this.recipes.add(new ResourceLocation(list.getString(i)));
+                    this.recipes.add(ResourceLocation.parse(list.getString(i)));
                 }
             }
         }
@@ -208,7 +208,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         if (amount == 0) {
             this.setEmpty();
         } else {
-            Item resource = BuiltInRegistries.ITEM.get(new ResourceLocation(buf.readUtf()));
+            Item resource = BuiltInRegistries.ITEM.get(ResourceLocation.parse(buf.readUtf()));
             DataComponentPatch tag = DataComponentPatch.STREAM_CODEC.decode(buf);
             this.set(resource, tag, amount);
         }

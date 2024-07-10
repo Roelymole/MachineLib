@@ -27,7 +27,6 @@ import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelResolver;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -46,10 +45,9 @@ public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<M
         assert this.data != null;
         JsonObject json = this.data.remove(context.id());
         if (json != null) {
-            MachineUnbakedModel model = new MachineUnbakedModel(MachineModelRegistry.getProviderFactory(new ResourceLocation(GsonHelper.getAsString(json, MachineModelRegistry.MARKER))),
+            MachineUnbakedModel model = new MachineUnbakedModel(MachineModelRegistry.getProviderFactory(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER))),
                     json.getAsJsonObject("sprites"));
-            this.pendingItemModels.put(new ResourceLocation(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
-            context.getOrLoadModel(new ModelResourceLocation(context.id().getNamespace(), context.id().getPath().replace("machine/", ""), "inventory"));
+            this.pendingItemModels.put(ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
             return model;
         }
         return this.pendingItemModels.remove(context.id());

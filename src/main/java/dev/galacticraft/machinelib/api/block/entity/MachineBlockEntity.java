@@ -22,7 +22,6 @@
 
 package dev.galacticraft.machinelib.api.block.entity;
 
-import dev.galacticraft.machinelib.api.block.MachineBlock;
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
@@ -34,7 +33,6 @@ import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
-import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -69,10 +67,6 @@ import java.util.Objects;
  * <p>
  * This class handles three different types of storage and IO configurations:
  * {@link MachineEnergyStorage energy}, {@link MachineItemStorage item} and {@link MachineFluidStorage fluid} storage.
- *
- * @see MachineBlock
- * @see MachineMenu
- * @see MachineScreen
  */
 public abstract class MachineBlockEntity extends ConfiguredBlockEntity implements RenderDataBlockEntity {
     private final @NotNull MachineItemStorage itemStorage;

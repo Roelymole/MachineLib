@@ -37,6 +37,6 @@ public interface Constant {
 
     @Contract("_ -> new")
     static @NotNull ResourceLocation id(@NotNull String id) {
-        return new ResourceLocation(MOD_ID, id);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, id);
     }
 }

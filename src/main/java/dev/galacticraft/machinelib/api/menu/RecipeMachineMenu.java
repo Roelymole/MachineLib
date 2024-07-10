@@ -25,11 +25,11 @@ package dev.galacticraft.machinelib.api.menu;
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -37,10 +37,10 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <Machine> The type of machine block entity
  * @param <R> The type of recipe the machine processes
- * @param <C> The type of storage the recipe uses
+ * @param <I> The type of storage the recipe uses
  * @see MachineMenu
  */
-public abstract class RecipeMachineMenu<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> extends MachineMenu<Machine> {
+public abstract class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machine extends RecipeMachineBlockEntity<I, R>> extends MachineMenu<Machine> {
     /**
      * The amount of progress the machine has made in crafting a recipe.
      * Counts from zero to {@link #maxProgress}, if {@link #maxProgress} > 0.
@@ -59,7 +59,7 @@ public abstract class RecipeMachineMenu<C extends Container, R extends Recipe<C>
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
      */
-    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<C, R, Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
+    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
         super(type, syncId, player, machine);
     }
 
@@ -71,7 +71,7 @@ public abstract class RecipeMachineMenu<C extends Container, R extends Recipe<C>
      * @param buf The data buffer containing the information needed to initialize the menu.
      * @param type The type of machine associated with this menu.
      */
-    protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<C, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
+    protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
         super(type, syncId, inventory, buf);
     }
 

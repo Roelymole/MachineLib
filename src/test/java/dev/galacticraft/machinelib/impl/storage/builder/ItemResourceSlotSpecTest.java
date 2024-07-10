@@ -56,7 +56,7 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
 
     @Test
     void icon() {
-        Pair<ResourceLocation, ResourceLocation> icon = new Pair<>(new ResourceLocation("null"), new ResourceLocation("null"));
+        Pair<ResourceLocation, ResourceLocation> icon = new Pair<>(ResourceLocation.withDefaultNamespace("null"), ResourceLocation.withDefaultNamespace("null"));
         ItemResourceSlot slot = spec.icon(icon).create();
 
         assertEquals(icon, slot.getDisplay().icon());

@@ -289,7 +289,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         private final TextureAtlasSprite machine;
 
         public FrontFaceSpriteProvider(@NotNull JsonObject json, @NotNull Function<Material, TextureAtlasSprite> atlas) {
-            this.sprite = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(GsonHelper.getAsString(json, "sprite"))));
+            this.sprite = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(GsonHelper.getAsString(json, "sprite"))));
             this.machineSide = atlas.apply(MACHINE_SIDE);
             this.machine = atlas.apply(MACHINE);
         }
@@ -306,7 +306,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         private final TextureAtlasSprite sprite;
 
         public SingleSpriteProvider(@NotNull JsonObject json, @NotNull Function<Material, TextureAtlasSprite> atlas) {
-            this.sprite = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(GsonHelper.getAsString(json, "sprite"))));
+            this.sprite = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(GsonHelper.getAsString(json, "sprite"))));
         }
 
         @Override
@@ -324,10 +324,10 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
         public ZAxisSpriteProvider(@NotNull JsonObject json, @NotNull Function<Material, TextureAtlasSprite> atlas) {
             if (json.has("sprite")) {
-                this.front = this.back = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(GsonHelper.getAsString(json, "sprite"))));
+                this.front = this.back = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(GsonHelper.getAsString(json, "sprite"))));
             } else {
-                this.front = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(GsonHelper.getAsString(json, "front"))));
-                this.back = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(GsonHelper.getAsString(json, "back"))));
+                this.front = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(GsonHelper.getAsString(json, "front"))));
+                this.back = atlas.apply(new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.parse(GsonHelper.getAsString(json, "back"))));
             }
             this.sided = GsonHelper.getAsBoolean(json, "sided");
             this.machineSide = atlas.apply(MACHINE_SIDE);

@@ -30,9 +30,9 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestGenerator;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
@@ -42,26 +42,26 @@ import java.util.List;
 /**
  * Provides a base implementation for testing recipe-based machines.
  *
- * @param <C> the type of container used by the recipe
+ * @param <I> the type of container used by the recipe
  * @param <R> the type of recipe used by the recipe
  * @param <Machine> the type of machine used in the game test
  * @see RecipeMachineBlockEntity
  */
-public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, Machine extends RecipeMachineBlockEntity<C, R>> extends MachineGameTest<Machine> {
+public abstract class RecipeGameTest<I extends RecipeInput, R extends Recipe<I>, Machine extends RecipeMachineBlockEntity<I, R>> extends MachineGameTest<Machine> {
     protected final int recipeRuntime;
     private final int outputSlotsStart;
     private final int outputSlotsLength;
-    private final List<IngredientSupplier<C, R, Machine>> conditions;
+    private final List<IngredientSupplier<I, R, Machine>> conditions;
 
-    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<C, R, Machine>> conditions, int recipeRuntime) {
+    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<I, R, Machine>> conditions, int recipeRuntime) {
         this(block, conditions, -1, 0, recipeRuntime);
     }
 
-    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<C, R, Machine>> conditions, int outputSlot, int recipeRuntime) {
+    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<I, R, Machine>> conditions, int outputSlot, int recipeRuntime) {
         this(block, conditions, outputSlot, 1, recipeRuntime);
     }
 
-    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<C, R, Machine>> conditions, int outputSlotsStart, int outputSlotsLength, int recipeRuntime) {
+    protected RecipeGameTest(@NotNull Block block, List<IngredientSupplier<I, R, Machine>> conditions, int outputSlotsStart, int outputSlotsLength, int recipeRuntime) {
         super(block);
 
         this.outputSlotsStart = outputSlotsStart;
@@ -84,7 +84,7 @@ public abstract class RecipeGameTest<C extends Container, R extends Recipe<C>, M
     }
 
     protected void fulfillRunConditions(Machine machine) {
-        for (IngredientSupplier<C, R, Machine> condition : this.conditions) {
+        for (IngredientSupplier<I, R, Machine> condition : this.conditions) {
             condition.supplyIngredient(machine);
         }
     }

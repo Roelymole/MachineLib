@@ -41,7 +41,7 @@ public interface Constant {
 
     @Contract(pure = true, value = "_ -> new")
     static @NotNull ResourceLocation id(@NotNull String s) {
-        return new ResourceLocation(MOD_ID, s);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, s);
     }
 
     interface Text {

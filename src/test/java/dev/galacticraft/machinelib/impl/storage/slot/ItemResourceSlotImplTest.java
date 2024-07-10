@@ -111,7 +111,7 @@ class ItemResourceSlotImplTest extends ResourceSlotImplTest<Item, ItemResourceSl
 
     @Nested
     class Recipes {
-        private static final ResourceLocation recipe = new ResourceLocation("test");
+        private static final ResourceLocation recipe = ResourceLocation.withDefaultNamespace("test");
 
         @BeforeEach
         void fillHalf() {

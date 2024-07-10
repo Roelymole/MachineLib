@@ -26,11 +26,11 @@ import dev.galacticraft.machinelib.api.storage.SlottedStorageAccess;
 import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,14 +40,14 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A machine block entity that processes recipes.
  *
- * @param <C> The type of inventory the recipe type uses.
+ * @param <I> The type of inventory the recipe type uses.
  * @param <R> The type of recipe the machine uses.
  */
-public abstract class BasicRecipeMachineBlockEntity<C extends Container, R extends Recipe<C>> extends RecipeMachineBlockEntity<C, R> {
+public abstract class BasicRecipeMachineBlockEntity<I extends RecipeInput, R extends Recipe<I>> extends RecipeMachineBlockEntity<I, R> {
     /**
      * An inventory for use in finding vanilla recipes for this machine.
      */
-    protected final @NotNull C craftingInv;
+    protected final @NotNull I craftingInv;
 
     protected final SlottedStorageAccess<Item, ItemResourceSlot> inputSlots;
     protected final SlottedStorageAccess<Item, ItemResourceSlot> outputSlots;
@@ -62,7 +62,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      * @param inputSlot The index of the recipe input slot.
      * @param outputSlot The index of the recipe output slot.
      */
-    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<I, R>> type,
                                             BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlot, int outputSlot) {
         this(type, pos, state, recipeType, spec, inputSlot, 1, outputSlot);
     }
@@ -78,7 +78,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      * @param inputSlotsLen The number of recipe input slots.
      * @param outputSlot The index of the recipe output slot.
      */
-    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<I, R>> type,
                                             BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlots, int inputSlotsLen, int outputSlot) {
         this(type, pos, state, recipeType, spec, inputSlots, inputSlotsLen, outputSlot, 1);
     }
@@ -95,7 +95,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      * @param outputSlots The index of the first recipe output slot.
      * @param outputSlotsLen The number of recipe output slots.
      */
-    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<C, R>> type,
+    protected BasicRecipeMachineBlockEntity(BlockEntityType<? extends BasicRecipeMachineBlockEntity<I, R>> type,
                                             BlockPos pos, BlockState state, RecipeType<R> recipeType, StorageSpec spec, int inputSlots, int inputSlotsLen, int outputSlots, int outputSlotsLen) {
         super(type, pos, state, recipeType, spec);
 
@@ -105,7 +105,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
         this.craftingInv = this.createCraftingInv();
     }
 
-    protected abstract C createCraftingInv();
+    protected abstract I createCraftingInv();
 
     /**
      * Creates an inventory for use in finding vanilla recipes for this machine.
@@ -115,7 +115,7 @@ public abstract class BasicRecipeMachineBlockEntity<C extends Container, R exten
      */
     @Override
     @Contract(pure = true)
-    protected @NotNull C craftingInv() {
+    protected @NotNull I craftingInv() {
         return this.craftingInv;
     }
 

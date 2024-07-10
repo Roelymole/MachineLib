@@ -63,7 +63,7 @@ public final class MachineUnbakedModel implements UnbakedModel {
     }
 
     @Override
-    public BakedModel bake(ModelBaker modelBaker, Function<Material, TextureAtlasSprite> function, ModelState modelState, ResourceLocation resourceLocation) {
-        return new MachineBakedModel(this.factory, this.spriteInfo, function);
+    public @NotNull BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer) {
+        return new MachineBakedModel(this.factory, this.spriteInfo, textureGetter);
     }
 }

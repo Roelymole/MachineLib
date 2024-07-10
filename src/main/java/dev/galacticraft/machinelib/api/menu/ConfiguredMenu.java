@@ -38,7 +38,6 @@ import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.client.api.screen.Tank;
 import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
 import net.minecraft.network.RegistryFriendlyByteBuf;

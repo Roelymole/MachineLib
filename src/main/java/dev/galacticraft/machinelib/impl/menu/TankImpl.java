@@ -22,10 +22,10 @@
 
 package dev.galacticraft.machinelib.impl.menu;
 
+import dev.galacticraft.machinelib.api.menu.Tank;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
-import dev.galacticraft.machinelib.client.api.screen.Tank;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;

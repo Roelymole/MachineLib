@@ -84,7 +84,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (tag.isEmpty()) {
             this.setEmpty();
         } else {
-            this.set(BuiltInRegistries.FLUID.get(new ResourceLocation(tag.getString(RESOURCE_KEY))),
+            this.set(BuiltInRegistries.FLUID.get(ResourceLocation.parse(tag.getString(RESOURCE_KEY))),
                     tag.contains(COMPONENTS_KEY, Tag.TAG_COMPOUND) ? DataComponentPatch.CODEC.decode(NbtOps.INSTANCE, tag.getCompound(COMPONENTS_KEY)).getOrThrow().getFirst() : DataComponentPatch.EMPTY,
                     tag.getLong(AMOUNT_KEY)
             );
@@ -109,7 +109,7 @@ public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements Fl
         if (amount == 0) {
             this.setEmpty();
         } else {
-            Fluid resource = BuiltInRegistries.FLUID.get(new ResourceLocation(buf.readUtf()));
+            Fluid resource = BuiltInRegistries.FLUID.get(ResourceLocation.parse(buf.readUtf()));
             DataComponentPatch components = DataComponentPatch.STREAM_CODEC.decode(buf);
             this.set(resource, components, amount);
         }

@@ -32,6 +32,7 @@ import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
 import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.menu.Tank;
 import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
@@ -92,10 +93,10 @@ import static dev.galacticraft.machinelib.impl.Constant.TextureCoordinate.*;
 public class MachineScreen<Machine extends MachineBlockEntity, Menu extends MachineMenu<Machine>> extends AbstractContainerScreen<Menu> {
     private static final ItemStack REDSTONE = new ItemStack(Items.REDSTONE);
     private static final ItemStack GUNPOWDER = new ItemStack(Items.GUNPOWDER);
-    private static final ItemStack UNLIT_TORCH = new ItemStack(getOptionalItem(new ResourceLocation("galacticraft", "unlit_torch"), Items.TORCH));
+    private static final ItemStack UNLIT_TORCH = new ItemStack(getOptionalItem(ResourceLocation.fromNamespaceAndPath("galacticraft", "unlit_torch"), Items.TORCH));
     private static final ItemStack REDSTONE_TORCH = new ItemStack(Items.REDSTONE_TORCH);
-    private static final ItemStack WRENCH = new ItemStack(getOptionalItem(new ResourceLocation("galacticraft", "standard_wrench"), Items.HOPPER));
-    private static final ItemStack ALUMINUM_WIRE = new ItemStack(getOptionalItem(new ResourceLocation("galacticraft", "aluminum_wire"), Items.MOJANG_BANNER_PATTERN));
+    private static final ItemStack WRENCH = new ItemStack(getOptionalItem(ResourceLocation.fromNamespaceAndPath("galacticraft", "standard_wrench"), Items.HOPPER));
+    private static final ItemStack ALUMINUM_WIRE = new ItemStack(getOptionalItem(ResourceLocation.fromNamespaceAndPath("galacticraft", "aluminum_wire"), Items.MOJANG_BANNER_PATTERN));
     private static final ItemStack IRON_CHESTPLATE = new ItemStack(Items.IRON_CHESTPLATE);
 
     private static final int SPACING = 4;

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.api.screen;
+package dev.galacticraft.machinelib.api.menu;
 
 import com.google.common.base.Preconditions;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
