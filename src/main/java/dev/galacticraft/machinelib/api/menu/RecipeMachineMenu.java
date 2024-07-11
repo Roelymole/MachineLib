@@ -40,7 +40,7 @@ import org.jetbrains.annotations.NotNull;
  * @param <I> The type of storage the recipe uses
  * @see MachineMenu
  */
-public abstract class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machine extends RecipeMachineBlockEntity<I, R>> extends MachineMenu<Machine> {
+public class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machine extends RecipeMachineBlockEntity<I, R>> extends MachineMenu<Machine> {
     /**
      * The amount of progress the machine has made in crafting a recipe.
      * Counts from zero to {@link #maxProgress}, if {@link #maxProgress} > 0.
@@ -55,6 +55,7 @@ public abstract class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<
     /**
      * Constructs a new recipe menu.
      *
+     * @param type The type of machine associated with this menu.
      * @param syncId The sync id for this menu.
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
@@ -66,13 +67,27 @@ public abstract class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<
     /**
      * Constructs a new recipe menu for a machine.
      *
+     * @param type The type of machine associated with this menu.
      * @param syncId The sync id for this menu.
      * @param inventory The inventory of the player interacting with this menu.
      * @param buf The data buffer containing the information needed to initialize the menu.
-     * @param type The type of machine associated with this menu.
      */
     protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
         super(type, syncId, inventory, buf);
+    }
+
+    /**
+     * Constructs a new recipe menu for a machine.
+     *
+     * @param type The type of machine associated with this menu.
+     * @param syncId The sync id for this menu.
+     * @param inventory The inventory of the player interacting with this menu.
+     * @param buf The data buffer containing the information needed to initialize the menu.
+     * @param invX The x position of the inventory in the menu.
+     * @param invY The y position of the inventory in the menu.
+     */
+    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY) {
+        super(type, syncId, inventory, buf, invX, invY);
     }
 
     @Override

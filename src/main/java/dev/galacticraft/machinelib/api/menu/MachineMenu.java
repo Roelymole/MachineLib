@@ -61,6 +61,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
      * Constructs a new menu for a machine.
      * Called on the logical server
      *
+     * @param type The type of menu this is.
      * @param syncId The sync id for this menu.
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
@@ -82,10 +83,10 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
      * Called on the logical client.
      * You must add the player inventory slots manually.
      *
+     * @param type The type of menu this is.
      * @param syncId The sync id for this menu.
      * @param buf The synchronization buffer from the server.
      * @param inventory The inventory of the player interacting with this menu.
-     * @param type The type of menu this is.
      */
     protected MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
         super(type, syncId, inventory, buf);

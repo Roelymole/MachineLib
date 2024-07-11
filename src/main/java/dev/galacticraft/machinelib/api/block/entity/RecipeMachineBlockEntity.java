@@ -302,13 +302,13 @@ public abstract class RecipeMachineBlockEntity<I extends RecipeInput, R extends 
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider lookup) {
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
         super.saveAdditional(tag, lookup);
         tag.putInt(Constant.Nbt.PROGRESS, this.getProgress());
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider lookup) {
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
         super.loadAdditional(tag, lookup);
         this.progress = tag.getInt(Constant.Nbt.PROGRESS);
     }

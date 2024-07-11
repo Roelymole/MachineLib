@@ -22,11 +22,11 @@
 
 package dev.galacticraft.machinelib.api.menu;
 
+import dev.architectury.utils.value.FloatSupplier;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
-import dev.galacticraft.machinelib.impl.menu.sync.EnumPacketSerializable;
-import dev.galacticraft.machinelib.impl.menu.sync.IntPacketSerializable;
-import dev.galacticraft.machinelib.impl.menu.sync.LongPacketSerializable;
-import dev.galacticraft.machinelib.impl.menu.sync.StreamCodecPacketSerializable;
+import dev.galacticraft.machinelib.impl.menu.sync.*;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import it.unimi.dsi.fastutil.floats.FloatConsumer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.ApiStatus;
@@ -79,6 +79,36 @@ public abstract class MenuData {
     }
 
     /**
+     * Registers a byte field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerBoolean(BooleanSupplier getter, BooleanConsumer setter) {
+        this.register(new BytePacketSerializable(() -> getter.getAsBoolean() ? 1 : 0, b -> setter.accept(b != 0)));
+    }
+
+    /**
+     * Registers a byte field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerByte(IntSupplier getter, IntConsumer setter) {
+        this.register(new BytePacketSerializable(getter, setter));
+    }
+
+    /**
+     * Registers a short field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerShort(IntSupplier getter, IntConsumer setter) {
+        this.register(new ShortPacketSerializable(getter, setter));
+    }
+
+    /**
      * Registers an integer field to be synchronized.
      *
      * @param getter provides the current value of the data
@@ -86,6 +116,36 @@ public abstract class MenuData {
      */
     public void registerInt(IntSupplier getter, IntConsumer setter) {
         this.register(new IntPacketSerializable(getter, setter));
+    }
+
+    /**
+     * Registers a long field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerLong(LongSupplier getter, LongConsumer setter) {
+        this.register(new LongPacketSerializable(getter, setter));
+    }
+
+    /**
+     * Registers a float field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerFloat(FloatSupplier getter, FloatConsumer setter) {
+        this.register(new FloatPacketSerializable(getter, setter));
+    }
+
+    /**
+     * Registers a double field to be synchronized.
+     *
+     * @param getter provides the current value of the data
+     * @param setter sets the value of the data
+     */
+    public void registerDouble(DoubleSupplier getter, DoubleConsumer setter) {
+        this.register(new DoublePacketSerializable(getter, setter));
     }
 
     /**
@@ -101,13 +161,13 @@ public abstract class MenuData {
     }
 
     /**
-     * Registers a long field to be synchronized.
+     * Registers an array of booleans to be synchronized.
      *
-     * @param getter provides the current value of the data
-     * @param setter sets the value of the data
+     * @param source the source array
+     * @param dest the destination array
      */
-    public void registerLong(LongSupplier getter, LongConsumer setter) {
-        this.register(new LongPacketSerializable(getter, setter));
+    public void registerBits(int len, boolean[] source, boolean[] dest) {
+        this.register(new BitsPacketSerializable(len, source, dest));
     }
 
     @ApiStatus.Internal
