@@ -24,8 +24,8 @@ package dev.galacticraft.machinelib.api.storage;
 
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.storage.MachineItemStorageImpl;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.component.DataComponentPatch;
@@ -95,12 +95,12 @@ public interface MachineItemStorage extends ResourceStorage<Item, ItemResourceSl
         }
 
         @Contract("_, _, _ -> this")
-        public @NotNull MachineItemStorage.Spec add3x3Grid(InputType type, int xOffset, int yOffset) {
+        public @NotNull MachineItemStorage.Spec add3x3Grid(TransferType type, int xOffset, int yOffset) {
             return this.addGrid(type, xOffset, yOffset, 3, 3);
         }
 
         @Contract("_, _, _, _, _ -> this")
-        public @NotNull MachineItemStorage.Spec addGrid(InputType type, int xOffset, int yOffset, int width, int height) {
+        public @NotNull MachineItemStorage.Spec addGrid(TransferType type, int xOffset, int yOffset, int width, int height) {
             assert width > 0 && height > 0;
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {

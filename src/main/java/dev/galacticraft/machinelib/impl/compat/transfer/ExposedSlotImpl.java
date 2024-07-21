@@ -42,8 +42,8 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
 
     public ExposedSlotImpl(@NotNull ResourceSlot<Resource> slot, @NotNull ResourceFlow flow) {
         this.slot = slot;
-        this.insertion = slot.inputType().externalInsertion() && flow == ResourceFlow.INPUT || flow == ResourceFlow.BOTH;
-        this.extraction = slot.inputType().externalExtraction() && flow == ResourceFlow.OUTPUT || flow == ResourceFlow.BOTH;
+        this.insertion = slot.transferMode().externalInsertion() && flow == ResourceFlow.INPUT || flow == ResourceFlow.BOTH;
+        this.extraction = slot.transferMode().externalExtraction() && flow == ResourceFlow.OUTPUT || flow == ResourceFlow.BOTH;
     }
 
     protected abstract @NotNull Variant createVariant(@Nullable Resource resource, @NotNull DataComponentPatch components);

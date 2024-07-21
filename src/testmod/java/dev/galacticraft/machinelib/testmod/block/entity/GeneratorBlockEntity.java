@@ -31,13 +31,12 @@ import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.EnergySource;
 import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -55,11 +54,11 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
 
     public static final StorageSpec STORAGE_SPEC = StorageSpec.of(
             MachineItemStorage.spec(
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(8, 62)
                             .filter(ResourceFilters.CAN_INSERT_ENERGY)
                             .capacity(32),
-                    ItemResourceSlot.builder(InputType.INPUT)
+                    ItemResourceSlot.builder(TransferType.INPUT)
                             .pos(80, 49)
                             .filter((item, tag) -> {
                                 Integer time = FuelRegistry.INSTANCE.get(item);
@@ -111,7 +110,7 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
     }
 
     @Override
-    public @Nullable MachineMenu<GeneratorBlockEntity> openMenu(int syncId, Inventory inventory, Player player) {
-        return new MachineMenu<>(TestModMenuTypes.GENERATOR, syncId, (ServerPlayer) player, this);
+    public @Nullable MachineMenu<GeneratorBlockEntity> createMenu(int syncId, Inventory inventory, Player player) {
+        return new MachineMenu<>(TestModMenuTypes.GENERATOR, syncId, player, this);
     }
 }

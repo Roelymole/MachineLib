@@ -28,10 +28,10 @@ import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,7 +66,7 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
      */
-    public MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
+    public MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Player player, @NotNull Machine machine) {
         super(type, syncId, player, machine);
 
         this.itemStorage = machine.itemStorage();
@@ -85,11 +85,11 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
      *
      * @param type The type of menu this is.
      * @param syncId The sync id for this menu.
-     * @param buf The synchronization buffer from the server.
+     * @param pos the position of the block being opened
      * @param inventory The inventory of the player interacting with this menu.
      */
-    protected MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
-        super(type, syncId, inventory, buf);
+    protected MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos) {
+        super(type, syncId, inventory, pos);
 
         this.itemStorage = this.be.itemStorage();
         this.fluidStorage = this.be.fluidStorage();
@@ -99,8 +99,8 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
         this.generateTanks(this.fluidStorage);
     }
 
-    public MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY) {
-        this(type, syncId, inventory, buf);
+    public MachineMenu(MenuType<? extends MachineMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos, int invX, int invY) {
+        this(type, syncId, inventory, pos);
         this.addPlayerInventorySlots(inventory, invX, invY);
     }
 
@@ -128,18 +128,18 @@ public class MachineMenu<Machine extends MachineBlockEntity> extends ConfiguredM
         short bits = 0b0_000_000_000_000;
 
         for (FluidResourceSlot slot : this.fluidStorage) {
-            InputType inputType = slot.inputType();
-            if (inputType.externalInsertion()) bits |= 0b001;
-            if (inputType.externalExtraction()) bits |= 0b010;
+            TransferType transferType = slot.transferMode();
+            if (transferType.externalInsertion()) bits |= 0b001;
+            if (transferType.externalExtraction()) bits |= 0b010;
             if ((bits & 0b011) == 0b011) break;
         }
         if ((bits & 0b011) == 0b011) bits |= 0b100;
         bits <<= 3;
 
         for (ItemResourceSlot slot : this.itemStorage) {
-            InputType inputType = slot.inputType();
-            if (inputType.externalInsertion()) bits |= 0b001;
-            if (inputType.externalExtraction()) bits |= 0b010;
+            TransferType transferType = slot.transferMode();
+            if (transferType.externalInsertion()) bits |= 0b001;
+            if (transferType.externalExtraction()) bits |= 0b010;
             if ((bits & 0b011) == 0b011) break;
         }
         if ((bits & 0b011) == 0b011) bits |= 0b100;

@@ -26,7 +26,7 @@ import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
 import dev.galacticraft.machinelib.test.MinecraftTest;
 import dev.galacticraft.machinelib.test.util.Utils;
@@ -45,7 +45,7 @@ public class ItemStorageInsertionTests implements MinecraftTest {
 
     @BeforeEach
     public void setup() {
-        this.storage = MachineItemStorage.create(ItemResourceSlot.create(InputType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any()));
+        this.storage = MachineItemStorage.create(ItemResourceSlot.create(TransferType.STORAGE, ItemSlotDisplay.create(0, 0), ResourceFilters.any()));
     }
 
     @AfterEach

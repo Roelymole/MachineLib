@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
@@ -70,10 +70,10 @@ public class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machi
      * @param type The type of machine associated with this menu.
      * @param syncId The sync id for this menu.
      * @param inventory The inventory of the player interacting with this menu.
-     * @param buf The data buffer containing the information needed to initialize the menu.
+     * @param pos the position of the machine being opened
      */
-    protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
-        super(type, syncId, inventory, buf);
+    protected RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos) {
+        super(type, syncId, inventory, pos);
     }
 
     /**
@@ -82,12 +82,12 @@ public class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machi
      * @param type The type of machine associated with this menu.
      * @param syncId The sync id for this menu.
      * @param inventory The inventory of the player interacting with this menu.
-     * @param buf The data buffer containing the information needed to initialize the menu.
+     * @param pos the position of the machine being opened
      * @param invX The x position of the inventory in the menu.
      * @param invY The y position of the inventory in the menu.
      */
-    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY) {
-        super(type, syncId, inventory, buf, invX, invY);
+    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos, int invX, int invY) {
+        super(type, syncId, inventory, pos, invX, invY);
     }
 
     @Override

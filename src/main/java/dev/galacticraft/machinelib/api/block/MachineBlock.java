@@ -229,8 +229,7 @@ public abstract class MachineBlock extends BaseBlock {
 
                 security.tryUpdate(player);
                 if (security.hasAccess(player)) {
-                    player.openMenu(machine);
-                    return InteractionResult.CONSUME;
+                    return super.useWithoutItem(state, level, pos, player, hit);
                 }
             }
         }

@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.storage.builder;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.test.MinecraftTest;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.world.level.material.Fluids;
@@ -38,7 +38,7 @@ class FluidResourceSlotBuilderTest implements MinecraftTest {
 
     @BeforeEach
     void setup() {
-        this.spec = FluidResourceSlot.builder(InputType.STORAGE);
+        this.spec = FluidResourceSlot.builder(TransferType.STORAGE);
     }
 
     @Test

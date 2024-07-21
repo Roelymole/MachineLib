@@ -23,19 +23,18 @@
 package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.BaseBlockEntity;
-import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public class SynchronizedMenuType<BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> extends ExtendedScreenHandlerType<Menu, RegistryFriendlyByteBuf> {
+public class SynchronizedMenuType<BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> extends ExtendedScreenHandlerType<Menu, BlockPos> {
     private final Factory<BE, Menu> factory;
 
     protected SynchronizedMenuType(Factory<BE, Menu> factory) {
-        super((syncId, inventory, data) -> null, Utils.BUF_IDENTITY_CODEC);
+        super((syncId, inventory, data) -> null, BlockPos.STREAM_CODEC);
         this.factory = factory;
     }
 
@@ -56,19 +55,18 @@ public class SynchronizedMenuType<BE extends BaseBlockEntity, Menu extends Synch
 
     @Contract("_, _, _ -> new")
     public static <BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> @NotNull MenuType<Menu> create(InventoryFactory<BE, Menu> factory, int invX, int invY) {
-        return new SynchronizedMenuType<>((type, syncId, inventory, buf) -> factory.create(type, syncId, inventory, buf, invX, invY));
+        return new SynchronizedMenuType<>((type, syncId, inventory, pos) -> factory.create(type, syncId, inventory, pos, invX, invY));
     }
 
     @Contract(value = "_ -> new", pure = true)
-    public static <BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> @NotNull MenuType<Menu> create(ExtendedScreenHandlerType.ExtendedFactory<Menu, RegistryFriendlyByteBuf> factory) {
-        return new ExtendedScreenHandlerType<>(factory, Utils.BUF_IDENTITY_CODEC);
+    public static <BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> @NotNull MenuType<Menu> create(ExtendedScreenHandlerType.ExtendedFactory<Menu, BlockPos> factory) {
+        return new ExtendedScreenHandlerType<>(factory, BlockPos.STREAM_CODEC);
     }
 
     @Override
-    public Menu create(int syncId, Inventory inventory, RegistryFriendlyByteBuf data) {
-        Menu menu = this.factory.create(this, syncId, inventory, data);
+    public Menu create(int syncId, Inventory inventory, BlockPos pos) {
+        Menu menu = this.factory.create(this, syncId, inventory, pos);
         menu.registerData(menu.getData());
-        menu.getData().handleInitial(data);
         return menu;
     }
 
@@ -85,14 +83,14 @@ public class SynchronizedMenuType<BE extends BaseBlockEntity, Menu extends Synch
          *
          * @param syncId the synchronization ID of the menu
          * @param inventory the player's inventory
-         * @param buf the byte buffer containing data for the menu
+         * @param pos the position of the block being opened
          * @return the created menu
          */
-        Menu create(MenuType<Menu> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf);
+        Menu create(MenuType<Menu> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos);
     }
 
     @FunctionalInterface
     public interface InventoryFactory<BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> {
-        Menu create(MenuType<Menu> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf, int invX, int invY);
+        Menu create(MenuType<Menu> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos, int invX, int invY);
     }
 }

@@ -28,7 +28,7 @@ import dev.galacticraft.machinelib.api.misc.PacketSerializable;
 import dev.galacticraft.machinelib.api.misc.Serializable;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.StorageAccess;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -48,12 +48,10 @@ import org.jetbrains.annotations.VisibleForTesting;
  */
 public interface ResourceSlot<Resource> extends StorageAccess<Resource>, MutableModifiable, Serializable<CompoundTag>, PacketSerializable<RegistryFriendlyByteBuf> {
     /**
-     * The type of input this slot accepts.
-     * Governs in-world and player interactions.
-     *
-     * @return the type of input this slot accepts.
+     * {@return the way this slot is allowed to be interacted with}
+     * Governs in-world (block-to-block) and player (menu) interactions.
      */
-    InputType inputType();
+    TransferType transferMode();
 
     /**
      * {@return the resource stored in this slot} If the slot is empty, returns null.

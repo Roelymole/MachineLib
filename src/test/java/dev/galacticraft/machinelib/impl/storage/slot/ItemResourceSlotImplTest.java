@@ -23,7 +23,7 @@
 package dev.galacticraft.machinelib.impl.storage.slot;
 
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.test.util.Utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +46,7 @@ class ItemResourceSlotImplTest extends ResourceSlotImplTest<Item, ItemResourceSl
 
     @Override
     ItemResourceSlotImpl createSlot() {
-        return new ItemResourceSlotImpl(InputType.RECIPE_OUTPUT, null, ResourceFilters.any(), (int) CAPACITY);
+        return new ItemResourceSlotImpl(TransferType.OUTPUT, null, ResourceFilters.any(), (int) CAPACITY);
     }
 
     @Test

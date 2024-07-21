@@ -26,7 +26,6 @@ import dev.galacticraft.machinelib.api.block.entity.BaseBlockEntity;
 import dev.galacticraft.machinelib.client.impl.menu.MenuDataClient;
 import dev.galacticraft.machinelib.impl.menu.MenuDataImpl;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -80,14 +79,22 @@ public abstract class SynchronizedMenu<BE extends BaseBlockEntity> extends Abstr
      * @param player The player who is interacting with this menu.
      * @param be The machine this menu is for.
      */
-    public SynchronizedMenu(MenuType<? extends SynchronizedMenu<BE>> type, int syncId, @NotNull ServerPlayer player, @NotNull BE be) {
+    public SynchronizedMenu(MenuType<? extends SynchronizedMenu<BE>> type, int syncId, @NotNull Player player, @NotNull BE be) {
         super(type, syncId);
+        assert player instanceof ServerPlayer;
+
         this.be = be;
-        this.data = new MenuDataImpl(player, syncId);
+        this.data = new MenuDataImpl((ServerPlayer) player, syncId);
 
         this.player = player;
         this.playerInventory = player.getInventory();
         this.levelAccess = ContainerLevelAccess.create(be.getLevel(), be.getBlockPos());
+    }
+
+    @Override
+    public void sendAllDataToRemote() {
+        super.sendAllDataToRemote();
+        this.data.synchronizeFull();
     }
 
     /**
@@ -95,20 +102,19 @@ public abstract class SynchronizedMenu<BE extends BaseBlockEntity> extends Abstr
      * Called on the logical client
      *
      * @param syncId The sync id for this menu.
-     * @param buf The synchronization buffer from the server.
+     * @param pos the position of the block being opened
      * @param inventory The inventory of the player interacting with this menu.
      * @param type The type of menu this is.
      */
-    protected SynchronizedMenu(MenuType<? extends SynchronizedMenu<BE>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
+    protected SynchronizedMenu(MenuType<? extends SynchronizedMenu<BE>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos) {
         super(type, syncId);
 
         this.data = new MenuDataClient(syncId);
         this.player = inventory.player;
         this.playerInventory = inventory;
 
-        BlockPos blockPos = buf.readBlockPos();
-        this.be = (BE) inventory.player.level().getBlockEntity(blockPos);
-        this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), blockPos);
+        this.be = (BE) inventory.player.level().getBlockEntity(pos);
+        this.levelAccess = ContainerLevelAccess.create(inventory.player.level(), pos);
     }
 
     /**

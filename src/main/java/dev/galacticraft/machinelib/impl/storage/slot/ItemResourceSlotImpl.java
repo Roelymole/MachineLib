@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.storage.slot;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.impl.util.Utils;
 import net.fabricmc.fabric.api.lookup.v1.item.ItemApiLookup;
@@ -58,8 +58,8 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     private @Nullable ItemApiLookup<?, ContainerItemContext> cachedLookup = null;
     private @Nullable Object cachedApi = null;
 
-    public ItemResourceSlotImpl(@NotNull InputType inputType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> externalFilter, int capacity) {
-        super(inputType, externalFilter, capacity);
+    public ItemResourceSlotImpl(@NotNull TransferType transferType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> externalFilter, int capacity) {
+        super(transferType, externalFilter, capacity);
         assert capacity > 0 && capacity <= 64;
         this.display = display;
     }
@@ -156,7 +156,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
         }
 
         // Only write the recipes if we have recipes
-        if (this.inputType() == InputType.RECIPE_OUTPUT && this.recipes != null) {
+        if (this.transferMode() == TransferType.OUTPUT && this.recipes != null) {
             ListTag recipeTag = new ListTag();
             for (ResourceLocation entry : this.recipes) {
                 recipeTag.add(StringTag.valueOf(entry.toString()));
@@ -179,7 +179,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
                 tag.getInt(AMOUNT_KEY)
         );
 
-        if (this.inputType() == InputType.RECIPE_OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
+        if (this.transferMode() == TransferType.OUTPUT && tag.contains(RECIPES_KEY, Tag.TAG_COMPOUND)) {
             ListTag list = tag.getList(RECIPES_KEY, Tag.TAG_STRING);
             if (!list.isEmpty()) {
                 this.recipes = new HashSet<>(list.size());
@@ -289,7 +289,7 @@ public class ItemResourceSlotImpl extends ResourceSlotImpl<Item> implements Item
     @Override
     public void recipeCrafted(@NotNull ResourceLocation id) {
         if (this.recipes == null) {
-            if (this.inputType() == InputType.RECIPE_OUTPUT) {
+            if (this.transferMode() == TransferType.OUTPUT) {
                 this.recipes = new HashSet<>();
             } else {
                 return;

@@ -22,13 +22,11 @@
 
 package dev.galacticraft.machinelib.api.transfer;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-public enum InputType {
+public enum TransferType {
     INPUT(0x009001, true, false, true), // external: insertion only, players: insertion and extraction allowed
     OUTPUT(0xa7071e, false, true, false), // external: extraction only, players: extraction only
-    RECIPE_OUTPUT(0xa7071e, false, true, false), // external: extraction only, players: extraction only - for use with recipe-based creating machines
     STORAGE(0x008d90, true, true, true), // external: insertion and extraction allowed, players: insertion and extraction allowed
     TRANSFER(0x908400, false, false, true); // external: immutable, players: insertion and extraction allowed - e.g. battery slots
 
@@ -37,34 +35,29 @@ public enum InputType {
     private final boolean externalExtract;
     private final boolean playerInsert;
 
-    InputType(int color, boolean externalInsert, boolean externalExtract, boolean playerInsert) {
+    TransferType(int color, boolean externalInsert, boolean externalExtract, boolean playerInsert) {
         this.color = color;
         this.externalInsert = externalInsert;
         this.externalExtract = externalExtract;
         this.playerInsert = playerInsert;
     }
 
-    @Contract(pure = true)
     public boolean externalExtraction() {
-        return externalExtract;
+        return this.externalExtract;
     }
 
-    @Contract(pure = true)
     public boolean externalInsertion() {
-        return externalInsert;
+        return this.externalInsert;
     }
 
-    @Contract(pure = true)
     public @Nullable ResourceFlow getExternalFlow() {
         return this.externalExtract ? this.externalInsert ? ResourceFlow.BOTH : ResourceFlow.OUTPUT : this.externalInsert ? ResourceFlow.INPUT : null;
     }
 
-    @Contract(pure = true)
     public boolean playerInsertion() {
         return playerInsert;
     }
 
-    @Contract(pure = true)
     public boolean playerExtraction() {
         return true;
     }
@@ -74,7 +67,7 @@ public enum InputType {
     }
 
     public boolean isOutput() {
-        return this == OUTPUT || this == RECIPE_OUTPUT;
+        return this == OUTPUT;
     }
 
     public int color() {

@@ -25,8 +25,8 @@ package dev.galacticraft.machinelib.api.menu;
 import com.google.common.base.Preconditions;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.menu.TankImpl;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -52,14 +52,14 @@ public interface Tank {
      *
      * @param slot the slot that this tank is associated with
      * @param display the display properties of the tank
-     * @param inputType the input type of the tank
+     * @param transferType the input type of the tank
      * @param index the index of the tank in the storage
      * @return a new tank
      */
     @Contract(value = "_, _, _, _ -> new", pure = true)
-    static @NotNull Tank create(@NotNull ResourceSlot<Fluid> slot, @NotNull TankDisplay display, @NotNull InputType inputType, int index) {
+    static @NotNull Tank create(@NotNull ResourceSlot<Fluid> slot, @NotNull TankDisplay display, @NotNull TransferType transferType, int index) {
         Preconditions.checkNotNull(slot);
-        return new TankImpl(slot, inputType, index, display.x(), display.y(), display.width(), display.height());
+        return new TankImpl(slot, transferType, index, display.x(), display.y(), display.width(), display.height());
     }
 
     /**
@@ -156,5 +156,5 @@ public interface Tank {
     /**
      * {@return the input type of this tank}
      */
-    InputType getInputType();
+    TransferType getInputType();
 }

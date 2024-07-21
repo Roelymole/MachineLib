@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.storage.slot;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -41,8 +41,8 @@ import org.jetbrains.annotations.Nullable;
 public class FluidResourceSlotImpl extends ResourceSlotImpl<Fluid> implements FluidResourceSlot {
     private final @Nullable TankDisplay display;
 
-    public FluidResourceSlotImpl(@NotNull InputType inputType, @Nullable TankDisplay display, long capacity, ResourceFilter<Fluid> filter) {
-        super(inputType, filter, capacity);
+    public FluidResourceSlotImpl(@NotNull TransferType transferType, @Nullable TankDisplay display, long capacity, ResourceFilter<Fluid> filter) {
+        super(transferType, filter, capacity);
         this.display = display;
     }
 

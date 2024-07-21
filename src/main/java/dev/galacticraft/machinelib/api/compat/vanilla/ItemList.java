@@ -20,20 +20,28 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.storage.slot;
+package dev.galacticraft.machinelib.api.compat.vanilla;
 
-import dev.galacticraft.machinelib.api.filter.ResourceFilters;
-import dev.galacticraft.machinelib.api.transfer.TransferType;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
+import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.util.ItemStackUtil;
+import net.minecraft.world.item.ItemStack;
 
-class FluidResourceSlotImplTest extends ResourceSlotImplTest<Fluid, FluidResourceSlotImpl> {
-    FluidResourceSlotImplTest() {
-        super(Fluids.WATER, Fluids.LAVA);
+import java.util.AbstractList;
+
+public class ItemList extends AbstractList<ItemStack> {
+    private final ItemResourceSlot[] slots;
+
+    public ItemList(ItemResourceSlot[] slots) {
+        this.slots = slots;
     }
 
     @Override
-    FluidResourceSlotImpl createSlot() {
-        return new FluidResourceSlotImpl(TransferType.STORAGE, null, CAPACITY, ResourceFilters.any());
+    public ItemStack get(int index) {
+        return ItemStackUtil.create(this.slots[index]);
+    }
+
+    @Override
+    public int size() {
+        return this.slots.length;
     }
 }

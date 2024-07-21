@@ -23,10 +23,16 @@
 package dev.galacticraft.machinelib.api.block;
 
 import dev.galacticraft.machinelib.api.block.entity.BaseBlockEntity;
+import dev.galacticraft.machinelib.api.menu.SynchronizedMenu;
 import dev.galacticraft.machinelib.impl.block.entity.BaseBlockEntityTicker;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -65,8 +71,34 @@ public abstract class BaseBlock extends BaseEntityBlock {
         if (!level.isClientSide) {
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity instanceof BaseBlockEntity be) {
-                player.openMenu(be);
-                return InteractionResult.CONSUME;
+                player.openMenu(new ExtendedScreenHandlerFactory<>() {
+                    @Nullable
+                    @Override
+                    public AbstractContainerMenu createMenu(int syncId, Inventory inventory, Player player) {
+                        assert player.getInventory() == inventory;
+
+                        SynchronizedMenu<?> menu = be.createMenu(syncId, inventory, player);
+                        if (menu != null) {
+                            menu.registerData(menu.getData());
+                        }
+                        return menu;
+                    }
+
+                    @Override
+                    public @NotNull Component getDisplayName() {
+                        return be.getDisplayName();
+                    }
+
+                    @Override
+                    public Object getScreenOpeningData(ServerPlayer player) {
+                        return be.getScreenOpeningData(player);
+                    }
+
+                    @Override
+                    public boolean shouldCloseCurrentScreen() {
+                        return be.shouldCloseCurrentScreen();
+                    }
+                });
             }
         }
 

@@ -26,7 +26,7 @@ import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.storage.slot.ResourceSlotImpl;
 import dev.galacticraft.machinelib.test.MinecraftTest;
 import dev.galacticraft.machinelib.test.util.Utils;
@@ -45,7 +45,7 @@ public class FluidStorageExtractionTest implements MinecraftTest {
 
     @BeforeEach
     public void setup() {
-        this.storage = MachineFluidStorage.create(FluidResourceSlot.create(InputType.STORAGE, TankDisplay.create(0, 0), FluidConstants.BUCKET * 16, ResourceFilters.any()));
+        this.storage = MachineFluidStorage.create(FluidResourceSlot.create(TransferType.STORAGE, TankDisplay.create(0, 0), FluidConstants.BUCKET * 16, ResourceFilters.any()));
     }
 
     @AfterEach

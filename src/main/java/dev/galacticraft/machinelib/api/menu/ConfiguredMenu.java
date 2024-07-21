@@ -33,15 +33,12 @@ import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.ItemStackUtil;
-import dev.galacticraft.machinelib.impl.compat.vanilla.RecipeOutputStorageSlot;
 import dev.galacticraft.machinelib.impl.compat.vanilla.StorageSlot;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -95,7 +92,7 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
      */
-    public ConfiguredMenu(MenuType<? extends ConfiguredMenu<Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
+    public ConfiguredMenu(MenuType<? extends ConfiguredMenu<Machine>> type, int syncId, @NotNull Player player, @NotNull Machine machine) {
         super(type, syncId, player, machine);
 
         this.configuration = machine.getIOConfig();
@@ -110,12 +107,12 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
      * Called on the logical client
      *
      * @param syncId The sync id for this menu.
-     * @param buf The synchronization buffer from the server.
+     * @param pos the position of the block being opened
      * @param inventory The inventory of the player interacting with this menu.
      * @param type The type of menu this is.
      */
-    protected ConfiguredMenu(MenuType<? extends ConfiguredMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull RegistryFriendlyByteBuf buf) {
-        super(type, syncId, inventory, buf);
+    protected ConfiguredMenu(MenuType<? extends ConfiguredMenu<Machine>> type, int syncId, @NotNull Inventory inventory, @NotNull BlockPos pos) {
+        super(type, syncId, inventory, pos);
 
         this.configuration = this.be.getIOConfig();
         this.security = this.be.getSecurity();
@@ -170,14 +167,8 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
         for (int i = 0; i < slots.length; i++) {
             ItemResourceSlot slot = slots[i];
             if (slot.getDisplay() != null) {
-                StorageSlot slot1;
-                if (slot.inputType() == InputType.RECIPE_OUTPUT) {
-                    slot1 = new RecipeOutputStorageSlot(itemStorage, slot, slot.getDisplay(), i, this.player);
-                } else {
-                    slot1 = new StorageSlot(itemStorage, slot, slot.getDisplay(), i, this.player.getUUID());
-                }
                 this.internalSlots++;
-                this.addSlot(slot1);
+                this.addSlot(new StorageSlot(itemStorage, slot, slot.getDisplay(), i, this.player));
             }
         }
     }
@@ -187,7 +178,7 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
         for (int i = 0; i < tanks.length; i++) {
             FluidResourceSlot slot = tanks[i];
             if (slot.getDisplay() != null) {
-                this.addTank(Tank.create(slot, slot.getDisplay(), slot.inputType(), i));
+                this.addTank(Tank.create(slot, slot.getDisplay(), slot.transferMode(), i));
             }
         }
     }
@@ -204,7 +195,7 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
         // move from machine -> player
         if (slotId < this.internalSlots) {
             assert slot instanceof StorageSlot;
-            this.quickMoveIntoPlayerInventory(((StorageSlot) slot).getSlot());
+            this.quickMoveIntoPlayerInventory(((StorageSlot) slot).getWrapped());
             return slot.getItem();
         }
 
@@ -219,8 +210,8 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
         // try to move it into slots that already contain the same item
         long available = stack.getCount();
         for (int i = 0; i < this.internalSlots; i++) {
-            ItemResourceSlot slot1 = ((StorageSlot) this.slots.get(i)).getSlot();
-            if (slot1.inputType().playerInsertion() && slot1.contains(stack.getItem(), stack.getComponentsPatch())) {
+            ItemResourceSlot slot1 = ((StorageSlot) this.slots.get(i)).getWrapped();
+            if (slot1.transferMode().playerInsertion() && slot1.contains(stack.getItem(), stack.getComponentsPatch())) {
                 available -= slot1.insert(stack.getItem(), stack.getComponentsPatch(), available);
                 // if we've moved all the items, we're done
                 if (available == 0) {
@@ -234,7 +225,7 @@ public abstract class ConfiguredMenu<Machine extends ConfiguredBlockEntity> exte
         for (int i = 0; i < this.internalSlots; i++) {
             StorageSlot slot1 = ((StorageSlot) this.slots.get(i));
             if (slot1.mayPlace(stack)) {
-                available -= slot1.getSlot().insert(stack.getItem(), stack.getComponentsPatch(), available);
+                available -= slot1.getWrapped().insert(stack.getItem(), stack.getComponentsPatch(), available);
                 if (available == 0) {
                     slot.setByPlayer(ItemStack.EMPTY);
                     return ItemStack.EMPTY;

@@ -33,12 +33,11 @@ import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -63,27 +62,27 @@ public class MixerBlockEntity extends MachineBlockEntity {
 
     private static final StorageSpec STORAGE_SPEC = StorageSpec.of(
             MachineItemStorage.spec(
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(8, 8)
                             .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
                             .capacity(32),
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(48, 8)
                             .filter(ResourceFilters.canExtractFluid(Fluids.WATER)),
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(70, 8)
                             .filter(ResourceFilters.canExtractFluid(Fluids.LAVA)),
-                    ItemResourceSlot.builder(InputType.RECIPE_OUTPUT)
+                    ItemResourceSlot.builder(TransferType.OUTPUT)
                             .pos(147, 43)
                             .filter(ResourceFilters.ofResource(Items.OBSIDIAN))
             ),
             MachineEnergyStorage.spec(30000, ENERGY_USAGE * 2, 0),
             MachineFluidStorage.spec(
-                    FluidResourceSlot.builder(InputType.INPUT)
+                    FluidResourceSlot.builder(TransferType.INPUT)
                             .pos(48, 30)
                             .capacity(FluidConstants.BUCKET * 16)
                             .filter(ResourceFilters.ofResource(Fluids.WATER)),
-                    FluidResourceSlot.builder(InputType.INPUT)
+                    FluidResourceSlot.builder(TransferType.INPUT)
                             .pos(70, 30)
                             .capacity(FluidConstants.BUCKET * 16)
                             .filter(ResourceFilters.ofResource(Fluids.LAVA))
@@ -135,7 +134,7 @@ public class MixerBlockEntity extends MachineBlockEntity {
     }
 
     @Override
-    public @Nullable MachineMenu<MixerBlockEntity> openMenu(int syncId, Inventory inventory, Player player) {
-        return new MachineMenu<>(TestModMenuTypes.MIXER, syncId, ((ServerPlayer) player), this);
+    public @Nullable MachineMenu<MixerBlockEntity> createMenu(int syncId, Inventory inventory, Player player) {
+        return new MachineMenu<>(TestModMenuTypes.MIXER, syncId, player, this);
     }
 }

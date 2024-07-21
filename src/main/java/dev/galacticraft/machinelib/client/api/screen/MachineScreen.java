@@ -33,8 +33,8 @@ import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.menu.Tank;
-import dev.galacticraft.machinelib.api.transfer.InputType;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
@@ -833,7 +833,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
                 if (resource.willAcceptResource(ResourceType.ITEM)) {
                     for (Slot slot : this.menu.slots) {
                         if (slot instanceof StorageSlot slot1) {
-                            InputType type = slot1.getSlot().inputType();
+                            TransferType type = slot1.getWrapped().transferMode();
                             if (type.getExternalFlow() != null && type.getExternalFlow().canFlowIn(config.getFlow())) {
                                 GraphicsUtil.highlightElement(graphics, this.leftPos, this.topPos, slot.x, slot.y, 16, 16, type.color());
                             }
@@ -843,7 +843,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
 
                 if (resource.willAcceptResource(ResourceType.FLUID)) {
                     for (Tank tank : this.menu.tanks) {
-                        InputType type = tank.getInputType();
+                        TransferType type = tank.getInputType();
                         if (type.getExternalFlow() != null && type.getExternalFlow().canFlowIn(config.getFlow())) {
                             GraphicsUtil.highlightElement(graphics, this.leftPos, this.topPos, tank.getX(), tank.getY(), tank.getWidth(), tank.getHeight(), type.color());
                         }

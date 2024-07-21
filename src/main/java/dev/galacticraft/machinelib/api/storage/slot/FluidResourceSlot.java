@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.api.storage.slot;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.storage.slot.FluidResourceSlotImpl;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.world.level.material.Fluid;
@@ -35,14 +35,14 @@ import org.jetbrains.annotations.Nullable;
 
 public interface FluidResourceSlot extends ResourceSlot<Fluid> {
     @Contract("_ -> new")
-    static @NotNull Spec builder(@NotNull InputType inputType) {
-        return new Spec(inputType);
+    static @NotNull Spec builder(@NotNull TransferType transferType) {
+        return new Spec(transferType);
     }
 
     @Contract("_, _, _, _ -> new")
-    static @NotNull FluidResourceSlot create(@NotNull InputType inputType, @Nullable TankDisplay display, long capacity, @NotNull ResourceFilter<Fluid> filter) {
+    static @NotNull FluidResourceSlot create(@NotNull TransferType transferType, @Nullable TankDisplay display, long capacity, @NotNull ResourceFilter<Fluid> filter) {
         if (capacity < 0) throw new IllegalArgumentException("capacity < 0");
-        return new FluidResourceSlotImpl(inputType, display, capacity, filter);
+        return new FluidResourceSlotImpl(transferType, display, capacity, filter);
     }
 
     /**
@@ -57,7 +57,7 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
     TankDisplay getDisplay();
 
     final class Spec {
-        private final InputType inputType;
+        private final TransferType transferType;
 
         private boolean hidden = false;
 
@@ -70,8 +70,8 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
         private long capacity = FluidConstants.BUCKET;
 
         @Contract(pure = true)
-        private Spec(@NotNull InputType inputType) {
-            this.inputType = inputType;
+        private Spec(@NotNull TransferType transferType) {
+            this.transferType = transferType;
         }
 
         @Contract("_, _ -> this")
@@ -136,7 +136,7 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
                     throw new UnsupportedOperationException("Display properties changed while hidden!");
             }
 
-            return FluidResourceSlot.create(this.inputType, this.hidden ? null : TankDisplay.create(this.x, this.y, this.width, this.height), this.capacity, this.filter);
+            return FluidResourceSlot.create(this.transferType, this.hidden ? null : TankDisplay.create(this.x, this.y, this.width, this.height), this.capacity, this.filter);
         }
     }
 }

@@ -24,7 +24,7 @@ package dev.galacticraft.machinelib.impl.menu;
 
 import dev.galacticraft.machinelib.api.menu.Tank;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
@@ -47,7 +47,7 @@ import java.util.List;
  */
 public final class TankImpl implements Tank {
     public final ResourceSlot<Fluid> slot;
-    private final InputType inputType;
+    private final TransferType transferType;
     private final int index;
     private final int x;
     private final int y;
@@ -55,9 +55,9 @@ public final class TankImpl implements Tank {
     private final int width;
     public int id = -1;
 
-    public TankImpl(ResourceSlot<Fluid> slot, InputType inputType, int index, int x, int y, int width, int height) {
+    public TankImpl(ResourceSlot<Fluid> slot, TransferType transferType, int index, int x, int y, int width, int height) {
         this.slot = slot;
-        this.inputType = inputType;
+        this.transferType = transferType;
         this.index = index;
         this.x = x;
         this.y = y;
@@ -149,7 +149,7 @@ public final class TankImpl implements Tank {
     public boolean acceptStack(@NotNull ContainerItemContext context) {
         Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
         if (storage != null) {
-            if (storage.supportsExtraction() && this.inputType.playerInsertion()) {
+            if (storage.supportsExtraction() && this.transferType.playerInsertion()) {
                 FluidVariant storedResource;
                 if (this.isEmpty()) {
                     storedResource = StorageUtil.findStoredResource(storage, variant -> this.slot.getFilter().test(variant.getFluid(), variant.getComponents()));
@@ -159,7 +159,7 @@ public final class TankImpl implements Tank {
                 if (storedResource != null && !storedResource.isBlank()) {
                     return StorageHelper.move(storedResource, storage, this.slot, Long.MAX_VALUE, null) != 0;
                 }
-            } else if (storage.supportsInsertion() && this.inputType.playerExtraction()) {
+            } else if (storage.supportsInsertion() && this.transferType.playerExtraction()) {
                 FluidVariant storedResource = this.createVariant();
                 if (!storedResource.isBlank()) {
                     return StorageHelper.move(storedResource, this.slot, storage, Long.MAX_VALUE, null) != 0;
@@ -175,7 +175,7 @@ public final class TankImpl implements Tank {
     }
 
     @Override
-    public InputType getInputType() {
-        return this.inputType;
+    public TransferType getInputType() {
+        return this.transferType;
     }
 }

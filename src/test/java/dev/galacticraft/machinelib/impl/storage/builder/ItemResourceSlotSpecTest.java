@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.storage.builder;
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.test.MinecraftTest;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -39,7 +39,7 @@ class ItemResourceSlotSpecTest implements MinecraftTest {
 
     @BeforeEach
     void setup() {
-        this.spec = ItemResourceSlot.builder(InputType.STORAGE);
+        this.spec = ItemResourceSlot.builder(TransferType.STORAGE);
     }
 
     @Test

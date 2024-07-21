@@ -26,7 +26,7 @@ import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.filter.ResourceFilters;
 import dev.galacticraft.machinelib.api.storage.slot.display.ItemSlotDisplay;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.compat.vanilla.FakeRecipeHolder;
 import dev.galacticraft.machinelib.impl.storage.slot.ItemResourceSlotImpl;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
@@ -42,19 +42,19 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemContext, FakeRecipeHolder {
     @Contract("_ -> new")
-    static @NotNull Spec builder(InputType inputType) {
-        return new Spec(inputType);
+    static @NotNull Spec builder(TransferType transferType) {
+        return new Spec(transferType);
     }
 
     @Contract("_, _, _ -> new")
-    static @NotNull ItemResourceSlot create(@NotNull InputType inputType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> filter) {
-        return create(inputType, display, filter, 64);
+    static @NotNull ItemResourceSlot create(@NotNull TransferType transferType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> filter) {
+        return create(transferType, display, filter, 64);
     }
 
     @Contract("_, _, _, _ -> new")
-    static @NotNull ItemResourceSlot create(@NotNull InputType inputType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> filter, int capacity) {
+    static @NotNull ItemResourceSlot create(@NotNull TransferType transferType, @Nullable ItemSlotDisplay display, @NotNull ResourceFilter<Item> filter, int capacity) {
         if (capacity < 0 || capacity > 64) throw new IllegalArgumentException();
-        return new ItemResourceSlotImpl(inputType, display, filter, capacity);
+        return new ItemResourceSlotImpl(transferType, display, filter, capacity);
     }
 
     /**
@@ -130,7 +130,7 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
     long getAmount();
 
     final class Spec {
-        private final InputType inputType;
+        private final TransferType transferType;
 
         private boolean hidden = false;
         private int x = 0;
@@ -141,8 +141,8 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
         private int capacity = 64;
 
         @Contract(pure = true)
-        private Spec(InputType inputType) {
-            this.inputType = inputType;
+        private Spec(TransferType transferType) {
+            this.transferType = transferType;
         }
 
         @Contract("_, _ -> this")
@@ -200,7 +200,7 @@ public interface ItemResourceSlot extends ResourceSlot<Item>, ContainerItemConte
                     throw new UnsupportedOperationException("Display prop while hidden");
             }
 
-            return ItemResourceSlot.create(this.inputType, this.hidden ? null : ItemSlotDisplay.create(this.x, this.y, this.icon), this.filter, this.capacity);
+            return ItemResourceSlot.create(this.transferType, this.hidden ? null : ItemSlotDisplay.create(this.x, this.y, this.icon), this.filter, this.capacity);
         }
     }
 }

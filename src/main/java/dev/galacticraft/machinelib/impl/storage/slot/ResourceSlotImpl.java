@@ -25,7 +25,7 @@ package dev.galacticraft.machinelib.impl.storage.slot;
 import dev.galacticraft.machinelib.api.filter.ResourceFilter;
 import dev.galacticraft.machinelib.api.storage.ResourceStorage;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
@@ -44,7 +44,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     protected static final String AMOUNT_KEY = "Amount";
     protected static final String COMPONENTS_KEY = "Components";
     protected final long capacity;
-    private final InputType inputType;
+    private final TransferType transferType;
     private final ResourceFilter<Resource> externalFilter;
     protected ResourceStorage<Resource, ?> parent;
 
@@ -54,15 +54,15 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
 
     private long modifications = 1;
 
-    protected ResourceSlotImpl(InputType inputType, ResourceFilter<Resource> externalFilter, long capacity) {
-        this.inputType = inputType;
+    protected ResourceSlotImpl(TransferType transferType, ResourceFilter<Resource> externalFilter, long capacity) {
+        this.transferType = transferType;
         this.externalFilter = externalFilter;
         this.capacity = capacity;
     }
 
     @Override
-    public InputType inputType() {
-        return this.inputType;
+    public TransferType transferMode() {
+        return this.transferType;
     }
 
     @Override

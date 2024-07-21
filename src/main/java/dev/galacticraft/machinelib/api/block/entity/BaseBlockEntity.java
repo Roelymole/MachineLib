@@ -22,15 +22,12 @@
 
 package dev.galacticraft.machinelib.api.block.entity;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.menu.SynchronizedMenu;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
@@ -41,7 +38,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -54,7 +50,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @see SynchronizedMenu
  */
-public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<RegistryFriendlyByteBuf> {
+public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScreenHandlerFactory<BlockPos> {
     /**
      * Constructs a new base block entity.
      *
@@ -82,23 +78,9 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
      */
     public abstract @Nullable CustomPacketPayload createUpdatePayload();
 
-    /**
-     * {@return a newly created menu}
-     *
-     * @param syncId
-     * @param inventory
-     * @param player
-     * @return
-     */
-    @Nullable
-    public abstract SynchronizedMenu<? extends BaseBlockEntity> openMenu(int syncId, Inventory inventory, Player player);
-
     @Override
-    public RegistryFriendlyByteBuf getScreenOpeningData(ServerPlayer player) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.server.registryAccess());
-        buf.writeBlockPos(this.getBlockPos());
-        ((MachineMenu<?>) player.containerMenu).getData().synchronizeInitial(buf);
-        return buf;
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return this.getBlockPos();
     }
 
     // we override the update packet to circumvent nbt serialization
@@ -116,15 +98,16 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
         return payload == null ? null : (Packet) new ClientboundCustomPayloadPacket(payload);
     }
 
+    /**
+     * {@return a newly created menu}
+     *
+     * @param syncId the synchronization id of the menu
+     * @param inventory the player's inventory
+     * @param player the player opening the menu
+     */
     @Nullable
     @Override
-    public final AbstractContainerMenu createMenu(int syncId, Inventory inventory, Player player) {
-        SynchronizedMenu<?> menu = this.openMenu(syncId, inventory, player);
-        if (menu != null) {
-            menu.registerData(menu.getData());
-        }
-        return menu;
-    }
+    public abstract SynchronizedMenu<? extends BaseBlockEntity> createMenu(int syncId, Inventory inventory, Player player);
 
     @Override
     public @NotNull Component getDisplayName() {

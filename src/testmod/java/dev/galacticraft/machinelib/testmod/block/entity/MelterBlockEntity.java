@@ -33,13 +33,12 @@ import dev.galacticraft.machinelib.api.storage.MachineItemStorage;
 import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
-import dev.galacticraft.machinelib.api.transfer.InputType;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.FluidSource;
 import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -62,19 +61,19 @@ public class MelterBlockEntity extends MachineBlockEntity {
 
     private static final StorageSpec STORAGE_SPEC = StorageSpec.of(
             MachineItemStorage.spec(
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(8, 8)
                             .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
                             .capacity(32),
-                    ItemResourceSlot.builder(InputType.INPUT)
+                    ItemResourceSlot.builder(TransferType.INPUT)
                             .pos(59, 42)
                             .filter(ResourceFilters.ofResource(Items.COBBLESTONE)),
-                    ItemResourceSlot.builder(InputType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.TRANSFER)
                             .pos(152, 62)
                             .filter(ResourceFilters.canInsertFluid(Fluids.LAVA))
             ),
             MachineEnergyStorage.spec(30000, ENERGY_USAGE * 2, 0),
-            MachineFluidStorage.spec(FluidResourceSlot.builder(InputType.RECIPE_OUTPUT)
+            MachineFluidStorage.spec(FluidResourceSlot.builder(TransferType.OUTPUT)
                     .pos(152, 8)
                     .capacity(FluidConstants.BUCKET * 16)
                     .filter(ResourceFilters.ofResource(Fluids.LAVA))
@@ -131,7 +130,7 @@ public class MelterBlockEntity extends MachineBlockEntity {
 
     @Nullable
     @Override
-    public MachineMenu<MelterBlockEntity> openMenu(int syncId, Inventory inv, Player player) {
-        return new MachineMenu<>(TestModMenuTypes.MELTER, syncId, ((ServerPlayer) player), this);
+    public MachineMenu<MelterBlockEntity> createMenu(int syncId, Inventory inv, Player player) {
+        return new MachineMenu<>(TestModMenuTypes.MELTER, syncId, player, this);
     }
 }

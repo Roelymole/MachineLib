@@ -102,7 +102,7 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
         this.energyStorage = spec.createEnergyStorage();
     }
 
-    public static <T extends MachineBlockEntity> void registerProviders(@NotNull BlockEntityType<T> type) {
+    public static <T extends MachineBlockEntity> void registerProviders(@NotNull BlockEntityType<? extends T> type) {
         EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> {
             if (direction == null) return blockEntity.energyStorage().getExposedStorage(ResourceFlow.BOTH);
             return blockEntity.energyStorage().getExposedStorage(blockEntity.getIOConfig().get(Objects.requireNonNull(BlockFace.from(blockEntity.getBlockState(), direction))).getFlow());
@@ -118,8 +118,8 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
     }
 
     @SafeVarargs
-    public static <T extends MachineBlockEntity> void registerProviders(BlockEntityType<T> @NotNull ... types) {
-        for (BlockEntityType<T> type : types) {
+    public static <T extends MachineBlockEntity> void registerProviders(BlockEntityType<? extends T> @NotNull ... types) {
+        for (BlockEntityType<? extends T> type : types) {
             registerProviders(type);
         }
     }
@@ -128,7 +128,7 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
     protected abstract @NotNull MachineStatus tick(@NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ProfilerFiller profiler);
 
     @Override
-    public abstract @Nullable MachineMenu<? extends MachineBlockEntity> openMenu(int syncId, Inventory inventory, Player player);
+    public abstract @Nullable MachineMenu<? extends MachineBlockEntity> createMenu(int syncId, Inventory inventory, Player player);
 
     /**
      * {@return the item storage of this machine}
@@ -256,10 +256,10 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
             tag.put(Constant.Nbt.ITEM_STORAGE, this.itemStorage.createTag());
         }
         if (this.fluidStorage.size() > 0) {
-            tag.put(Constant.Nbt.FLUID_STORAGE, this.itemStorage.createTag());
+            tag.put(Constant.Nbt.FLUID_STORAGE, this.fluidStorage.createTag());
         }
         if (this.energyStorage.getCapacity() > 0) {
-            tag.put(Constant.Nbt.ENERGY_STORAGE, this.itemStorage.createTag());
+            tag.put(Constant.Nbt.ENERGY_STORAGE, this.energyStorage.createTag());
         }
     }
 
