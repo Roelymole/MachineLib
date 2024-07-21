@@ -24,8 +24,8 @@ package dev.galacticraft.machinelib.api.menu;
 
 import dev.galacticraft.machinelib.api.block.entity.RecipeMachineBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -60,7 +60,7 @@ public class RecipeMachineMenu<I extends RecipeInput, R extends Recipe<I>, Machi
      * @param player The player who is interacting with this menu.
      * @param machine The machine this menu is for.
      */
-    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull ServerPlayer player, @NotNull Machine machine) {
+    public RecipeMachineMenu(MenuType<? extends RecipeMachineMenu<I, R, Machine>> type, int syncId, @NotNull Player player, @NotNull Machine machine) {
         super(type, syncId, player, machine);
     }
 

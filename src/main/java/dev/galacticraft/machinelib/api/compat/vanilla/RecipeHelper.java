@@ -24,9 +24,12 @@ package dev.galacticraft.machinelib.api.compat.vanilla;
 
 import dev.galacticraft.machinelib.api.storage.SlottedStorageAccess;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
+import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -82,5 +85,26 @@ public class RecipeHelper {
 
     public static @NotNull RecipeInput input(ItemResourceSlot... slots) {
         return new MachineRecipeInput(slots);
+    }
+
+    public static @NotNull RecipeInput input(ItemResourceSlot slot) {
+        return new SingleSlotInput(slot);
+    }
+
+    public static @NotNull SingleRecipeInput single(ItemResourceSlot slot) {
+        return new SingleRecipeInput(ItemStackUtil.create(slot));
+    }
+
+    private record SingleSlotInput(ItemResourceSlot slot) implements RecipeInput {
+        @Override
+        public @NotNull ItemStack getItem(int i) {
+            if (i == 0) return ItemStackUtil.create(slot);
+            throw new IndexOutOfBoundsException("Index: " + i);
+        }
+
+        @Override
+        public int size() {
+            return 1;
+        }
     }
 }
