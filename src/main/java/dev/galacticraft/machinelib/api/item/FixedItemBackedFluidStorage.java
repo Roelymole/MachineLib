@@ -20,31 +20,37 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl;
+package dev.galacticraft.machinelib.api.item;
 
-import dev.galacticraft.machinelib.api.component.MLDataComponents;
-import dev.galacticraft.machinelib.api.config.Config;
-import dev.galacticraft.machinelib.impl.network.MachineLibPackets;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
-import net.fabricmc.loader.api.FabricLoader;
-import org.jetbrains.annotations.ApiStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import dev.galacticraft.machinelib.api.filter.ResourceFilter;
+import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.material.Fluid;
 
-@ApiStatus.Internal
-public final class MachineLib implements ModInitializer {
-    public static final Logger LOGGER = LoggerFactory.getLogger(Constant.MOD_NAME);
-    public static final Config CONFIG = Config.loadFrom(FabricLoader.getInstance().getConfigDir().resolve("machinelib.json").toFile());
+public class FixedItemBackedFluidStorage extends ItemBackedFluidStorage {
+    private final long maxIn;
+    private final long maxOut;
+    private final long capacity;
+
+    public FixedItemBackedFluidStorage(ItemStack stack, ContainerItemContext context, ResourceFilter<Fluid> filter, long maxIn, long maxOut, long capacity) {
+        super(stack, context, filter);
+        this.maxIn = maxIn;
+        this.maxOut = maxOut;
+        this.capacity = capacity;
+    }
 
     @Override
-    public void onInitialize() {
-        MachineLibPackets.registerChannels();
-        MachineLibPackets.registerServer();
-        MLDataComponents.init();
+    protected long getRawMaxInput() {
+        return this.maxIn;
+    }
 
-        if (CONFIG.enableColoredVanillaFluidNames()) {
-            FluidVariantAttributes.enableColoredVanillaFluidNames();
-        }
+    @Override
+    protected long getRawMaxOutput() {
+        return this.maxOut;
+    }
+
+    @Override
+    protected long getRawCapacity() {
+        return this.capacity;
     }
 }
