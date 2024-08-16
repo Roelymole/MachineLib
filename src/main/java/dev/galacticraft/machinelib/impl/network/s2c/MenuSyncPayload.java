@@ -48,7 +48,11 @@ public record MenuSyncPayload(RegistryFriendlyByteBuf buf) implements CustomPack
             if (player.containerMenu instanceof MachineMenu<?> menu && syncId == menu.containerId) {
                 menu.getData().handle(this.buf);
             } else {
-                MachineLib.LOGGER.warn("Received menu sync packet for invalid menu ID: {} (active: {})", syncId, player.containerMenu.containerId);
+                if (player.containerMenu.containerId != 0) {
+                    MachineLib.LOGGER.warn("Received menu sync packet for invalid menu ID: {} (active: {})", syncId, player.containerMenu.containerId);
+                } else {
+                    MachineLib.LOGGER.debug("Received menu sync packet for '{}' with no menu open", syncId);
+                }
             }
         }
     }

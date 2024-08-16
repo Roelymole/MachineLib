@@ -101,7 +101,6 @@ public abstract class RecipeMachineBlockEntity<I extends RecipeInput, R extends 
 
     /**
      * An inventory for use in finding vanilla recipes for this machine.
-     * NOTE: This inventory can assume that it is never modified - do not modify it!
      *
      * @return The crafting inventory of the machine.
      */

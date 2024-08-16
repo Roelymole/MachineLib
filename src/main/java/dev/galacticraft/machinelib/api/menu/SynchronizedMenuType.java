@@ -60,7 +60,11 @@ public class SynchronizedMenuType<BE extends BaseBlockEntity, Menu extends Synch
 
     @Contract(value = "_ -> new", pure = true)
     public static <BE extends BaseBlockEntity, Menu extends SynchronizedMenu<BE>> @NotNull MenuType<Menu> create(ExtendedScreenHandlerType.ExtendedFactory<Menu, BlockPos> factory) {
-        return new ExtendedScreenHandlerType<>(factory, BlockPos.STREAM_CODEC);
+        return new ExtendedScreenHandlerType<>((syncId, inventory, data) -> {
+            Menu menu = factory.create(syncId, inventory, data);
+            menu.registerData(menu.getData());
+            return menu;
+        }, BlockPos.STREAM_CODEC);
     }
 
     @Override

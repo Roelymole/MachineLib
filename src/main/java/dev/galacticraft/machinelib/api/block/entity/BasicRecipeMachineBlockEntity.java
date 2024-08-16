@@ -34,7 +34,6 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -44,11 +43,6 @@ import org.jetbrains.annotations.NotNull;
  * @param <R> The type of recipe the machine uses.
  */
 public abstract class BasicRecipeMachineBlockEntity<I extends RecipeInput, R extends Recipe<I>> extends RecipeMachineBlockEntity<I, R> {
-    /**
-     * An inventory for use in finding vanilla recipes for this machine.
-     */
-    protected final @NotNull I craftingInv;
-
     protected final SlottedStorageAccess<Item, ItemResourceSlot> inputSlots;
     protected final SlottedStorageAccess<Item, ItemResourceSlot> outputSlots;
 
@@ -101,52 +95,20 @@ public abstract class BasicRecipeMachineBlockEntity<I extends RecipeInput, R ext
 
         this.inputSlots = this.itemStorage().subStorage(inputSlots, inputSlotsLen);
         this.outputSlots = this.itemStorage().subStorage(outputSlots, outputSlotsLen);
-
-        this.craftingInv = this.createCraftingInv();
     }
 
-    protected abstract I createCraftingInv();
-
-    /**
-     * Creates an inventory for use in finding vanilla recipes for this machine.
-     * NOTE: This inventory can assume that it is never modified - do not modify it!
-     *
-     * @return The crafting inventory of the machine.
-     */
-    @Override
-    @Contract(pure = true)
-    protected @NotNull I craftingInv() {
-        return this.craftingInv;
-    }
-
-    /**
-     * Inserts the active recipe's output into the machine's inventory.
-     *
-     * @param recipe The recipe to output.
-     */
     @Override
     protected void outputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
         this.outputSlots.insertMatching(assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
-    /**
-     * Checks if the machine can output stacks for the given recipe.
-     *
-     * @param recipe The recipe to check.
-     * @return {@code true} if the machine can output stacks for the recipe, {@code false} otherwise.
-     */
     @Override
     protected boolean canOutputStacks(@NotNull RecipeHolder<R> recipe) {
         ItemStack assembled = recipe.value().assemble(this.craftingInv(), this.level.registryAccess());
-        return this.inputSlots.canInsert(assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
+        return this.outputSlots.canInsert(assembled.getItem(), assembled.getComponentsPatch(), assembled.getCount());
     }
 
-    /**
-     * Extracts the recipe's input from the machine's inventory.
-     *
-     * @param recipe The recipe to extract.
-     */
     @Override
     protected void extractCraftingMaterials(@NotNull RecipeHolder<R> recipe) {
         for (ItemResourceSlot slot : this.inputSlots) {

@@ -37,25 +37,23 @@ import java.util.List;
 
 public class RecipeHelper {
     public static @NotNull CraftingInput craftingInput(int width, int height, SlottedStorageAccess<Item, ItemResourceSlot> storage) {
-        ItemResourceSlot[] slots = new ItemResourceSlot[width * height];
-        ItemResourceSlot[] storageSlots = storage.getSlots();
-        int j = 0;
+        List<ItemStack> items = new ArrayList<>(width * height);
         for (int i = 0; i < storage.size(); i++) {
-            if (storageSlots[i].transferMode().isInput()) {
-                slots[j++] = storageSlots[i];
+            ItemResourceSlot slot = storage.slot(i);
+            if (slot.transferMode().isInput()) {
+                items.add(ItemStackUtil.create(slot));
             }
         }
-        assert j == width * height;
 
-        return craftingInput(width, height, slots);
+        return CraftingInput.of(width, height, items);
     }
 
     public static @NotNull CraftingInput craftingInput(int offset, int width, int height, SlottedStorageAccess<Item, ItemResourceSlot> storage) {
-        ItemResourceSlot[] slots = new ItemResourceSlot[width * height];
+        List<ItemStack> items = new ArrayList<>(width * height);
         for (int i = 0; i < width * height; i++) {
-            slots[i] = storage.getSlots()[offset + i];
+            items.add(ItemStackUtil.create(storage.slot(offset + i)));
         }
-        return craftingInput(width, height, slots);
+        return CraftingInput.of(width, height, items);
     }
 
     public static @NotNull CraftingInput craftingInput(int width, int height, ItemResourceSlot... slots) {
@@ -87,24 +85,7 @@ public class RecipeHelper {
         return new MachineRecipeInput(slots);
     }
 
-    public static @NotNull RecipeInput input(ItemResourceSlot slot) {
-        return new SingleSlotInput(slot);
-    }
-
     public static @NotNull SingleRecipeInput single(ItemResourceSlot slot) {
         return new SingleRecipeInput(ItemStackUtil.create(slot));
-    }
-
-    private record SingleSlotInput(ItemResourceSlot slot) implements RecipeInput {
-        @Override
-        public @NotNull ItemStack getItem(int i) {
-            if (i == 0) return ItemStackUtil.create(slot);
-            throw new IndexOutOfBoundsException("Index: " + i);
-        }
-
-        @Override
-        public int size() {
-            return 1;
-        }
     }
 }
