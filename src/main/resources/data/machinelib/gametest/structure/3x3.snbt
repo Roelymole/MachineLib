@@ -31,5 +31,5 @@
         { pos: [2, 2, 2], state: 0 }
 	],
 	palette: [ {Name: "minecraft:air"} ],
-	DataVersion: 3700
+	DataVersion: 3953
 }
