@@ -44,6 +44,7 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
 
     @Override
     public boolean supportsInsertion() {
+        if (!this.storage.isValid()) return false;
         for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (slot.supportsInsertion()) {
                 return true;
@@ -54,6 +55,7 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
 
     @Override
     public boolean supportsExtraction() {
+        if (!this.storage.isValid()) return false;
         for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (slot.supportsExtraction()) {
                 return true;
@@ -64,6 +66,7 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
 
     @Override
     public long insert(Variant variant, long maxAmount, TransactionContext transaction) {
+        if (!this.storage.isValid()) return 0;
         long requested = maxAmount;
         for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (maxAmount == 0) return requested;
@@ -74,6 +77,7 @@ public class ExposedStorageImpl<Resource, Variant extends TransferVariant<Resour
 
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
+        if (!this.storage.isValid()) return 0;
         long requested = maxAmount;
         for (ExposedSlot<Resource, Variant> slot : this.slots) {
             if (maxAmount == 0) return requested;

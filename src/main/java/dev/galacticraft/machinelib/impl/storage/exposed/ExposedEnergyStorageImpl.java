@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.impl.storage.exposed;
 
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedEnergyStorage;
+import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import org.jetbrains.annotations.NotNull;
 import team.reborn.energy.api.EnergyStorage;
@@ -35,16 +36,16 @@ import team.reborn.energy.api.EnergyStorage;
  * @param maxExtraction The maximum amount of energy that can be extracted in one transaction.
  * @see EnergyStorage
  */
-public record ExposedEnergyStorageImpl(@NotNull EnergyStorage parent, long maxInsertion,
+public record ExposedEnergyStorageImpl(@NotNull MachineEnergyStorage parent, long maxInsertion,
                                        long maxExtraction) implements ExposedEnergyStorage {
     @Override
     public boolean supportsInsertion() {
-        return this.maxInsertion > 0;
+        return this.parent.isValid() && this.maxInsertion > 0;
     }
 
     @Override
     public long insert(long maxAmount, TransactionContext transaction) {
-        if (this.maxInsertion > 0) {
+        if (this.supportsInsertion()) {
             return this.parent.insert(Math.min(this.maxInsertion, maxAmount), transaction);
         }
         return 0;
@@ -52,12 +53,12 @@ public record ExposedEnergyStorageImpl(@NotNull EnergyStorage parent, long maxIn
 
     @Override
     public boolean supportsExtraction() {
-        return this.maxExtraction > 0;
+        return this.parent.isValid() && this.maxExtraction > 0;
     }
 
     @Override
     public long extract(long maxAmount, TransactionContext transaction) {
-        if (this.maxExtraction > 0) {
+        if (this.supportsExtraction()) {
             return this.parent.extract(Math.min(this.maxExtraction, maxAmount), transaction);
         }
         return 0;

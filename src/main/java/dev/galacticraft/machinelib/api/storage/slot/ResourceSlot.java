@@ -48,6 +48,11 @@ import org.jetbrains.annotations.VisibleForTesting;
  */
 public interface ResourceSlot<Resource> extends StorageAccess<Resource>, MutableModifiable, Serializable<CompoundTag>, PacketSerializable<RegistryFriendlyByteBuf> {
     /**
+     * {@return whether this slot should still be interacted with}
+     */
+    boolean isValid();
+
+    /**
      * {@return the way this slot is allowed to be interacted with}
      * Governs in-world (block-to-block) and player (menu) interactions.
      */

@@ -61,6 +61,11 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     }
 
     @Override
+    public boolean isValid() {
+        return this.parent == null || this.parent.isValid();
+    }
+
+    @Override
     public TransferType transferMode() {
         return this.transferType;
     }

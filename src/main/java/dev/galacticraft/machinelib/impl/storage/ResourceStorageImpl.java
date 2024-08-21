@@ -29,13 +29,14 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Resource>> extends BaseSlottedStorage<Resource, Slot> implements ResourceStorage<Resource, Slot>, TransactionContext.CloseCallback {
     private final LongList transactions = new LongArrayList();
     private long modifications = 1;
-    private Runnable listener;
+    private @Nullable BlockEntity parent;
 
     public ResourceStorageImpl(@NotNull Slot @NotNull [] slots) {
         super(slots);
@@ -45,8 +46,13 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     }
 
     @Override
-    public void setListener(Runnable listener) {
-        this.listener = listener;
+    public void setParent(@Nullable BlockEntity parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public boolean isValid() {
+        return this.parent == null || !this.parent.isRemoved();
     }
 
     @Override
@@ -57,7 +63,7 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
     @Override
     public void markModified() {
         this.modifications++;
-        if (this.listener != null) this.listener.run();
+        if (this.parent != null) this.parent.setChanged();
     }
 
     @Override
@@ -92,7 +98,7 @@ public abstract class ResourceStorageImpl<Resource, Slot extends ResourceSlot<Re
             this.transactions.clear();
             transaction.addOuterCloseCallback((res) -> {
                 assert res.wasCommitted();
-                if (this.listener != null) this.listener.run();
+                if (this.parent != null) this.parent.setChanged();
             });
         }
     }

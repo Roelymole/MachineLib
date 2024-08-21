@@ -32,6 +32,7 @@ import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,11 +45,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface ResourceStorage<Resource, Slot extends ResourceSlot<Resource>> extends Iterable<Slot>, MutableModifiable, SlottedStorageAccess<Resource, Slot>, Serializable<ListTag>, DeltaPacketSerializable<RegistryFriendlyByteBuf, long[]>, PacketSerializable<RegistryFriendlyByteBuf> {
     /**
-     * Set the listener for this storage. This listener will be called whenever the storage is modified.
+     * Set the parent for this storage. This parent will be notified whenever the storage is modified.
      *
-     * @param listener the listener to set.
+     * @param parent the parent of this storage.
      */
-    void setListener(Runnable listener);
+    void setParent(BlockEntity parent);
+
+    boolean isValid();
 
     /**
      * Create an exposed storage for this storage.

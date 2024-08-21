@@ -50,24 +50,24 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
 
     @Override
     public long insert(Variant variant, long maxAmount, TransactionContext transaction) {
-        return this.insertion && this.slot.getFilter().test(variant.getObject(), variant.getComponents()) ?
+        return this.supportsInsertion() && this.slot.getFilter().test(variant.getObject(), variant.getComponents()) ?
                 this.slot.insert(variant.getObject(), variant.getComponents(), maxAmount, transaction)
                 : 0;
     }
 
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
-        return this.extraction ? this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction) : 0;
+        return this.supportsExtraction() ? this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction) : 0;
     }
 
     @Override
     public boolean supportsInsertion() {
-        return this.insertion;
+        return this.insertion && this.slot.isValid() ;
     }
 
     @Override
     public boolean supportsExtraction() {
-        return this.extraction;
+        return this.extraction && this.slot.isValid() ;
     }
 
     @Override

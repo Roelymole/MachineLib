@@ -34,6 +34,7 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.LongTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -204,10 +205,15 @@ public interface MachineEnergyStorage extends EnergyStorage, Serializable<LongTa
     long externalExtractionRate();
 
     /**
-     * Sets the listener (called when the energy storage changes). Internal use only.
+     * Sets the parent of this energy storage (notified when the energy storage changes). Internal use only.
      */
     @ApiStatus.Internal
-    void setListener(Runnable listener);
+    void setParent(BlockEntity parent);
+
+    /**
+     * {@return whether the energy storage should still be interacted with}
+     */
+    boolean isValid();
 
     record Spec(long capacity, long insertion, long extraction) {
         public Spec {

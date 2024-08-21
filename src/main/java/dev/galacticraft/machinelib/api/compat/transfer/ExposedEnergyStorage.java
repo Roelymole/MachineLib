@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.api.compat.transfer;
 
+import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.impl.storage.exposed.ExposedEnergyStorageImpl;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +41,7 @@ public interface ExposedEnergyStorage extends EnergyStorage {
      * @return A new exposed energy storage.
      */
     @Contract("_, _, _ -> new")
-    static @NotNull ExposedEnergyStorage create(@NotNull EnergyStorage parent, long maxInsertion, long maxExtraction) {
+    static @NotNull ExposedEnergyStorage create(@NotNull MachineEnergyStorage parent, long maxInsertion, long maxExtraction) {
         return new ExposedEnergyStorageImpl(parent, maxInsertion, maxExtraction);
     }
 }

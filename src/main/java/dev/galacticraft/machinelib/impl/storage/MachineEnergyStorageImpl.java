@@ -29,6 +29,7 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.LongTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +42,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     private final long maxOutput;
     private final @Nullable EnergyStorage[] exposedStorages = new EnergyStorage[3];
     public long amount = 0;
-    private Runnable listener;
+    private BlockEntity parent;
 
     public MachineEnergyStorageImpl(long capacity, long maxInput, long maxOutput) {
         this.capacity = capacity;
@@ -199,8 +200,13 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     @Override
-    public void setListener(Runnable listener) {
-        this.listener = listener;
+    public void setParent(BlockEntity parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public boolean isValid() {
+        return this.parent == null || !this.parent.isRemoved();
     }
 
     @Override
@@ -235,7 +241,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     }
 
     private void markModified() {
-        if (this.listener != null) this.listener.run();
+        if (this.parent != null) this.parent.setChanged();
     }
 
     @Override

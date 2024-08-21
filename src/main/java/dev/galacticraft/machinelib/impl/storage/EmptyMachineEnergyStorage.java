@@ -27,6 +27,7 @@ import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.LongTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import team.reborn.energy.api.EnergyStorage;
@@ -138,7 +139,12 @@ public class EmptyMachineEnergyStorage implements MachineEnergyStorage {
     }
 
     @Override
-    public void setListener(Runnable listener) {
+    public void setParent(BlockEntity parent) {
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
     }
 
     @Override
