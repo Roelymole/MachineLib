@@ -26,8 +26,6 @@ import dev.galacticraft.machinelib.api.menu.SynchronizedMenu;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
@@ -83,12 +81,6 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
         return this.getBlockPos();
     }
 
-    // we override the update packet to circumvent nbt serialization
-    @Override
-    public final @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
-        return new CompoundTag();
-    }
-
     @Override
     public final @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
         CustomPacketPayload payload = this.createUpdatePayload();
@@ -130,8 +122,8 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
     /**
      * Marks the block entity for re-rendering.
      */
-    public void markForRerender() {
-        if (this.level != null) {
+    public void requestRerender() {
+        if (this.level != null && this.level.isClientSide) {
             this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 0);
         }
     }

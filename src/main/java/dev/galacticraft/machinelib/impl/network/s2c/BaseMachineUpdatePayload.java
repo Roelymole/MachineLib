@@ -53,7 +53,7 @@ public record BaseMachineUpdatePayload(BlockPos pos, IOConfig config) implements
         if (level != null && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
             this.config.copyInto(machine.getIOConfig());
             machine.setChanged();
-            machine.markForRerender();
+            machine.requestRerender();
         }
     }
 }

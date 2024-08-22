@@ -279,6 +279,13 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
     }
 
     @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        CompoundTag tag = super.getUpdateTag(registryLookup);
+        tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
+        return tag;
+    }
+
+    @Override
     public @NotNull CustomPacketPayload createUpdatePayload() {
         return new BaseMachineUpdatePayload(this.worldPosition, this.configuration);
     }
@@ -351,9 +358,8 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
                 this.flow = flow;
 
                 ConfiguredBlockEntity.this.setChanged();
-                if (ConfiguredBlockEntity.this.level.isClientSide) {
-                    ConfiguredBlockEntity.this.markForRerender();
-                } else {
+                ConfiguredBlockEntity.this.requestRerender();
+                if (ConfiguredBlockEntity.this.level != null && !ConfiguredBlockEntity.this.level.isClientSide) {
                     ConfiguredBlockEntity.this.broadcastToPlayers(new SideConfigurationUpdatePayload(ConfiguredBlockEntity.this.worldPosition, this.face, type, flow));
                 }
             }
