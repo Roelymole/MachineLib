@@ -108,7 +108,7 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
         EnergyStorage.SIDED.registerForBlockEntity((machine, direction) -> {
             if (direction == null) return machine.energyStorage().getExposedStorage(ResourceFlow.BOTH);
             IOFace ioFace = machine.getIOConfig().get(Objects.requireNonNull(BlockFace.from(machine.getBlockState(), direction)));
-            return ioFace.getType().willAcceptResource(ResourceType.FLUID) ? machine.energyStorage().getExposedStorage(ioFace.getFlow()) : null;
+            return ioFace.getType().willAcceptResource(ResourceType.ENERGY) ? machine.energyStorage().getExposedStorage(ioFace.getFlow()) : null;
         }, type);
         ItemStorage.SIDED.registerForBlockEntity((machine, direction) -> {
             if (direction == null) return machine.itemStorage().getExposedStorage(ResourceFlow.BOTH);
@@ -118,7 +118,7 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
         FluidStorage.SIDED.registerForBlockEntity((machine, direction) -> {
             if (direction == null) return machine.fluidStorage().getExposedStorage(ResourceFlow.BOTH);
             IOFace ioFace = machine.getIOConfig().get(Objects.requireNonNull(BlockFace.from(machine.getBlockState(), direction)));
-            return ioFace.getType().willAcceptResource(ResourceType.ENERGY) ? machine.fluidStorage().getExposedStorage(ioFace.getFlow()) : null;
+            return ioFace.getType().willAcceptResource(ResourceType.FLUID) ? machine.fluidStorage().getExposedStorage(ioFace.getFlow()) : null;
         }, type);
     }
 
