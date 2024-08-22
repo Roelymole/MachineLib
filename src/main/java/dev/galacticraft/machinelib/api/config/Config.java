@@ -61,14 +61,14 @@ public interface Config {
     void setEnableColoredVanillaFluidNames(boolean enabled);
 
     /**
-     * {@return what unit fluids should be displayed in}
+     * {@return the unit that fluids should be displayed in}
      */
     FluidUnits fluidUnits();
 
     /**
-     * Sets what unit fluids should be displayed in.
+     * Sets the unit that fluids should be displayed in.
      *
-     * @param units what unit fluids should be displayed in
+     * @param units the unit that fluids should be displayed in
      */
     void getFluidUnits(FluidUnits units);
 

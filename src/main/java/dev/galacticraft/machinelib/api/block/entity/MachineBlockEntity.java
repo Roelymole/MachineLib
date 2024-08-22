@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.api.block.entity;
 
 import dev.galacticraft.machinelib.api.machine.MachineStatus;
+import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.storage.MachineEnergyStorage;
 import dev.galacticraft.machinelib.api.storage.MachineFluidStorage;
@@ -31,6 +32,7 @@ import dev.galacticraft.machinelib.api.storage.StorageSpec;
 import dev.galacticraft.machinelib.api.storage.slot.FluidResourceSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ItemResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.impl.Constant;
@@ -103,17 +105,20 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
     }
 
     public static <T extends MachineBlockEntity> void registerProviders(@NotNull BlockEntityType<? extends T> type) {
-        EnergyStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> {
-            if (direction == null) return blockEntity.energyStorage().getExposedStorage(ResourceFlow.BOTH);
-            return blockEntity.energyStorage().getExposedStorage(blockEntity.getIOConfig().get(Objects.requireNonNull(BlockFace.from(blockEntity.getBlockState(), direction))).getFlow());
+        EnergyStorage.SIDED.registerForBlockEntity((machine, direction) -> {
+            if (direction == null) return machine.energyStorage().getExposedStorage(ResourceFlow.BOTH);
+            IOFace ioFace = machine.getIOConfig().get(Objects.requireNonNull(BlockFace.from(machine.getBlockState(), direction)));
+            return ioFace.getType().willAcceptResource(ResourceType.FLUID) ? machine.energyStorage().getExposedStorage(ioFace.getFlow()) : null;
         }, type);
-        ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> {
-            if (direction == null) return blockEntity.itemStorage().getExposedStorage(ResourceFlow.BOTH);
-            return blockEntity.itemStorage().getExposedStorage(blockEntity.getIOConfig().get(Objects.requireNonNull(BlockFace.from(blockEntity.getBlockState(), direction))).getFlow());
+        ItemStorage.SIDED.registerForBlockEntity((machine, direction) -> {
+            if (direction == null) return machine.itemStorage().getExposedStorage(ResourceFlow.BOTH);
+            IOFace ioFace = machine.getIOConfig().get(Objects.requireNonNull(BlockFace.from(machine.getBlockState(), direction)));
+            return ioFace.getType().willAcceptResource(ResourceType.ITEM) ? machine.itemStorage().getExposedStorage(ioFace.getFlow()) : null;
         }, type);
-        FluidStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> {
-            if (direction == null) return blockEntity.fluidStorage().getExposedStorage(ResourceFlow.BOTH);
-            return blockEntity.fluidStorage().getExposedStorage(blockEntity.getIOConfig().get(Objects.requireNonNull(BlockFace.from(blockEntity.getBlockState(), direction))).getFlow());
+        FluidStorage.SIDED.registerForBlockEntity((machine, direction) -> {
+            if (direction == null) return machine.fluidStorage().getExposedStorage(ResourceFlow.BOTH);
+            IOFace ioFace = machine.getIOConfig().get(Objects.requireNonNull(BlockFace.from(machine.getBlockState(), direction)));
+            return ioFace.getType().willAcceptResource(ResourceType.ENERGY) ? machine.fluidStorage().getExposedStorage(ioFace.getFlow()) : null;
         }, type);
     }
 
