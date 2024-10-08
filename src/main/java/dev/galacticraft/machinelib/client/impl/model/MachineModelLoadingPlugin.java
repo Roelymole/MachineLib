@@ -52,7 +52,7 @@ public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<M
         JsonObject json = this.data.remove(context.id());
         if (json != null) {
             Codec<? extends TextureProvider<?>> codec = MachineModelRegistry.getProviderFactoryOrDefault(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER)));
-            DataResult<? extends Pair<? extends TextureProvider<?>, JsonElement>> sprites = codec.decode(JsonOps.INSTANCE, json.getAsJsonObject("data"));
+            DataResult<? extends Pair<? extends TextureProvider<?>, JsonElement>> sprites = codec.decode(JsonOps.INSTANCE, json.get("data"));
             JsonElement baseId = json.get("base");
             ResourceLocation base = baseId == null ? context.id().withPath("base") : ResourceLocation.parse(baseId.getAsString());
             MachineUnbakedModel model = new MachineUnbakedModel(sprites.getOrThrow().getFirst(), base);

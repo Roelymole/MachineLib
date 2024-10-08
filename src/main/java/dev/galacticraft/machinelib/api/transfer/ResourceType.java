@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.api.transfer;
 
+import com.mojang.serialization.Codec;
 import dev.galacticraft.machinelib.impl.Constant;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
@@ -59,7 +60,7 @@ public enum ResourceType implements StringRepresentable {
      */
     ANY(0b111, Component.translatable(Constant.TranslationKey.ANY).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
 
-    public static final StringRepresentable.EnumCodec<ResourceType> CODEC = StringRepresentable.fromEnum(ResourceType::values);
+    public static final Codec<ResourceType> CODEC = StringRepresentable.fromValues(ResourceType::values);
     public static final StreamCodec<ByteBuf, ResourceType> STREAM_CODEC = ByteBufCodecs.BYTE.map(i -> i == -1 ? null : values()[i], face -> face == null ? -1 : (byte) face.ordinal());
 
     /**

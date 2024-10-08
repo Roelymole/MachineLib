@@ -36,10 +36,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
+import net.fabricmc.fabric.api.renderer.v1.model.ModelHelper;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -58,7 +58,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,17 +66,6 @@ import java.util.function.Supplier;
 @Environment(EnvType.CLIENT)
 @ApiStatus.Internal
 public final class MachineBakedModel implements FabricBakedModel, BakedModel {
-    private static final ItemTransforms ITEM_TRANSFORMATION = new ItemTransforms(
-            new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 0.25f, 0), new Vector3f(0.375f, 0.375f, 0.375f)),
-            new ItemTransform(new Vector3f(75, 45, 0), new Vector3f(0, 0.25f, 0), new Vector3f(0.375f, 0.375f, 0.375f)),
-            new ItemTransform(new Vector3f(0, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.40f, 0.40f, 0.40f)),
-            new ItemTransform(new Vector3f(0, 45, 0), new Vector3f(0, 0, 0), new Vector3f(0.40f, 0.40f, 0.40f)),
-            ItemTransform.NO_TRANSFORM,
-            new ItemTransform(new Vector3f(30, 225, 0), new Vector3f(0, 0, 0), new Vector3f(0.625f, 0.625f, 0.625f)),
-            new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0.2f, 0), new Vector3f(0.25f, 0.25f, 0.25f)),
-            new ItemTransform(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), new Vector3f(0.5f, 0.5f, 0.5f))
-    );
-
     private final TextureProvider.BoundTextureProvider provider;
     private final MachineTextureBase.Bound base;
 
@@ -101,8 +89,8 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     private boolean transformItem(IOConfig config, @NotNull MutableQuadView quad) {
         BlockFace face = BlockFace.from(Direction.NORTH, quad.nominalFace());
-        IOFace IOFace = config.get(face);
         assert face != null;
+        IOFace IOFace = config.get(face);
         quad.spriteBake(getSprite(face,
                         config,
                         IOFace.getType(), IOFace.getFlow()),
@@ -245,7 +233,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     @Override
     public @NotNull ItemTransforms getTransforms() {
-        return ITEM_TRANSFORMATION;
+        return ModelHelper.MODEL_TRANSFORM_BLOCK;
     }
 
     @Override

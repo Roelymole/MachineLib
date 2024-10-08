@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.client.api.model.sprite;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.util.BlockFace;
@@ -36,10 +37,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 public interface TextureProvider<B extends TextureProvider.BoundTextureProvider> {
-    Codec<Material> MATERIAL_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ResourceLocation.CODEC.fieldOf("atlas").orElse(TextureAtlas.LOCATION_BLOCKS).forGetter(Material::atlasLocation),
-            ResourceLocation.CODEC.fieldOf("texture").forGetter(Material::texture)
-    ).apply(instance, Material::new));
+    Codec<Material> MATERIAL_CODEC = Codec.withAlternative(
+            RecordCodecBuilder.create(instance -> instance.group(
+                    ResourceLocation.CODEC.fieldOf("atlas").orElse(TextureAtlas.LOCATION_BLOCKS).forGetter(Material::atlasLocation),
+                    ResourceLocation.CODEC.fieldOf("texture").forGetter(Material::texture)
+            ).apply(instance, Material::new)),
+            ResourceLocation.CODEC.comapFlatMap(tex -> DataResult.success(new Material(TextureAtlas.LOCATION_BLOCKS, tex)), Material::atlasLocation)
+    );
 
     B bind(Function<Material, TextureAtlasSprite> atlas);
 
