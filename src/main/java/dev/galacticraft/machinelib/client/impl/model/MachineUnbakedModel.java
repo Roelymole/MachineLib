@@ -22,8 +22,7 @@
 
 package dev.galacticraft.machinelib.client.impl.model;
 
-import com.google.gson.JsonObject;
-import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
+import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import dev.galacticraft.machinelib.impl.MachineLib;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -39,12 +38,12 @@ import java.util.function.Function;
 @ApiStatus.Internal
 public final class MachineUnbakedModel implements UnbakedModel {
     private static boolean rendererWarn = false;
-    private final MachineModelRegistry.SpriteProviderFactory factory;
-    private final JsonObject spriteInfo;
+    private final TextureProvider<?> provider;
+    private final ResourceLocation base;
 
-    public MachineUnbakedModel(MachineModelRegistry.SpriteProviderFactory factory, JsonObject spriteInfo) {
-        this.factory = factory;
-        this.spriteInfo = spriteInfo;
+    public MachineUnbakedModel(TextureProvider<?> provider, ResourceLocation base) {
+        this.provider = provider;
+        this.base = base;
 
         if (!RendererAccess.INSTANCE.hasRenderer() && !rendererWarn) {
             rendererWarn = true;
@@ -59,11 +58,10 @@ public final class MachineUnbakedModel implements UnbakedModel {
 
     @Override
     public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
-
     }
 
     @Override
     public @NotNull BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer) {
-        return new MachineBakedModel(this.factory, this.spriteInfo, textureGetter);
+        return new MachineBakedModel(this.provider.bind(textureGetter), MachineModelRegistryImpl.TEXTURE_BASES.get(this.base).bind(textureGetter));
     }
 }

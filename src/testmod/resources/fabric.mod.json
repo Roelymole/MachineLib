@@ -25,7 +25,7 @@
       "dev.galacticraft.machinelib.testmod.TestMod"
     ],
     "client": [
-      "dev.galacticraft.machinelib.testmod.TestModClient"
+      "dev.galacticraft.machinelib.testmod.client.TestModClient"
     ],
     "fabric-gametest": [
       "dev.galacticraft.machinelib.testmod.gametest.GeneratorTests"

@@ -189,7 +189,7 @@ public abstract class MachineBlock extends BaseBlock {
         super.setPlacedBy(level, pos, state, placer, itemStack);
         if (!level.isClientSide && placer instanceof ServerPlayer player) {
             if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
-                machine.getSecurity().tryUpdate(player);
+                machine.getSecurity().tryUpdate(player.getUUID());
             }
         }
     }
@@ -227,7 +227,7 @@ public abstract class MachineBlock extends BaseBlock {
             if (entity instanceof MachineBlockEntity machine) {
                 SecuritySettings security = machine.getSecurity();
 
-                security.tryUpdate(player);
+                security.tryUpdate(player.getUUID());
                 if (security.hasAccess(player)) {
                     return super.useWithoutItem(state, level, pos, player, hit);
                 }

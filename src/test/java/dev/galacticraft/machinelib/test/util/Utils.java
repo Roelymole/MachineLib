@@ -30,6 +30,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.ItemLike;
 
 import java.util.Random;
 
@@ -43,8 +44,10 @@ public class Utils {
         return DataComponentPatch.builder().set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag)).build();
     }
 
-    public static ItemStack itemStack(Item item, DataComponentPatch components, int amount) {
-        return new ItemStack(item.builtInRegistryHolder(), amount, components);
+    public static ItemStack itemStack(ItemLike item, DataComponentPatch components, int amount) {
+        ItemStack stack = new ItemStack(item, amount);
+        stack.applyComponents(components);
+        return stack;
     }
 
     public static RegistryFriendlyByteBuf createBuf() {

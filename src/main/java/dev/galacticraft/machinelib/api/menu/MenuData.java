@@ -22,8 +22,8 @@
 
 package dev.galacticraft.machinelib.api.menu;
 
-import dev.architectury.utils.value.FloatSupplier;
 import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
+import dev.galacticraft.machinelib.api.util.FloatSupplier;
 import dev.galacticraft.machinelib.impl.menu.sync.*;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.floats.FloatConsumer;

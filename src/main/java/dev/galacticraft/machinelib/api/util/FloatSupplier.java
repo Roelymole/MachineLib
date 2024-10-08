@@ -20,20 +20,20 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.testmod;
+package dev.galacticraft.machinelib.api.util;
 
-import dev.galacticraft.machinelib.testmod.client.screen.GeneratorScreen;
-import dev.galacticraft.machinelib.testmod.client.screen.MelterScreen;
-import dev.galacticraft.machinelib.testmod.client.screen.MixerScreen;
-import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
-import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.gui.screens.MenuScreens;
+import java.util.function.Supplier;
 
-public class TestModClient implements ClientModInitializer {
+/**
+ * A {@link Supplier}, but for shorts
+ * @see java.util.function.DoubleSupplier
+ */
+@FunctionalInterface
+public interface FloatSupplier extends Supplier<Float> {
+    float getAsFloat();
+
     @Override
-    public void onInitializeClient() {
-        MenuScreens.register(TestModMenuTypes.GENERATOR, GeneratorScreen::new);
-        MenuScreens.register(TestModMenuTypes.MIXER, MixerScreen::new);
-        MenuScreens.register(TestModMenuTypes.MELTER, MelterScreen::new);
+    default Float get() {
+        return this.getAsFloat();
     }
 }

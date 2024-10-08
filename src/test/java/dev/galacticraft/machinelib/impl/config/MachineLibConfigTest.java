@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.test.misc;
+package dev.galacticraft.machinelib.impl.config;
 
 import dev.galacticraft.machinelib.api.config.Config;
 import dev.galacticraft.machinelib.test.MinecraftTest;
@@ -33,7 +33,7 @@ import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ConfigTest implements MinecraftTest {
+class MachineLibConfigTest implements MinecraftTest {
     private static final File FILE = FabricLoader.getInstance().getGameDir().resolve(".machinelib_test_config.json").toFile();
 
     private Config config;

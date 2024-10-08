@@ -167,6 +167,6 @@ public abstract class MachineGameTest<Machine extends MachineBlockEntity> extend
      */
     protected Machine createMachine(GameTestHelper helper) {
         helper.setBlock(MACHINE_POS, this.block);
-        return (Machine) helper.getBlockEntity(MACHINE_POS);
+        return helper.getBlockEntity(MACHINE_POS);
     }
 }

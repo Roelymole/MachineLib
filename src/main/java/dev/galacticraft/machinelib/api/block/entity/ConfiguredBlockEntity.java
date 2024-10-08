@@ -42,7 +42,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -50,6 +49,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements RenderDataBlockEntity {
     private final @NotNull IOConfig configuration;
@@ -324,9 +325,9 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
      */
     private class InternalSecuritySettings extends SecuritySettings {
         @Override
-        public void tryUpdate(@NotNull Player player) {
+        public void tryUpdate(@NotNull UUID uuid) {
             if (this.owner == null) {
-                this.owner = player.getUUID();
+                this.owner = uuid;
                 ConfiguredBlockEntity.this.setChanged();
             }
         }

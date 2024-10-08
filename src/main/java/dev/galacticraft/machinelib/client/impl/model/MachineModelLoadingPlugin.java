@@ -22,8 +22,14 @@
 
 package dev.galacticraft.machinelib.client.impl.model;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
+import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelResolver;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
@@ -45,8 +51,11 @@ public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<M
         assert this.data != null;
         JsonObject json = this.data.remove(context.id());
         if (json != null) {
-            MachineUnbakedModel model = new MachineUnbakedModel(MachineModelRegistry.getProviderFactory(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER))),
-                    json.getAsJsonObject("sprites"));
+            Codec<? extends TextureProvider<?>> codec = MachineModelRegistry.getProviderFactoryOrDefault(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER)));
+            DataResult<? extends Pair<? extends TextureProvider<?>, JsonElement>> sprites = codec.decode(JsonOps.INSTANCE, json.getAsJsonObject("data"));
+            JsonElement baseId = json.get("base");
+            ResourceLocation base = baseId == null ? context.id().withPath("base") : ResourceLocation.parse(baseId.getAsString());
+            MachineUnbakedModel model = new MachineUnbakedModel(sprites.getOrThrow().getFirst(), base);
             this.pendingItemModels.put(ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
             return model;
         }

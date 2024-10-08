@@ -20,38 +20,25 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.menu.sync;
+package dev.galacticraft.machinelib.testmod.client;
 
-import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
-import dev.galacticraft.machinelib.api.util.FloatSupplier;
-import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.floats.FloatConsumer;
-import org.jetbrains.annotations.NotNull;
+import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
+import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
+import dev.galacticraft.machinelib.testmod.Constant;
+import dev.galacticraft.machinelib.testmod.client.screen.GeneratorScreen;
+import dev.galacticraft.machinelib.testmod.client.screen.MelterScreen;
+import dev.galacticraft.machinelib.testmod.client.screen.MixerScreen;
+import dev.galacticraft.machinelib.testmod.menu.TestModMenuTypes;
+import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.gui.screens.MenuScreens;
 
-public record FloatPacketSerializable(FloatSupplier getter,
-                                      FloatConsumer setter) implements DeltaPacketSerializable<ByteBuf, float[]> {
+public class TestModClient implements ClientModInitializer {
     @Override
-    public boolean hasChanged(float[] previous) {
-        return previous[0] != this.getter.getAsFloat();
-    }
+    public void onInitializeClient() {
+        MenuScreens.register(TestModMenuTypes.GENERATOR, GeneratorScreen::new);
+        MenuScreens.register(TestModMenuTypes.MIXER, MixerScreen::new);
+        MenuScreens.register(TestModMenuTypes.MELTER, MelterScreen::new);
 
-    @Override
-    public void copyInto(float[] other) {
-        other[0] = this.getter.getAsFloat();
-    }
-
-    @Override
-    public void readPacket(@NotNull ByteBuf buf) {
-        this.setter.accept(buf.readFloat());
-    }
-
-    @Override
-    public void writePacket(@NotNull ByteBuf buf) {
-        buf.writeFloat(this.getter.getAsFloat());
-    }
-
-    @Override
-    public float[] createEquivalent() {
-        return new float[1];
+        MachineModelRegistry.registerBase(Constant.id("base"), MachineTextureBase.prefixed(Constant.MOD_ID, "block/machine_"));
     }
 }

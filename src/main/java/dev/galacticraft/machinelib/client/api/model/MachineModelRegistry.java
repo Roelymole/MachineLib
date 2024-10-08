@@ -23,84 +23,57 @@
 package dev.galacticraft.machinelib.client.api.model;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonObject;
-import dev.galacticraft.machinelib.api.machine.MachineRenderData;
-import dev.galacticraft.machinelib.api.util.BlockFace;
+import com.mojang.serialization.Codec;
+import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
+import dev.galacticraft.machinelib.client.api.model.sprite.SingleTextureProvider;
+import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import dev.galacticraft.machinelib.client.impl.model.MachineModelRegistryImpl;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 /**
  * A registry for {@link MachineBakedModel} sprite providers.
  */
-public interface MachineModelRegistry {
-    String MARKER = "machinelib:generate";
-    Map<ResourceLocation, SpriteProviderFactory> FACTORIES = new HashMap<>();
+public final class MachineModelRegistry {
+    public static final String MARKER = "machinelib:generate";
 
     /**
      * Registers a sprite provider for a block.
      *
-     * @param id The id to register the provider for.
-     * @param factory The provider to register.
+     * @param id the id to register the provider for
+     * @param codec the provider to register
      */
-    static void register(@NotNull ResourceLocation id, @NotNull SpriteProviderFactory factory) {
+    public static void register(@NotNull ResourceLocation id, @NotNull Codec<? extends TextureProvider<?>> codec) {
         Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(factory);
+        Preconditions.checkNotNull(codec);
 
-        FACTORIES.put(id, factory);
+        MachineModelRegistryImpl.FACTORIES.put(id, codec);
+    }
+
+    public static void registerBase(@NotNull ResourceLocation id, @NotNull MachineTextureBase bundle) {
+        Preconditions.checkNotNull(id);
+        Preconditions.checkNotNull(bundle);
+
+        MachineModelRegistryImpl.TEXTURE_BASES.put(id, bundle);
     }
 
     /**
      * {@return the registered provider, or null if none is registered}
      *
-     * @param providerId The provider id to get the provider for.
+     * @param providerId the provider id to get the provider for
      */
-    static @Nullable SpriteProviderFactory getProviderFactory(@NotNull ResourceLocation providerId) {
-        return FACTORIES.get(providerId);
+    public static @Nullable Codec<? extends TextureProvider<?>> getProviderFactory(@NotNull ResourceLocation providerId) {
+        return MachineModelRegistryImpl.FACTORIES.get(providerId);
     }
 
-    static @NotNull SpriteProviderFactory getProviderFactoryOrDefault(@NotNull ResourceLocation providerId) {
-        return FACTORIES.getOrDefault(providerId, SpriteProviderFactory.DEFAULT);
-    }
-
-    @FunctionalInterface
-    interface SpriteProviderFactory {
-        SpriteProviderFactory DEFAULT = new SpriteProviderFactory() {
-            @Contract(value = "_, _ -> new", pure = true)
-            @Override
-            public @NotNull SpriteProvider create(@NotNull JsonObject json, @NotNull Function<Material, TextureAtlasSprite> atlas) {
-                return new SpriteProvider() {
-                    private final TextureAtlasSprite machineSide = atlas.apply(MachineBakedModel.MACHINE_SIDE);
-                    private final TextureAtlasSprite machine = atlas.apply(MachineBakedModel.MACHINE);
-
-                    @Override
-                    public @NotNull TextureAtlasSprite getSpritesForState(@Nullable MachineRenderData renderData, @NotNull BlockFace face) {
-                        if (face.side()) return this.machineSide;
-                        return this.machine;
-                    }
-                };
-            }
-        };
-
-        SpriteProvider create(@NotNull JsonObject json, @NotNull Function<Material, TextureAtlasSprite> atlas);
-    }
-
-    @FunctionalInterface
-    interface SpriteProvider {
-        /**
-         * @param face The face that is being textured.
-         * @return The appropriate sprite to render for the given face.
-         */
-        @Contract(pure = true)
-        @NotNull
-        TextureAtlasSprite getSpritesForState(@Nullable MachineRenderData data, @NotNull BlockFace face);
+    /**
+     * {@return the registered provider, or {@link SingleTextureProvider#MISSING_CODEC} if none is registered}
+     *
+     * @param providerId the provider id to get the provider for
+     */
+    public static @NotNull Codec<? extends TextureProvider<?>> getProviderFactoryOrDefault(@NotNull ResourceLocation providerId) {
+        return MachineModelRegistryImpl.FACTORIES.getOrDefault(providerId, SingleTextureProvider.CODEC);
     }
 }

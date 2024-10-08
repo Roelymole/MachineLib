@@ -29,8 +29,11 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
+import dev.galacticraft.machinelib.client.api.model.sprite.AxisSpriteProvider;
+import dev.galacticraft.machinelib.client.api.model.sprite.SimpleTextureProvider;
+import dev.galacticraft.machinelib.client.api.model.sprite.SingleTextureProvider;
 import dev.galacticraft.machinelib.client.impl.model.MachineModelLoadingPlugin;
+import dev.galacticraft.machinelib.client.api.model.sprite.FrontSidedSpriteProvider;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.network.MachineLibPackets;
 import net.fabricmc.api.ClientModInitializer;
@@ -68,11 +71,11 @@ public final class MachineLibClient implements ClientModInitializer {
             return map;
         }), MachineModelLoadingPlugin.INSTANCE);
 
-        // Builtin Sprite Providers
-        MachineModelRegistry.register(Constant.id("default"), MachineModelRegistry.SpriteProviderFactory.DEFAULT);
-        MachineModelRegistry.register(Constant.id("front_face"), MachineBakedModel.FrontFaceSpriteProvider::new);
-        MachineModelRegistry.register(Constant.id("single"), MachineBakedModel.SingleSpriteProvider::new);
-        MachineModelRegistry.register(Constant.id("z_axis"), MachineBakedModel.ZAxisSpriteProvider::new);
+        // Builtin Texture Providers
+        MachineModelRegistry.register(Constant.id("missingno"), SingleTextureProvider.MISSING_CODEC);
+        MachineModelRegistry.register(Constant.id("single"), SingleTextureProvider.CODEC);
+        MachineModelRegistry.register(Constant.id("simple"), SimpleTextureProvider.CODEC);
+        MachineModelRegistry.register(Constant.id("axis"), AxisSpriteProvider.CODEC);
 
         MachineLibPackets.registerClient();
     }

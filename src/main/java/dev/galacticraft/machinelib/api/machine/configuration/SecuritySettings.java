@@ -54,11 +54,11 @@ public class SecuritySettings implements Serializable<CompoundTag>, DeltaPacketS
     /**
      * Updates the owner of the linked machine if it is not already set.
      *
-     * @param player the player to try to set as the owner
+     * @param uuid the player to try to set as the owner
      */
-    public void tryUpdate(@NotNull Player player) {
+    public void tryUpdate(@NotNull UUID uuid) {
         if (this.owner == null) {
-            this.owner = player.getUUID();
+            this.owner = uuid;
         }
     }
 

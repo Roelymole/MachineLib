@@ -20,38 +20,17 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.impl.menu.sync;
+package dev.galacticraft.machinelib.client.impl.model;
 
-import dev.galacticraft.machinelib.api.misc.DeltaPacketSerializable;
-import dev.galacticraft.machinelib.api.util.FloatSupplier;
-import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.floats.FloatConsumer;
-import org.jetbrains.annotations.NotNull;
+import com.mojang.serialization.Codec;
+import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
+import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
+import net.minecraft.resources.ResourceLocation;
 
-public record FloatPacketSerializable(FloatSupplier getter,
-                                      FloatConsumer setter) implements DeltaPacketSerializable<ByteBuf, float[]> {
-    @Override
-    public boolean hasChanged(float[] previous) {
-        return previous[0] != this.getter.getAsFloat();
-    }
+import java.util.HashMap;
+import java.util.Map;
 
-    @Override
-    public void copyInto(float[] other) {
-        other[0] = this.getter.getAsFloat();
-    }
-
-    @Override
-    public void readPacket(@NotNull ByteBuf buf) {
-        this.setter.accept(buf.readFloat());
-    }
-
-    @Override
-    public void writePacket(@NotNull ByteBuf buf) {
-        buf.writeFloat(this.getter.getAsFloat());
-    }
-
-    @Override
-    public float[] createEquivalent() {
-        return new float[1];
-    }
+public class MachineModelRegistryImpl {
+    public static final Map<ResourceLocation, Codec<? extends TextureProvider<?>>> FACTORIES = new HashMap<>();
+    public static final Map<ResourceLocation, MachineTextureBase> TEXTURE_BASES = new HashMap<>();
 }

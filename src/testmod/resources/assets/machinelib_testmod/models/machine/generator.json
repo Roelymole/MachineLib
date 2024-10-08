@@ -1,3 +1,6 @@
 {
-  "machinelib:generate": "machinelib:default"
+  "machinelib:generate": "machinelib:single",
+  "data": {
+    "texture": "machinelib_testmod:block/machine"
+  }
 }
