@@ -24,16 +24,14 @@ package dev.galacticraft.machinelib.client.impl;
 
 import com.google.common.base.Charsets;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-import com.mojang.datafixers.util.Pair;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
 import dev.galacticraft.machinelib.client.api.model.sprite.AxisSpriteProvider;
 import dev.galacticraft.machinelib.client.api.model.sprite.SimpleTextureProvider;
 import dev.galacticraft.machinelib.client.api.model.sprite.SingleTextureProvider;
+import dev.galacticraft.machinelib.client.impl.model.MachineModelData;
 import dev.galacticraft.machinelib.client.impl.model.MachineModelLoadingPlugin;
-import dev.galacticraft.machinelib.client.api.model.sprite.FrontSidedSpriteProvider;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.network.MachineLibPackets;
 import net.fabricmc.api.ClientModInitializer;
@@ -43,33 +41,29 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @ApiStatus.Internal
 public final class MachineLibClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        PreparableModelLoadingPlugin.register((resourceManager, executor) -> CompletableFuture.supplyAsync(() -> resourceManager.listResources("models/machine", s -> s.getPath().endsWith(".json")), executor).thenApplyAsync(entries -> {
-            Map<ResourceLocation, JsonObject> map = new HashMap<>();
-
-            entries.entrySet().parallelStream().map(entry -> CompletableFuture.supplyAsync(() -> {
-                        JsonElement element;
-                        try (JsonReader reader = new JsonReader(new InputStreamReader(entry.getValue().open(), Charsets.UTF_8))) {
-                            element = Streams.parse(reader);
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                        String path = entry.getKey().getPath();
-                        return new Pair<>(ResourceLocation.fromNamespaceAndPath(entry.getKey().getNamespace(), path.substring(path.indexOf('/') + 1, path.lastIndexOf('.'))), element);
-                    }, executor))
-                    .map(CompletableFuture::join)
-                    .filter(pair -> pair.getSecond().isJsonObject() && pair.getSecond().getAsJsonObject().has(MachineModelRegistry.MARKER))
-                    .forEach(pair -> map.put(pair.getFirst(), pair.getSecond().getAsJsonObject()));
-
-            return map;
-        }), MachineModelLoadingPlugin.INSTANCE);
+        PreparableModelLoadingPlugin.register((resourceManager, executor) ->
+                CompletableFuture.supplyAsync(() -> resourceManager.listResources("models/machine", s -> s.getPath().endsWith(".json")), executor)
+                        .thenComposeAsync(entries -> {
+                            MachineModelData modelData = new MachineModelData();
+                            return CompletableFuture.allOf(entries.entrySet().parallelStream().map(entry -> CompletableFuture.supplyAsync(() -> {
+                                        try (JsonReader reader = new JsonReader(new InputStreamReader(entry.getValue().open(), Charsets.UTF_8))) {
+                                            JsonElement element = Streams.parse(reader);
+                                            ResourceLocation id = entry.getKey();
+                                            String path = id.getPath();
+                                            modelData.register(ResourceLocation.fromNamespaceAndPath(id.getNamespace(), path.substring(path.indexOf('/') + 1, path.lastIndexOf('.'))), element);
+                                        } catch (IOException ex) {
+                                            throw new RuntimeException(ex);
+                                        }
+                                        return null;
+                                    }, executor)).toArray(CompletableFuture[]::new)
+                            ).thenApplyAsync(v -> modelData);
+                        }), MachineModelLoadingPlugin.INSTANCE);
 
         // Builtin Texture Providers
         MachineModelRegistry.register(Constant.id("missingno"), SingleTextureProvider.MISSING_CODEC);

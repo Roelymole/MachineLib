@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.client.impl.model;
 
+import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import dev.galacticraft.machinelib.impl.MachineLib;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
@@ -38,12 +39,13 @@ import java.util.function.Function;
 @ApiStatus.Internal
 public final class MachineUnbakedModel implements UnbakedModel {
     private static boolean rendererWarn = false;
-    private final TextureProvider<?> provider;
-    private final ResourceLocation base;
+    private final @NotNull TextureProvider<?> provider;
+    private final @NotNull ResourceLocation baseId;
+    private MachineTextureBase base = null;
 
-    public MachineUnbakedModel(TextureProvider<?> provider, ResourceLocation base) {
+    public MachineUnbakedModel(@NotNull TextureProvider<?> provider, @NotNull ResourceLocation baseId) {
         this.provider = provider;
-        this.base = base;
+        this.baseId = baseId;
 
         if (!RendererAccess.INSTANCE.hasRenderer() && !rendererWarn) {
             rendererWarn = true;
@@ -53,15 +55,23 @@ public final class MachineUnbakedModel implements UnbakedModel {
 
     @Override
     public @NotNull Collection<ResourceLocation> getDependencies() {
-        return Collections.emptyList();
+        return Collections.singleton(this.baseId);
     }
 
     @Override
     public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
+        UnbakedModel model = function.apply(this.baseId);
+        if (model instanceof MachineTextureBase tex) {
+            this.base = tex;
+        } else {
+            if (model == null) throw new IllegalStateException("Machine must have a base model!");
+            throw new IllegalArgumentException("Base model is not a MachineTextureBase!");
+        }
     }
 
     @Override
     public @NotNull BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer) {
-        return new MachineBakedModel(this.provider.bind(textureGetter), MachineModelRegistryImpl.TEXTURE_BASES.get(this.base).bind(textureGetter));
+        if (this.base == null) throw new IllegalStateException("Machine unbaked model has not been initialized!");
+        return new MachineBakedModel(this.provider.bind(textureGetter), this.base.bind(textureGetter));
     }
 }

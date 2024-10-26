@@ -44,10 +44,10 @@ val wthit = project.property("wthit.version").toString()
 plugins {
     java
     `maven-publish`
-    id("fabric-loom") version("1.7-SNAPSHOT")
+    id("fabric-loom") version("1.8-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
     id("org.ajoberstar.grgit") version("5.2.2")
-    id("dev.galacticraft.mojarn") version("0.5.0+13")
+    id("dev.galacticraft.mojarn") version("0.5.1+14")
 }
 
 group = "dev.galacticraft"

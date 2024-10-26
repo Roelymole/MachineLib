@@ -24,7 +24,6 @@ package dev.galacticraft.machinelib.client.api.model;
 
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.sprite.SingleTextureProvider;
 import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import dev.galacticraft.machinelib.client.impl.model.MachineBakedModel;
@@ -37,7 +36,8 @@ import org.jetbrains.annotations.Nullable;
  * A registry for {@link MachineBakedModel} sprite providers.
  */
 public final class MachineModelRegistry {
-    public static final String MARKER = "machinelib:generate";
+    public static final String MARKER = "machinelib:type";
+    public static final String BASE_TYPE = "base";
 
     /**
      * Registers a sprite provider for a block.
@@ -52,19 +52,12 @@ public final class MachineModelRegistry {
         MachineModelRegistryImpl.FACTORIES.put(id, codec);
     }
 
-    public static void registerBase(@NotNull ResourceLocation id, @NotNull MachineTextureBase bundle) {
-        Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(bundle);
-
-        MachineModelRegistryImpl.TEXTURE_BASES.put(id, bundle);
-    }
-
     /**
      * {@return the registered provider, or null if none is registered}
      *
      * @param providerId the provider id to get the provider for
      */
-    public static @Nullable Codec<? extends TextureProvider<?>> getProviderFactory(@NotNull ResourceLocation providerId) {
+    public static @Nullable Codec<? extends TextureProvider<?>> getProviderFactory(@Nullable ResourceLocation providerId) {
         return MachineModelRegistryImpl.FACTORIES.get(providerId);
     }
 
@@ -73,7 +66,7 @@ public final class MachineModelRegistry {
      *
      * @param providerId the provider id to get the provider for
      */
-    public static @NotNull Codec<? extends TextureProvider<?>> getProviderFactoryOrDefault(@NotNull ResourceLocation providerId) {
+    public static @NotNull Codec<? extends TextureProvider<?>> getProviderFactoryOrDefault(@Nullable ResourceLocation providerId) {
         return MachineModelRegistryImpl.FACTORIES.getOrDefault(providerId, SingleTextureProvider.CODEC);
     }
 }

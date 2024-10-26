@@ -23,12 +23,12 @@
 package dev.galacticraft.machinelib.client.api.model.sprite;
 
 import com.mojang.serialization.Codec;
-import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.util.BlockFace;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,7 +47,7 @@ public record SingleTextureProvider(Material material) implements TextureProvide
 
     public record Bound(TextureAtlasSprite texture) implements BoundTextureProvider {
         @Override
-        public TextureAtlasSprite getSprite(@Nullable MachineRenderData renderData, @NotNull BlockFace face) {
+        public TextureAtlasSprite getSprite(@Nullable BlockState state, @NotNull BlockFace face) {
             return this.texture;
         }
 

@@ -22,18 +22,29 @@
 
 package dev.galacticraft.machinelib.client.api.model.sprite;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 
 public record MachineTextureBase(Material machineEnergyIn, Material machineEnergyOut, Material machineEnergyBoth,
                                  Material machineItemIn, Material machineItemOut, Material machineItemBoth,
                                  Material machineFluidIn, Material machineFluidOut, Material machineFluidBoth,
                                  Material machineAnyIn, Material machineAnyOut, Material machineAnyBoth
-) {
+) implements UnbakedModel {
+    public static final Codec<MachineTextureBase> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            TypedResourceSprites.CODEC.fieldOf("energy").forGetter(b -> new TypedResourceSprites(b.machineEnergyIn, b.machineEnergyOut, b.machineEnergyBoth)),
+            TypedResourceSprites.CODEC.fieldOf("item").forGetter(b -> new TypedResourceSprites(b.machineItemIn, b.machineItemOut, b.machineItemBoth)),
+            TypedResourceSprites.CODEC.fieldOf("fluid").forGetter(b -> new TypedResourceSprites(b.machineFluidIn, b.machineFluidOut, b.machineFluidBoth)),
+            TypedResourceSprites.CODEC.fieldOf("any").forGetter(b -> new TypedResourceSprites(b.machineAnyIn, b.machineAnyOut, b.machineAnyBoth))
+    ).apply(instance, (e, i, f ,a) -> new MachineTextureBase(e.input, e.output, e.both, i.input, i.output, i.both, f.input, f.output, f.both, a.input, a.output, a.both)));
 
     public static MachineTextureBase prefixed(String id, String prefix) {
         return new MachineTextureBase(
@@ -53,6 +64,20 @@ public record MachineTextureBase(Material machineEnergyIn, Material machineEnerg
         );
     }
 
+    @Override
+    public Collection<ResourceLocation> getDependencies() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void resolveParents(Function<ResourceLocation, UnbakedModel> modelLoader) {
+    }
+
+    @Override
+    public @Nullable BakedModel bake(ModelBaker modelBaker, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer) {
+        return null;
+    }
+
     public record Bound(TextureAtlasSprite machineEnergyIn, TextureAtlasSprite machineEnergyOut, TextureAtlasSprite machineEnergyBoth,
                         TextureAtlasSprite machineItemIn, TextureAtlasSprite machineItemOut, TextureAtlasSprite machineItemBoth,
                         TextureAtlasSprite machineFluidIn, TextureAtlasSprite machineFluidOut, TextureAtlasSprite machineFluidBoth,
@@ -62,5 +87,13 @@ public record MachineTextureBase(Material machineEnergyIn, Material machineEnerg
 
     private static Material mat(String namespace, String location) {
         return new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.fromNamespaceAndPath(namespace, location));
+    }
+
+    private record TypedResourceSprites(Material input, Material output, Material both) {
+        private static final Codec<TypedResourceSprites> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                TextureProvider.MATERIAL_CODEC.fieldOf("input").forGetter(TypedResourceSprites::input),
+                TextureProvider.MATERIAL_CODEC.fieldOf("output").forGetter(TypedResourceSprites::output),
+                TextureProvider.MATERIAL_CODEC.fieldOf("both").forGetter(TypedResourceSprites::both)
+        ).apply(instance, TypedResourceSprites::new));
     }
 }

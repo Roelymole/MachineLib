@@ -23,7 +23,6 @@
 package dev.galacticraft.machinelib.client.impl.model;
 
 import com.mojang.serialization.Codec;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import net.minecraft.resources.ResourceLocation;
 
@@ -32,5 +31,4 @@ import java.util.Map;
 
 public class MachineModelRegistryImpl {
     public static final Map<ResourceLocation, Codec<? extends TextureProvider<?>>> FACTORIES = new HashMap<>();
-    public static final Map<ResourceLocation, MachineTextureBase> TEXTURE_BASES = new HashMap<>();
 }

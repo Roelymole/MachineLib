@@ -22,9 +22,6 @@
 
 package dev.galacticraft.machinelib.testmod.client;
 
-import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
-import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.client.screen.GeneratorScreen;
 import dev.galacticraft.machinelib.testmod.client.screen.MelterScreen;
 import dev.galacticraft.machinelib.testmod.client.screen.MixerScreen;
@@ -38,7 +35,5 @@ public class TestModClient implements ClientModInitializer {
         MenuScreens.register(TestModMenuTypes.GENERATOR, GeneratorScreen::new);
         MenuScreens.register(TestModMenuTypes.MIXER, MixerScreen::new);
         MenuScreens.register(TestModMenuTypes.MELTER, MelterScreen::new);
-
-        MachineModelRegistry.registerBase(Constant.id("base"), MachineTextureBase.prefixed(Constant.MOD_ID, "block/machine_"));
     }
 }

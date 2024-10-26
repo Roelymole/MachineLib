@@ -29,6 +29,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
+import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
 import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelResolver;
@@ -41,29 +42,33 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<Map<ResourceLocation, JsonObject>>, ModelResolver {
+public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<MachineModelData>, ModelResolver {
     public static final MachineModelLoadingPlugin INSTANCE = new MachineModelLoadingPlugin();
     private final Map<ResourceLocation, UnbakedModel> pendingItemModels = new HashMap<>();
-    private Map<ResourceLocation, JsonObject> data = null;
+    private MachineModelData data = null;
 
     @Override
     public @Nullable UnbakedModel resolveModel(ModelResolver.Context context) {
         assert this.data != null;
-        JsonObject json = this.data.remove(context.id());
+        JsonObject json = this.data.getMachine(context.id());
         if (json != null) {
             Codec<? extends TextureProvider<?>> codec = MachineModelRegistry.getProviderFactoryOrDefault(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER)));
             DataResult<? extends Pair<? extends TextureProvider<?>, JsonElement>> sprites = codec.decode(JsonOps.INSTANCE, json.get("data"));
             JsonElement baseId = json.get("base");
-            ResourceLocation base = baseId == null ? context.id().withPath("base") : ResourceLocation.parse(baseId.getAsString());
+            ResourceLocation base = baseId == null ? context.id().withPath("machine/base") : ResourceLocation.parse(baseId.getAsString());
             MachineUnbakedModel model = new MachineUnbakedModel(sprites.getOrThrow().getFirst(), base);
             this.pendingItemModels.put(ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
             return model;
         }
+
+        MachineTextureBase base = this.data.getBase(context.id());
+        if (base != null) return base;
+
         return this.pendingItemModels.remove(context.id());
     }
 
     @Override
-    public void onInitializeModelLoader(Map<ResourceLocation, JsonObject> data, ModelLoadingPlugin.Context pluginContext) {
+    public void onInitializeModelLoader(MachineModelData data, ModelLoadingPlugin.Context pluginContext) {
         this.data = data;
         this.pendingItemModels.clear();
         pluginContext.resolveModel().register(this);

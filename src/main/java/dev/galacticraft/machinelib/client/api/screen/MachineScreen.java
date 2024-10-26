@@ -27,8 +27,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.galacticraft.machinelib.api.block.entity.MachineBlockEntity;
-import dev.galacticraft.machinelib.api.machine.MachineRenderData;
 import dev.galacticraft.machinelib.api.machine.configuration.AccessLevel;
+import dev.galacticraft.machinelib.api.machine.configuration.IOConfig;
 import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.machine.configuration.RedstoneMode;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
@@ -70,6 +70,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -191,8 +192,8 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * The height of the capacitor.
      */
     protected int capacitorHeight = 48;
-    protected @NotNull MachineRenderData renderData;
     private @Nullable MachineBakedModel model;
+    private BlockState previousState;
 
     /**
      * Creates a new screen from the given screen handler.
@@ -205,7 +206,6 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         super(menu, menu.playerInventory, title);
 
         this.texture = texture;
-        this.renderData = menu.configuration;
 
         UUID owner = this.menu.security.getOwner() == null ? this.menu.player.getUUID() : this.menu.security.getOwner();
         this.owner = SkullBlockEntity.fetchGameProfile(owner).thenApply(o -> o.orElse(new GameProfile(owner, "???")));
@@ -233,7 +233,19 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
 
         if (this.minecraft.getModelManager().getBlockModelShaper().getBlockModel(this.menu.be.getBlockState()) instanceof MachineBakedModel model) {
+            this.previousState = this.menu.be.getBlockState();
             this.model = model;
+        }
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        if (!this.menu.be.getBlockState().equals(this.previousState)) {
+            this.previousState = this.menu.be.getBlockState();
+            if (this.minecraft.getModelManager().getBlockModelShaper().getBlockModel(this.menu.be.getBlockState()) instanceof MachineBakedModel model) {
+                this.model = model;
+            }
         }
     }
 
@@ -303,12 +315,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
                     .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
 
             RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-            this.drawMachineFace(graphics, TOP_FACE_X, TOP_FACE_Y, this.renderData, BlockFace.TOP);
-            this.drawMachineFace(graphics, LEFT_FACE_X, LEFT_FACE_Y, this.renderData, BlockFace.LEFT);
-            this.drawMachineFace(graphics, FRONT_FACE_X, FRONT_FACE_Y, this.renderData, BlockFace.FRONT);
-            this.drawMachineFace(graphics, RIGHT_FACE_X, RIGHT_FACE_Y, this.renderData, BlockFace.RIGHT);
-            this.drawMachineFace(graphics, BACK_FACE_X, BACK_FACE_Y, this.renderData, BlockFace.BACK);
-            this.drawMachineFace(graphics, BOTTOM_FACE_X, BOTTOM_FACE_Y, this.renderData, BlockFace.BOTTOM);
+            this.drawMachineFace(graphics, TOP_FACE_X, TOP_FACE_Y, this.menu.configuration, BlockFace.TOP);
+            this.drawMachineFace(graphics, LEFT_FACE_X, LEFT_FACE_Y, this.menu.configuration, BlockFace.LEFT);
+            this.drawMachineFace(graphics, FRONT_FACE_X, FRONT_FACE_Y, this.menu.configuration, BlockFace.FRONT);
+            this.drawMachineFace(graphics, RIGHT_FACE_X, RIGHT_FACE_Y, this.menu.configuration, BlockFace.RIGHT);
+            this.drawMachineFace(graphics, BACK_FACE_X, BACK_FACE_Y, this.menu.configuration, BlockFace.BACK);
+            this.drawMachineFace(graphics, BOTTOM_FACE_X, BOTTOM_FACE_Y, this.menu.configuration, BlockFace.BOTTOM);
             poseStack.popPose();
         }
         if (Tab.STATS.isOpen()) {
@@ -366,13 +378,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param graphics the gui graphics
      * @param x the x position to draw at
      * @param y the y position to draw at
-     * @param data the machine's extra render data
+     * @param ioConfig the machine's extra render data
      * @param face the face to draw
      */
-    private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull MachineRenderData data, @NotNull BlockFace face) {
-        IOFace machineFace = menu.configuration.get(face);
+    private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull IOConfig ioConfig, @NotNull BlockFace face) {
         if (this.model != null) {
-            graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, model.getSprite(face, data, machineFace.getType(), machineFace.getFlow()));
+            graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, this.model.getSprite(this.menu.be.getBlockState(), face, ioConfig));
         }
     }
 

@@ -46,7 +46,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.BlockItem;
@@ -74,33 +73,21 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         this.base = base;
     }
 
-    private boolean transform(MachineRenderData renderData, @NotNull BlockState state, @NotNull MutableQuadView quad) {
-        BlockFace face = BlockFace.from(state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad.nominalFace());
+    private boolean transform(@Nullable BlockState state, @Nullable IOConfig config, Direction direction, @NotNull MutableQuadView quad) {
+        BlockFace face = BlockFace.from(direction, quad.nominalFace());
         assert face != null;
 
-        IOFace machineFace = renderData == null ? new IOFace() : renderData.getIOConfig().get(face);
-        quad.spriteBake(getSprite(face,
-                        renderData,
-                        machineFace.getType(), machineFace.getFlow()),
-                MutableQuadView.BAKE_LOCK_UV);
-        quad.color(-1, -1, -1, -1);
+        quad.spriteBake(getSprite(state, face, config), MutableQuadView.BAKE_LOCK_UV)
+                .color(-1, -1, -1, -1);
         return true;
     }
 
-    private boolean transformItem(IOConfig config, @NotNull MutableQuadView quad) {
-        BlockFace face = BlockFace.from(Direction.NORTH, quad.nominalFace());
-        assert face != null;
-        IOFace IOFace = config.get(face);
-        quad.spriteBake(getSprite(face,
-                        config,
-                        IOFace.getType(), IOFace.getFlow()),
-                MutableQuadView.BAKE_LOCK_UV);
-        quad.color(-1, -1, -1, -1);
-        return true;
-    }
-
-    public TextureAtlasSprite getSprite(@NotNull BlockFace face, @Nullable MachineRenderData renderData, @NotNull ResourceType type, @NotNull ResourceFlow flow) {
-        if (type == ResourceType.NONE) return this.provider.getSprite(renderData, face);
+    public TextureAtlasSprite getSprite(@Nullable BlockState state, @NotNull BlockFace face, @Nullable IOConfig config) {
+        if (config == null) return this.provider.getSprite(state, face);
+        IOFace ioFace = config.get(face);
+        ResourceType type = ioFace.getType();
+        if (type == ResourceType.NONE) return this.provider.getSprite(state, face);
+        ResourceFlow flow = ioFace.getFlow();
 
         switch (flow) {
             case INPUT -> {
@@ -153,7 +140,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
             }
         }
 
-        return this.provider.getSprite(renderData, face);
+        return this.provider.getSprite(state, face);
     }
 
     public TextureProvider.BoundTextureProvider getProvider() {
@@ -167,14 +154,13 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     @Override
     public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        // TODO: block entity can be null when loading the world, I don't think that's suppose to happen
-        if (blockView.getBlockEntityRenderData(pos) instanceof MachineRenderData renderData) {
-            context.pushTransform(quad -> transform(renderData, state, quad));
-            for (Direction direction : Constant.Cache.DIRECTIONS) {
-                context.getEmitter().square(direction, 0, 0, 1, 1, 0).emit();
-            }
-            context.popTransform();
+        Object data = blockView.getBlockEntityRenderData(pos);
+        IOConfig config = data instanceof MachineRenderData rd ? rd.getIOConfig() : null;
+        context.pushTransform(quad -> transform(state, config, state.getValue(BlockStateProperties.HORIZONTAL_FACING), quad));
+        for (Direction direction : Constant.Cache.DIRECTIONS) {
+            context.getEmitter().square(direction, 0, 0, 1, 1, 0).emit();
         }
+        context.popTransform();
     }
 
     @Override
@@ -183,18 +169,15 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
         assert ((BlockItem) stack.getItem()).getBlock() instanceof MachineBlock;
         CustomData customData = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
 
-        IOConfig config = new IOConfig();
-        if (!customData.isEmpty()) {
-            CompoundTag beTag = customData.getUnsafe();
-            if (beTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {
-                CompoundTag confTag = beTag.getCompound(Constant.Nbt.CONFIGURATION);
-                if (confTag.contains(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND)) {
-                    config.readTag(confTag.getList(Constant.Nbt.CONFIGURATION, Tag.TAG_COMPOUND));
-                }
-            }
+        IOConfig config;
+        if (!customData.isEmpty() && customData.contains(Constant.Nbt.CONFIGURATION)) {
+            config = new IOConfig();
+            config.readTag(customData.getUnsafe().getList(Constant.Nbt.CONFIGURATION, Tag.TAG_BYTE));
+        } else {
+            config = null;
         }
 
-        context.pushTransform(quad -> transformItem(config, quad));
+        context.pushTransform(quad -> transform(null, config, Direction.NORTH, quad));
         for (Direction direction : Constant.Cache.DIRECTIONS) {
             context.getEmitter().square(direction, 0, 0, 1, 1, 0).emit();
         }

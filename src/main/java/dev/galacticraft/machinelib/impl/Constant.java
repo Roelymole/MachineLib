@@ -62,23 +62,15 @@ public interface Constant {
         String DISABLE_DROPS = "NoDrop";
         String OWNER = "Owner";
         String PROGRESS = "Progress";
-        String TEAM = "Team";
         String ACCESS_LEVEL = "AccessLevel";
         String SECURITY = "Security";
         String CONFIGURATION = "Configuration";
         String ENERGY = "Energy";
         String REDSTONE_MODE = "RedstoneMode";
-        String MAX_PROGRESS = "MaxProgress";
-        String RESOURCE = "Resource";
-        String FLOW = "Flow";
         String ENERGY_STORAGE = "EnergyStorage";
         String ITEM_STORAGE = "ItemStorage";
         String FLUID_STORAGE = "FluidStorage";
-        String USERNAME = "Username";
-        String TEAM_NAME = "TeamName";
         String STATE = "State";
-        String STATUS = "Status";
-        String POWERED = "Powered";
     }
 
     interface ScreenTexture {

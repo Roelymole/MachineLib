@@ -1,0 +1,23 @@
+{
+  "machinelib:type": "base",
+  "energy": {
+    "input": "machinelib_testmod:block/machine_energy_input",
+    "output": "machinelib_testmod:block/machine_energy_output",
+    "both": "machinelib_testmod:block/machine_energy_both"
+  },
+  "item": {
+    "input": "machinelib_testmod:block/machine_item_input",
+    "output": "machinelib_testmod:block/machine_item_output",
+    "both": "machinelib_testmod:block/machine_item_both"
+  },
+  "fluid": {
+    "input": "machinelib_testmod:block/machine_fluid_input",
+    "output": "machinelib_testmod:block/machine_fluid_output",
+    "both": "machinelib_testmod:block/machine_fluid_both"
+  },
+  "any": {
+    "input": "machinelib_testmod:block/machine_any_input",
+    "output": "machinelib_testmod:block/machine_any_output",
+    "both": "machinelib_testmod:block/machine_any_both"
+  }
+}
