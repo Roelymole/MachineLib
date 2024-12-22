@@ -1,0 +1,6 @@
+{
+  "data": {
+    "front": "minecraft:block/furnace_front"
+  },
+  "machinelib:type": "machine"
+}

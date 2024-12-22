@@ -1,0 +1,7 @@
+{
+  "data": {
+    "back": "minecraft:block/blast_furnace_front",
+    "front": "minecraft:block/blast_furnace_front"
+  },
+  "machinelib:type": "machine"
+}

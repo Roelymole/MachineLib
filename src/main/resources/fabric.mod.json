@@ -4,7 +4,7 @@
   "version": "$version",
   "name": "$mod_name",
   "icon": "assets/${mod_id}/icon.png",
-  "description": "Machine Library for the FabricMC port of Galacticraft.",
+  "description": "Machine Library for Galacticraft 5.",
   "license": "MIT",
   "contact": {
     "homepage": "https://galacticraft.dev/",
@@ -44,7 +44,7 @@
     ]
   },
   "depends": {
-    "fabricloader": ">=0.15",
+    "fabricloader": ">=0.16",
     "minecraft": ">=1.21",
     "fabric-api-base": "*",
     "fabric-api-lookup-api-v1": "*",

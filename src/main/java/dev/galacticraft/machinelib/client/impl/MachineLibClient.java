@@ -26,13 +26,8 @@ import com.google.common.base.Charsets;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.api.model.sprite.AxisSpriteProvider;
-import dev.galacticraft.machinelib.client.api.model.sprite.SimpleTextureProvider;
-import dev.galacticraft.machinelib.client.api.model.sprite.SingleTextureProvider;
-import dev.galacticraft.machinelib.client.impl.model.MachineModelData;
+import dev.galacticraft.machinelib.client.impl.model.MachineModelDataLoader;
 import dev.galacticraft.machinelib.client.impl.model.MachineModelLoadingPlugin;
-import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.network.MachineLibPackets;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
@@ -50,7 +45,7 @@ public final class MachineLibClient implements ClientModInitializer {
         PreparableModelLoadingPlugin.register((resourceManager, executor) ->
                 CompletableFuture.supplyAsync(() -> resourceManager.listResources("models/machine", s -> s.getPath().endsWith(".json")), executor)
                         .thenComposeAsync(entries -> {
-                            MachineModelData modelData = new MachineModelData();
+                            MachineModelDataLoader modelData = new MachineModelDataLoader();
                             return CompletableFuture.allOf(entries.entrySet().parallelStream().map(entry -> CompletableFuture.supplyAsync(() -> {
                                         try (JsonReader reader = new JsonReader(new InputStreamReader(entry.getValue().open(), Charsets.UTF_8))) {
                                             JsonElement element = Streams.parse(reader);
@@ -64,12 +59,6 @@ public final class MachineLibClient implements ClientModInitializer {
                                     }, executor)).toArray(CompletableFuture[]::new)
                             ).thenApplyAsync(v -> modelData);
                         }), MachineModelLoadingPlugin.INSTANCE);
-
-        // Builtin Texture Providers
-        MachineModelRegistry.register(Constant.id("missingno"), SingleTextureProvider.MISSING_CODEC);
-        MachineModelRegistry.register(Constant.id("single"), SingleTextureProvider.CODEC);
-        MachineModelRegistry.register(Constant.id("simple"), SimpleTextureProvider.CODEC);
-        MachineModelRegistry.register(Constant.id("axis"), AxisSpriteProvider.CODEC);
 
         MachineLibPackets.registerClient();
     }

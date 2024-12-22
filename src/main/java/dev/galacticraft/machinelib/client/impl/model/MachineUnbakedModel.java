@@ -22,8 +22,8 @@
 
 package dev.galacticraft.machinelib.client.impl.model;
 
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
-import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
+import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
+import dev.galacticraft.machinelib.client.api.model.TextureProvider;
 import dev.galacticraft.machinelib.impl.MachineLib;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -39,11 +39,11 @@ import java.util.function.Function;
 @ApiStatus.Internal
 public final class MachineUnbakedModel implements UnbakedModel {
     private static boolean rendererWarn = false;
-    private final @NotNull TextureProvider<?> provider;
+    private final @NotNull TextureProvider provider;
     private final @NotNull ResourceLocation baseId;
     private MachineTextureBase base = null;
 
-    public MachineUnbakedModel(@NotNull TextureProvider<?> provider, @NotNull ResourceLocation baseId) {
+    public MachineUnbakedModel(@NotNull TextureProvider provider, @NotNull ResourceLocation baseId) {
         this.provider = provider;
         this.baseId = baseId;
 

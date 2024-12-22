@@ -44,10 +44,10 @@ val wthit = project.property("wthit.version").toString()
 plugins {
     java
     `maven-publish`
-    id("fabric-loom") version("1.8-SNAPSHOT")
+    id("fabric-loom") version("1.9-SNAPSHOT")
     id("org.cadixdev.licenser") version("0.6.1")
     id("org.ajoberstar.grgit") version("5.2.2")
-    id("dev.galacticraft.mojarn") version("0.5.1+14")
+    id("dev.galacticraft.mojarn") version("0.5.2+15")
 }
 
 group = "dev.galacticraft"
@@ -86,6 +86,8 @@ java {
 
 sourceSets {
     register("testmod") {
+        resources.srcDir("src/testmod/generated")
+
         runtimeClasspath += sourceSets.main.get().runtimeClasspath
         compileClasspath += sourceSets.main.get().compileClasspath
     }
@@ -125,6 +127,16 @@ loom {
             source(testmod)
             property("fabric-api.gametest")
             property("fabric-api.gametest.report-file", "${project.layout.buildDirectory.get()}/junit.xml")
+        }
+        register("data") {
+            name("Data Generation")
+            client()
+            source(testmod)
+            runDir("build/datagen")
+            property("fabric-api.datagen")
+            property("fabric-api.datagen.modid", "machinelib_testmod")
+            property("fabric-api.datagen.output-dir", project.file("src/testmod/generated").toString())
+            property("fabric-api.datagen.strict-validation", "false")
         }
     }
 }

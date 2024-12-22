@@ -20,7 +20,15 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.impl.model;
+package dev.galacticraft.machinelib.testmod.data;
 
-public class MachineModelRegistryImpl {
+import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+
+public class TestModDatagen implements DataGeneratorEntrypoint {
+    @Override
+    public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
+        FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+        pack.addProvider(TestModModelProvider::new);
+    }
 }

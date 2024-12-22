@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package dev.galacticraft.machinelib.client.api.model.sprite;
+package dev.galacticraft.machinelib.client.api.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -34,20 +34,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
-public record MachineTextureBase(Material machineEnergyIn, Material machineEnergyOut, Material machineEnergyBoth,
+public record MachineTextureBase(Material base,
+                                 Material machineEnergyIn, Material machineEnergyOut, Material machineEnergyBoth,
                                  Material machineItemIn, Material machineItemOut, Material machineItemBoth,
                                  Material machineFluidIn, Material machineFluidOut, Material machineFluidBoth,
                                  Material machineAnyIn, Material machineAnyOut, Material machineAnyBoth
 ) implements UnbakedModel {
     public static final Codec<MachineTextureBase> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            TextureProvider.MATERIAL_CODEC.fieldOf("base").forGetter(MachineTextureBase::base),
             TypedResourceSprites.CODEC.fieldOf("energy").forGetter(b -> new TypedResourceSprites(b.machineEnergyIn, b.machineEnergyOut, b.machineEnergyBoth)),
             TypedResourceSprites.CODEC.fieldOf("item").forGetter(b -> new TypedResourceSprites(b.machineItemIn, b.machineItemOut, b.machineItemBoth)),
             TypedResourceSprites.CODEC.fieldOf("fluid").forGetter(b -> new TypedResourceSprites(b.machineFluidIn, b.machineFluidOut, b.machineFluidBoth)),
             TypedResourceSprites.CODEC.fieldOf("any").forGetter(b -> new TypedResourceSprites(b.machineAnyIn, b.machineAnyOut, b.machineAnyBoth))
-    ).apply(instance, (e, i, f ,a) -> new MachineTextureBase(e.input, e.output, e.both, i.input, i.output, i.both, f.input, f.output, f.both, a.input, a.output, a.both)));
+    ).apply(instance, (b, e, i, f ,a) -> new MachineTextureBase(b, e.input, e.output, e.both, i.input, i.output, i.both, f.input, f.output, f.both, a.input, a.output, a.both)));
 
     public static MachineTextureBase prefixed(String id, String prefix) {
         return new MachineTextureBase(
+                mat(id, prefix),
                 mat(id, prefix + "_energy_input"), mat(id, prefix + "_energy_output"), mat(id, prefix + "_energy_both"),
                 mat(id, prefix + "_item_input"), mat(id, prefix + "_item_output"), mat(id, prefix + "_item_both"),
                 mat(id, prefix + "_fluid_input"), mat(id, prefix + "_fluid_output"), mat(id, prefix + "_fluid_both"),
@@ -57,6 +60,7 @@ public record MachineTextureBase(Material machineEnergyIn, Material machineEnerg
 
     public Bound bind(Function<Material, TextureAtlasSprite> atlas) {
         return new Bound(
+                atlas.apply(this.base),
                 atlas.apply(this.machineEnergyIn), atlas.apply(this.machineEnergyOut), atlas.apply(this.machineEnergyBoth),
                 atlas.apply(this.machineItemIn), atlas.apply(this.machineItemOut), atlas.apply(this.machineItemBoth),
                 atlas.apply(this.machineFluidIn), atlas.apply(this.machineFluidOut), atlas.apply(this.machineFluidBoth),
@@ -78,7 +82,8 @@ public record MachineTextureBase(Material machineEnergyIn, Material machineEnerg
         return null;
     }
 
-    public record Bound(TextureAtlasSprite machineEnergyIn, TextureAtlasSprite machineEnergyOut, TextureAtlasSprite machineEnergyBoth,
+    public record Bound(TextureAtlasSprite base,
+                        TextureAtlasSprite machineEnergyIn, TextureAtlasSprite machineEnergyOut, TextureAtlasSprite machineEnergyBoth,
                         TextureAtlasSprite machineItemIn, TextureAtlasSprite machineItemOut, TextureAtlasSprite machineItemBoth,
                         TextureAtlasSprite machineFluidIn, TextureAtlasSprite machineFluidOut, TextureAtlasSprite machineFluidBoth,
                         TextureAtlasSprite machineAnyIn, TextureAtlasSprite machineAnyOut, TextureAtlasSprite machineAnyBoth) {

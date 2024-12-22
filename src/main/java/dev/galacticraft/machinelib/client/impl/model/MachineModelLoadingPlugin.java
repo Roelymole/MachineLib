@@ -25,37 +25,38 @@ package dev.galacticraft.machinelib.client.impl.model;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
-import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
+import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
+import dev.galacticraft.machinelib.client.api.model.TextureProvider;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelResolver;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<MachineModelData>, ModelResolver {
+public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<MachineModelDataLoader>, ModelResolver {
+    public static final String MARKER = "machinelib:type";
+    public static final String BASE_TYPE = "base";
+    public static final String MACHINE_TYPE = "machine";
+    public static final String DEFAULT_MACHINE_BASE = "machine/base";
+
     public static final MachineModelLoadingPlugin INSTANCE = new MachineModelLoadingPlugin();
     private final Map<ResourceLocation, UnbakedModel> pendingItemModels = new HashMap<>();
-    private MachineModelData data = null;
+    private MachineModelDataLoader data = null;
 
     @Override
     public @Nullable UnbakedModel resolveModel(ModelResolver.Context context) {
         assert this.data != null;
         JsonObject json = this.data.getMachine(context.id());
         if (json != null) {
-            Codec<? extends TextureProvider<?>> codec = MachineModelRegistry.getProviderFactoryOrDefault(ResourceLocation.parse(GsonHelper.getAsString(json, MachineModelRegistry.MARKER)));
-            DataResult<? extends Pair<? extends TextureProvider<?>, JsonElement>> sprites = codec.decode(JsonOps.INSTANCE, json.get("data"));
+            DataResult<? extends Pair<TextureProvider, JsonElement>> sprites = TextureProvider.CODEC.decode(JsonOps.INSTANCE, json.get("data"));
             JsonElement baseId = json.get("base");
-            ResourceLocation base = baseId == null ? context.id().withPath("machine/base") : ResourceLocation.parse(baseId.getAsString());
+            ResourceLocation base = baseId == null ? context.id().withPath(DEFAULT_MACHINE_BASE) : ResourceLocation.parse(baseId.getAsString());
             MachineUnbakedModel model = new MachineUnbakedModel(sprites.getOrThrow().getFirst(), base);
             this.pendingItemModels.put(ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
             return model;
@@ -64,11 +65,11 @@ public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<M
         MachineTextureBase base = this.data.getBase(context.id());
         if (base != null) return base;
 
-        return this.pendingItemModels.remove(context.id());
+        return this.pendingItemModels.remove(context.id()); //todo: allow overriding item models
     }
 
     @Override
-    public void onInitializeModelLoader(MachineModelData data, ModelLoadingPlugin.Context pluginContext) {
+    public void onInitializeModelLoader(MachineModelDataLoader data, ModelLoadingPlugin.Context pluginContext) {
         this.data = data;
         this.pendingItemModels.clear();
         pluginContext.resolveModel().register(this);

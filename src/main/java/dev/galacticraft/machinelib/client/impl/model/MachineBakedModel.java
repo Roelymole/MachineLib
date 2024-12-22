@@ -29,8 +29,8 @@ import dev.galacticraft.machinelib.api.machine.configuration.IOFace;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
 import dev.galacticraft.machinelib.api.transfer.ResourceType;
 import dev.galacticraft.machinelib.api.util.BlockFace;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
-import dev.galacticraft.machinelib.client.api.model.sprite.TextureProvider;
+import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
+import dev.galacticraft.machinelib.client.api.model.TextureProvider;
 import dev.galacticraft.machinelib.impl.Constant;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -83,64 +83,67 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
     }
 
     public TextureAtlasSprite getSprite(@Nullable BlockState state, @NotNull BlockFace face, @Nullable IOConfig config) {
-        if (config == null) return this.provider.getSprite(state, face);
-        IOFace ioFace = config.get(face);
-        ResourceType type = ioFace.getType();
-        if (type == ResourceType.NONE) return this.provider.getSprite(state, face);
-        ResourceFlow flow = ioFace.getFlow();
+        if (config != null) {
+            IOFace ioFace = config.get(face);
+            ResourceType type = ioFace.getType();
+            if (type != ResourceType.NONE) {
+                ResourceFlow flow = ioFace.getFlow();
 
-        switch (flow) {
-            case INPUT -> {
-                switch (type) {
-                    case ENERGY -> {
-                        return this.base.machineEnergyIn();
+                switch (flow) {
+                    case INPUT -> {
+                        switch (type) {
+                            case ENERGY -> {
+                                return this.base.machineEnergyIn();
+                            }
+                            case ITEM -> {
+                                return this.base.machineItemIn();
+                            }
+                            case FLUID -> {
+                                return this.base.machineFluidIn();
+                            }
+                            case ANY -> {
+                                return this.base.machineAnyIn();
+                            }
+                        }
                     }
-                    case ITEM -> {
-                        return this.base.machineItemIn();
+                    case OUTPUT -> {
+                        switch (type) {
+                            case ENERGY -> {
+                                return this.base.machineEnergyOut();
+                            }
+                            case ITEM -> {
+                                return this.base.machineItemOut();
+                            }
+                            case FLUID -> {
+                                return this.base.machineFluidOut();
+                            }
+                            case ANY -> {
+                                return this.base.machineAnyOut();
+                            }
+                        }
                     }
-                    case FLUID -> {
-                        return this.base.machineFluidIn();
-                    }
-                    case ANY -> {
-                        return this.base.machineAnyIn();
-                    }
-                }
-            }
-            case OUTPUT -> {
-                switch (type) {
-                    case ENERGY -> {
-                        return this.base.machineEnergyOut();
-                    }
-                    case ITEM -> {
-                        return this.base.machineItemOut();
-                    }
-                    case FLUID -> {
-                        return this.base.machineFluidOut();
-                    }
-                    case ANY -> {
-                        return this.base.machineAnyOut();
-                    }
-                }
-            }
-            case BOTH -> {
-                switch (type) {
-                    case ENERGY -> {
-                        return this.base.machineEnergyBoth();
-                    }
-                    case ITEM -> {
-                        return this.base.machineItemBoth();
-                    }
-                    case FLUID -> {
-                        return this.base.machineFluidBoth();
-                    }
-                    case ANY -> {
-                        return this.base.machineAnyBoth();
+                    case BOTH -> {
+                        switch (type) {
+                            case ENERGY -> {
+                                return this.base.machineEnergyBoth();
+                            }
+                            case ITEM -> {
+                                return this.base.machineItemBoth();
+                            }
+                            case FLUID -> {
+                                return this.base.machineFluidBoth();
+                            }
+                            case ANY -> {
+                                return this.base.machineAnyBoth();
+                            }
+                        }
                     }
                 }
             }
         }
 
-        return this.provider.getSprite(state, face);
+        TextureAtlasSprite sprite = this.provider.getSprite(face);
+        return sprite == null ? this.base.base() : sprite;
     }
 
     public TextureProvider.BoundTextureProvider getProvider() {
@@ -211,7 +214,8 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     @Override
     public @NotNull TextureAtlasSprite getParticleIcon() {
-        return this.provider.getParticle();
+        TextureAtlasSprite particle = this.provider.getParticle();
+        return particle != null ? particle : this.base.base();
     }
 
     @Override

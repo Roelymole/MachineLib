@@ -25,29 +25,25 @@ package dev.galacticraft.machinelib.client.impl.model;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
-import dev.galacticraft.machinelib.client.api.model.MachineModelRegistry;
-import dev.galacticraft.machinelib.client.api.model.sprite.MachineTextureBase;
-import dev.galacticraft.machinelib.impl.MachineLib;
+import dev.galacticraft.machinelib.client.api.model.MachineTextureBase;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MachineModelData {
+public class MachineModelDataLoader {
     private final Map<ResourceLocation, JsonObject> machines = new ConcurrentHashMap<>();
     private final Map<ResourceLocation, MachineTextureBase> bases = new ConcurrentHashMap<>();
 
     public void register(ResourceLocation id, JsonElement json) {
         if (json.isJsonObject()) {
             JsonObject obj = json.getAsJsonObject();
-            if (obj.has(MachineModelRegistry.MARKER)) {
-                String type = obj.get(MachineModelRegistry.MARKER).getAsString();
-                if (type.equals(MachineModelRegistry.BASE_TYPE)){
+            if (obj.has(MachineModelLoadingPlugin.MARKER)) {
+                String type = obj.get(MachineModelLoadingPlugin.MARKER).getAsString();
+                if (type.equals(MachineModelLoadingPlugin.BASE_TYPE)){
                     this.bases.put(id, MachineTextureBase.CODEC.decode(JsonOps.INSTANCE, obj).getOrThrow().getFirst());
                 } else {
-                    if (MachineModelRegistry.getProviderFactory(ResourceLocation.tryParse(type)) == null) {
-                        MachineLib.LOGGER.warn("Invalid machine model type: " + type);
-                    }
+                    assert type.equals(MachineModelLoadingPlugin.MACHINE_TYPE);
                     this.machines.put(id, obj);
                 }
             }

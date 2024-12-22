@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,9 +28,9 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
             .gradle
-          key: ${{ runner.os }}-gradle-PR${{github.event.number}}-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', '**/build.gradle.kts', '**/gradle.properties') }}
+          key: ${{ runner.os }}-gradle-PR${{github.event.number}}-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', '**/build.gradle.kts', '**/gradle.properties') }}
+            ${{ runner.os }}-gradle-${{ hashFiles('gradle/gradle-wrapper.properties', 'settings.gradle.kts', 'build.gradle.kts', 'gradle.properties') }}
             ${{ runner.os }}-gradle-PR${{github.event.number}}-
             ${{ runner.os }}-gradle-
 
