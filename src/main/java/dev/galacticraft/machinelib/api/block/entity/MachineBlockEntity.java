@@ -102,6 +102,10 @@ public abstract class MachineBlockEntity extends ConfiguredBlockEntity implement
         this.itemStorage = spec.createItemStorage();
         this.fluidStorage = spec.createFluidStorage();
         this.energyStorage = spec.createEnergyStorage();
+
+        this.itemStorage.setParent(this);
+        this.fluidStorage.setParent(this);
+        this.energyStorage.setParent(this);
     }
 
     public static <T extends MachineBlockEntity> void registerProviders(@NotNull BlockEntityType<? extends T> type) {

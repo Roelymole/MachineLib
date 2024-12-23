@@ -36,9 +36,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * The base block for all machines.
- */
 public class SimpleMachineBlock extends MachineBlock {
     private static final MapCodec<SimpleMachineBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             propertiesCodec(),
