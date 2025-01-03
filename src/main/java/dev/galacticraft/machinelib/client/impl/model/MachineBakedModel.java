@@ -40,6 +40,7 @@ import net.fabricmc.fabric.api.renderer.v1.model.ModelHelper;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -57,6 +58,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +67,16 @@ import java.util.function.Supplier;
 @Environment(EnvType.CLIENT)
 @ApiStatus.Internal
 public final class MachineBakedModel implements FabricBakedModel, BakedModel {
+    private static final ItemTransforms ITEM_TRANSFORMS = new ItemTransforms(
+            ModelHelper.TRANSFORM_BLOCK_3RD_PERSON_RIGHT,
+            ModelHelper.TRANSFORM_BLOCK_3RD_PERSON_RIGHT,
+            new ItemTransform(new Vector3f(0, 135, 0), new Vector3f(), new Vector3f(0.4f, 0.4f, 0.4f)),
+            new ItemTransform(new Vector3f(0, 135, 0), new Vector3f(), new Vector3f(0.4f, 0.4f, 0.4f)),
+            ItemTransform.NO_TRANSFORM,
+            ModelHelper.TRANSFORM_BLOCK_GUI,
+            ModelHelper.TRANSFORM_BLOCK_GROUND,
+            ModelHelper.TRANSFORM_BLOCK_FIXED);
+
     private final TextureProvider.BoundTextureProvider provider;
     private final MachineTextureBase.Bound base;
 
@@ -220,7 +232,7 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
 
     @Override
     public @NotNull ItemTransforms getTransforms() {
-        return ModelHelper.MODEL_TRANSFORM_BLOCK;
+        return ITEM_TRANSFORMS;
     }
 
     @Override
