@@ -91,12 +91,12 @@ public class MachineItemStorageImpl extends ResourceStorageImpl<Item, ItemResour
 
     @Override
     public boolean canPlaceItem(int i, ItemStack itemStack) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canTakeItem(Container container, int i, ItemStack itemStack) {
-        return false;
+        return true;
     }
 
     @Override
