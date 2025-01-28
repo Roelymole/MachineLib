@@ -59,9 +59,10 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
         if (this.supportsExtraction()) {
-            if (this.slot.transferMode() == TransferType.TRANSFER) {
-                if (this.slot.getFilter().test(variant.getObject(), variant.getComponents()))
+            if (this.slot.transferMode() == TransferType.PROCESSING) {
+                if (this.slot.getFilter().test(variant.getObject(), variant.getComponents())) {
                     return 0;
+                }
             }
             return this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction);
         }
