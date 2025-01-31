@@ -34,6 +34,7 @@ import dev.galacticraft.machinelib.api.util.ItemStackUtil;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
 import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.block.entity.MachineBlockEntityTicker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentPatch;
@@ -43,6 +44,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -212,7 +214,7 @@ public abstract class MachineBlock extends BaseBlock {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (Screen.hasShiftDown()) {
-            tooltip.addAll(DisplayUtil.wrapText(Component.translatable(this.getDescriptionId() + ".description"), 128));
+            tooltip.addAll(Minecraft.getInstance().font.getSplitter().splitLines(this.getDescriptionId() + ".description", 150, Style.EMPTY).stream().map(formattedText -> Component.literal(formattedText.getString()).withStyle(Constant.Text.GRAY_STYLE)).toList());
         } else {
             tooltip.add(PRESS_SHIFT);
         }
