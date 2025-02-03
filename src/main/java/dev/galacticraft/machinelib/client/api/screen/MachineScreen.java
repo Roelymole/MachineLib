@@ -100,12 +100,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private static final ItemStack ALUMINUM_WIRE = new ItemStack(getOptionalItem(ResourceLocation.fromNamespaceAndPath("galacticraft", "aluminum_wire"), Items.MOJANG_BANNER_PATTERN));
     private static final ItemStack IRON_CHESTPLATE = new ItemStack(Items.IRON_CHESTPLATE);
 
-    private static final int SPACING = 4;
+    public static final int SPACING = 4;
 
-    private static final int PANEL_ICON_X = 3;
+    private static final int PANEL_ICON_X_LEFT = 4;
+    private static final int PANEL_ICON_X_RIGHT = 2;
     private static final int PANEL_ICON_Y = 3;
 
-    private static final int PANEL_TITLE_X = 19;
+    private static final int PANEL_TITLE_X = 18;
     private static final int PANEL_TITLE_Y = 7;
 
     private static final int REDSTONE_IGNORE_X = 18;
@@ -117,13 +118,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private static final int REDSTONE_HIGH_X = 68;
     private static final int REDSTONE_HIGH_Y = 30;
 
-    private static final int SECURITY_PUBLIC_X = 18;
+    private static final int SECURITY_PUBLIC_X = 16;
     private static final int SECURITY_PUBLIC_Y = 30;
 
-    private static final int SECURITY_TEAM_X = 43;
+    private static final int SECURITY_TEAM_X = 41;
     private static final int SECURITY_TEAM_Y = 30;
 
-    private static final int SECURITY_PRIVATE_X = 68;
+    private static final int SECURITY_PRIVATE_X = 66;
     private static final int SECURITY_PRIVATE_Y = 30;
 
     private static final int TOP_FACE_X = 33;
@@ -144,17 +145,20 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private static final int BOTTOM_FACE_X = 33;
     private static final int BOTTOM_FACE_Y = 64;
 
-    private static final int OWNER_FACE_X = 6;
-    private static final int OWNER_FACE_Y = 20;
+    private static final int OWNER_FACE_X = 33;
+    private static final int OWNER_FACE_Y = 36;
 
     private static final int REDSTONE_STATE_TEXT_X = 11;
-    private static final int REDSTONE_STATE_TEXT_Y = 53;
+    private static final int REDSTONE_STATE_TEXT_Y = 54;
 
     private static final int REDSTONE_STATUS_TEXT_X = 11;
-    private static final int REDSTONE_STATUS_TEXT_Y = 57; //add font height
+    private static final int REDSTONE_STATUS_TEXT_Y = 59; //add font height
 
-    private static final int SECURITY_STATE_TEXT_X = 11;
-    private static final int SECURITY_STATE_TEXT_Y = 53;
+    private static final int SECURITY_STATE_TEXT_X = 9;
+    private static final int SECURITY_STATE_TEXT_Y = 54;
+
+    private static final int STATS_TEXT_X = 9;
+    private static final int STATS_TEXT_Y = 55;
 
     private static final int MACHINE_FACE_SIZE = 16;
     private static final int BUTTON_SIZE = 16;
@@ -268,17 +272,31 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     protected void drawConfigurationPanels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
         assert this.minecraft != null;
-        boolean secondary = false;
         PoseStack poseStack = graphics.pose();
 
+        int leftX = this.leftPos;
+        int rightX = this.leftPos + this.imageWidth;
+        int leftY = this.topPos + SPACING;
+        int rightY = this.topPos + SPACING;
+        int width;
+        int height;
         for (Tab tab : Tab.values()) { // 0, 1, 2, 3
             poseStack.pushPose();
-            if (secondary) poseStack.translate(0, SPACING, 0);
-            graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, this.leftPos + (tab.isLeft() ? tab.isOpen() ? -PANEL_WIDTH : -22 : this.imageWidth), this.topPos + (secondary ? Tab.values()[tab.ordinal() - 1].isOpen() ? PANEL_HEIGHT : TAB_HEIGHT : 0) + SPACING, tab.getU(), tab.getV(), tab.isOpen() ? PANEL_WIDTH : TAB_WIDTH, tab.isOpen() ? PANEL_HEIGHT : TAB_HEIGHT);
-            if (!tab.isOpen()) {
-                graphics.renderFakeItem(tab.getItem(), this.leftPos + (tab.isLeft() ? -22 : this.imageWidth) + (tab.isLeft() ? 4 : 2), this.topPos + (secondary ? Tab.values()[tab.ordinal() - 1].isOpen() ? PANEL_HEIGHT : TAB_HEIGHT : 0) + SPACING + 3);
+            width = tab.isOpen() ? PANEL_WIDTH : TAB_WIDTH;
+            height = tab.isOpen() ? PANEL_HEIGHT : TAB_HEIGHT;
+            if (tab.isLeft()) {
+                graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, leftX - width, leftY, tab.getU(), tab.getV(), width, height);
+                if (!tab.isOpen()) {
+                    graphics.renderFakeItem(tab.getItem(), leftX - TAB_WIDTH + 4, leftY + 3);
+                }
+                leftY += height + SPACING;
+            } else {
+                graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, rightX, rightY, tab.getU(), tab.getV(), width, height);
+                if (!tab.isOpen()) {
+                    graphics.renderFakeItem(tab.getItem(), rightX + 2, rightY + 3);
+                }
+                rightY += height + SPACING;
             }
-            secondary = !secondary;
             poseStack.popPose();
         }
         poseStack.pushPose();
@@ -290,13 +308,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             this.drawButton(graphics, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.IGNORE);
             this.drawButton(graphics, REDSTONE_LOW_X, REDSTONE_LOW_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.LOW);
             this.drawButton(graphics, REDSTONE_HIGH_X, REDSTONE_HIGH_Y, mouseX + PANEL_WIDTH - this.leftPos, mouseY - SPACING - this.topPos, menu.redstoneMode == RedstoneMode.HIGH);
-            graphics.renderFakeItem(REDSTONE, PANEL_ICON_X, PANEL_ICON_Y);
+            graphics.renderFakeItem(REDSTONE, (Tab.REDSTONE.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT), PANEL_ICON_Y);
             graphics.renderFakeItem(GUNPOWDER, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y);
             graphics.renderFakeItem(UNLIT_TORCH, REDSTONE_LOW_X, REDSTONE_LOW_Y - 2);
             graphics.renderFakeItem(REDSTONE_TORCH, REDSTONE_HIGH_X, REDSTONE_HIGH_Y - 2);
 
-            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_MODE)
-                    .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
+            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_MODE).setStyle(Constant.Text.GRAY_STYLE),
+                    (Tab.REDSTONE.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT) + PANEL_TITLE_X - 1, PANEL_TITLE_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_STATE,
                     menu.redstoneMode.getName()).setStyle(Constant.Text.GRAY_STYLE), REDSTONE_STATE_TEXT_X, REDSTONE_STATE_TEXT_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.REDSTONE_STATUS,
@@ -307,12 +325,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
 
             poseStack.popPose();
         }
+
         if (Tab.CONFIGURATION.isOpen()) {
             poseStack.pushPose();
-            poseStack.translate(-PANEL_WIDTH, TAB_HEIGHT + SPACING + SPACING, 0);
-            graphics.renderFakeItem(WRENCH, PANEL_ICON_X, PANEL_ICON_Y);
-            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.CONFIGURATION)
-                    .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
+            poseStack.translate(-PANEL_WIDTH, TAB_HEIGHT + SPACING * 2, 0);
+            graphics.renderFakeItem(WRENCH, (Tab.CONFIGURATION.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT), PANEL_ICON_Y);
+            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.CONFIGURATION).setStyle(Constant.Text.GRAY_STYLE),
+                    (Tab.CONFIGURATION.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT) + PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
 
             RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
             this.drawMachineFace(graphics, TOP_FACE_X, TOP_FACE_Y, this.menu.configuration, BlockFace.TOP);
@@ -323,36 +342,37 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             this.drawMachineFace(graphics, BOTTOM_FACE_X, BOTTOM_FACE_Y, this.menu.configuration, BlockFace.BOTTOM);
             poseStack.popPose();
         }
+
         if (Tab.STATS.isOpen()) {
             poseStack.pushPose();
             poseStack.translate(this.imageWidth, SPACING, 0);
-            graphics.renderFakeItem(ALUMINUM_WIRE, PANEL_ICON_X, PANEL_ICON_Y);
+            graphics.renderFakeItem(ALUMINUM_WIRE, (Tab.STATS.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT), PANEL_ICON_Y);
             PlayerFaceRenderer.draw(graphics, this.ownerSkin.getNow(DefaultPlayerSkin.get(this.menu.security.getOwner() == null ? this.menu.player.getUUID() : this.menu.security.getOwner())), OWNER_FACE_X, OWNER_FACE_Y, OWNER_FACE_SIZE);
-            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.STATISTICS)
-                    .setStyle(Constant.Text.GREEN_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
-            List<FormattedCharSequence> text = this.font.split(this.menu.be.getBlockState().getBlock().getName(), 64);
-            int offsetY = 0;
-            for (FormattedCharSequence orderedText : text) {
-                graphics.drawString(this.font, orderedText, 40, 22 + offsetY, 0xFFFFFFFF, false);
-                offsetY += this.font.lineHeight + 2;
-            }
+            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.STATISTICS).setStyle(Constant.Text.GRAY_STYLE),
+                    (Tab.STATS.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT) + PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
+            // List<FormattedCharSequence> text = this.font.split(this.menu.be.getBlockState().getBlock().getName(), 64);
+            // int offsetY = 0;
+            // for (FormattedCharSequence orderedText : text) {
+            //     graphics.drawString(this.font, orderedText, STATS_TEXT_X, STATS_TEXT_Y + offsetY, 0xFFFFFFFF, false);
+            //     offsetY += this.font.lineHeight + 2;
+            // }
             poseStack.popPose();
         }
 
         if (Tab.SECURITY.isOpen()) {
             poseStack.pushPose();
-            poseStack.translate(this.imageWidth, TAB_HEIGHT + SPACING + SPACING, 0);
-            graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, PANEL_ICON_X, PANEL_ICON_Y, ICON_LOCK_PRIVATE_U, ICON_LOCK_PRIVATE_V, ICON_WIDTH, ICON_HEIGHT);
+            poseStack.translate(this.imageWidth, TAB_HEIGHT + SPACING * 2, 0);
+            graphics.renderFakeItem(IRON_CHESTPLATE, (Tab.SECURITY.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT), PANEL_ICON_Y);
 
-            this.drawButton(graphics, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PUBLIC || !this.menu.security.isOwner(this.menu.player));
-            this.drawButton(graphics, SECURITY_TEAM_X, SECURITY_TEAM_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.TEAM || !this.menu.security.isOwner(this.menu.player));
-            this.drawButton(graphics, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING + SPACING) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PRIVATE || !this.menu.security.isOwner(this.menu.player));
+            this.drawButton(graphics, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING * 2) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PUBLIC || !this.menu.security.isOwner(this.menu.player));
+            this.drawButton(graphics, SECURITY_TEAM_X, SECURITY_TEAM_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING * 2) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.TEAM || !this.menu.security.isOwner(this.menu.player));
+            this.drawButton(graphics, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, mouseX - this.imageWidth - this.leftPos, mouseY - (TAB_HEIGHT + SPACING * 2) - this.topPos, this.menu.security.getAccessLevel() == AccessLevel.PRIVATE || !this.menu.security.isOwner(this.menu.player));
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_PUBLIC_X, SECURITY_PUBLIC_Y, ICON_LOCK_PRIVATE_U, ICON_LOCK_PRIVATE_V, ICON_WIDTH, ICON_HEIGHT);
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_TEAM_X, SECURITY_TEAM_Y, ICON_LOCK_PARTY_U, ICON_LOCK_PARTY_V, ICON_WIDTH, ICON_HEIGHT);
             graphics.blit(Constant.ScreenTexture.MACHINE_CONFIG_PANELS, SECURITY_PRIVATE_X, SECURITY_PRIVATE_Y, ICON_LOCK_PUBLIC_U, ICON_LOCK_PUBLIC_V, ICON_WIDTH, ICON_HEIGHT);
 
-            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.SECURITY)
-                    .setStyle(Constant.Text.GRAY_STYLE), PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
+            graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.SECURITY).setStyle(Constant.Text.GRAY_STYLE),
+                    (Tab.SECURITY.isLeft() ? PANEL_ICON_X_LEFT : PANEL_ICON_X_RIGHT) + PANEL_TITLE_X, PANEL_TITLE_Y, 0xFFFFFFFF);
             graphics.drawString(this.font, Component.translatable(Constant.TranslationKey.ACCESS_LEVEL,
                     this.menu.security.getAccessLevel().getName()).setStyle(Constant.Text.GRAY_STYLE), SECURITY_STATE_TEXT_X, SECURITY_STATE_TEXT_Y, 0xFFFFFFFF);
 
@@ -462,7 +482,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseY = mY - this.topPos;
         if (Tab.CONFIGURATION.isOpen()) {
             mouseX += PANEL_WIDTH;
-            mouseY -= TAB_HEIGHT + SPACING + SPACING;
+            mouseY -= TAB_HEIGHT + SPACING * 2;
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.CONFIGURATION.toggle();
                 return true;
@@ -491,9 +511,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         } else {
             mouseX += TAB_WIDTH;
             if (Tab.REDSTONE.isOpen()) {
-                mouseY -= PANEL_HEIGHT + SPACING + SPACING;
+                mouseY -= PANEL_HEIGHT + SPACING * 2;
             } else {
-                mouseY -= TAB_HEIGHT + SPACING + SPACING;
+                mouseY -= TAB_HEIGHT + SPACING * 2;
             }
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.CONFIGURATION.toggle();
@@ -519,7 +539,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseY = mY - this.topPos;
         mouseX -= this.imageWidth;
         if (Tab.SECURITY.isOpen()) {
-            mouseY -= TAB_HEIGHT + SPACING + SPACING;
+            mouseY -= TAB_HEIGHT + SPACING * 2;
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.SECURITY.toggle();
                 return true;
@@ -544,9 +564,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             }
         } else {
             if (Tab.STATS.isOpen()) {
-                mouseY -= PANEL_HEIGHT + SPACING + SPACING;
+                mouseY -= PANEL_HEIGHT + SPACING * 2;
             } else {
-                mouseY -= TAB_HEIGHT + SPACING + SPACING;
+                mouseY -= TAB_HEIGHT + SPACING * 2;
             }
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.SECURITY.toggle();
@@ -609,7 +629,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseY = mY - this.topPos;
         if (Tab.CONFIGURATION.isOpen()) {
             mouseX += PANEL_WIDTH;
-            mouseY -= TAB_HEIGHT + SPACING + SPACING;
+            mouseY -= TAB_HEIGHT + SPACING * 2;
             if (mouseIn(mouseX, mouseY, TOP_FACE_X, TOP_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
                 this.renderFaceTooltip(graphics, BlockFace.TOP, mX, mY);
             }
@@ -660,7 +680,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         mouseY = mY - this.topPos;
         if (Tab.SECURITY.isOpen()) {
             mouseX -= this.imageWidth;
-            mouseY -= TAB_HEIGHT + SPACING + SPACING;
+            mouseY -= TAB_HEIGHT + SPACING * 2;
 
             if (this.menu.security.isOwner(this.menu.player)) {
                 if (mouseIn(mouseX, mouseY, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
@@ -682,12 +702,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         } else {
             mouseX -= this.imageWidth;
             if (Tab.STATS.isOpen()) {
-                mouseY -= PANEL_HEIGHT + SPACING + SPACING;
+                mouseY -= PANEL_HEIGHT + SPACING * 2;
             } else {
-                mouseY -= TAB_HEIGHT + SPACING + SPACING;
+                mouseY -= TAB_HEIGHT + SPACING * 2;
             }
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
-                graphics.renderTooltip(this.font, Component.translatable(Constant.TranslationKey.SECURITY).setStyle(Constant.Text.BLUE_STYLE), mX, mY);
+                graphics.renderTooltip(this.font, Component.translatable(Constant.TranslationKey.SECURITY).setStyle(Constant.Text.GREEN_STYLE), mX, mY);
             }
         }
     }
@@ -826,7 +846,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     private void handleSlotHighlight(GuiGraphics graphics, int mouseX, int mouseY) {
         if (Tab.CONFIGURATION.isOpen()) {
             mouseX -= (this.leftPos - PANEL_WIDTH);
-            mouseY -= (this.topPos + (TAB_HEIGHT + SPACING + SPACING));
+            mouseY -= (this.topPos + (TAB_HEIGHT + SPACING * 2));
             IOFace config = null;
             if (mouseIn(mouseX, mouseY, TOP_FACE_X, TOP_FACE_Y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE)) {
                 config = this.menu.configuration.get(BlockFace.TOP);

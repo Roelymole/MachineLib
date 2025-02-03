@@ -200,7 +200,7 @@ dependencies {
     "testmodImplementation"(sourceSets.main.get().output)
     "modTestmodImplementation"("net.fabricmc.fabric-api:fabric-api:$fabric")
 
-//    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:$rei")
+    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:$rei")
     modRuntimeOnly("mcp.mobius.waila:wthit:fabric-$wthit")
 }
 

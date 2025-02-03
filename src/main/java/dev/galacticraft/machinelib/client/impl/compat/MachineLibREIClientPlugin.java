@@ -25,6 +25,7 @@ package dev.galacticraft.machinelib.client.impl.compat;
 import dev.architectury.event.CompoundEventResult;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.impl.Constant;
+import dev.galacticraft.machinelib.impl.Constant.TextureCoordinate;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.screen.ExclusionZones;
@@ -49,13 +50,30 @@ public class MachineLibREIClientPlugin implements REIClientPlugin {
 
     @Override
     public void registerExclusionZones(ExclusionZones zones) {
-        zones.register(MachineScreen.class, screen -> {
+        zones.register(MachineScreen.class, provider -> {
             List<Rectangle> areas = new ArrayList<>();
-            if (MachineScreen.Tab.STATS.isOpen() || MachineScreen.Tab.SECURITY.isOpen()) {
-                areas.add(new Rectangle(screen.getX() + screen.getImageWidth(), screen.getY() + (MachineScreen.Tab.STATS.isOpen() ? 0 : Constant.TextureCoordinate.TAB_HEIGHT), Constant.TextureCoordinate.PANEL_WIDTH, Constant.TextureCoordinate.PANEL_HEIGHT));
-                areas.add(new Rectangle(screen.getX() + screen.getImageWidth(), screen.getY() + Constant.TextureCoordinate.TAB_HEIGHT, Constant.TextureCoordinate.TAB_WIDTH, Constant.TextureCoordinate.PANEL_HEIGHT));
+            int leftX = provider.getX();
+            int rightX = provider.getX() + provider.getImageWidth();
+            int leftY = provider.getY() + MachineScreen.SPACING;
+            int rightY = provider.getY() + MachineScreen.SPACING;
+            int width;
+            int height;
+            for (MachineScreen.Tab tab : MachineScreen.Tab.values()) {
+                if (tab.isOpen()) {
+                    width = TextureCoordinate.PANEL_WIDTH;
+                    height = TextureCoordinate.PANEL_HEIGHT;
+                } else {
+                    width = TextureCoordinate.TAB_WIDTH;
+                    height = TextureCoordinate.TAB_HEIGHT;
+                }
+                if (tab.isLeft()) {
+                    areas.add(new Rectangle(leftX - width, leftY, width, height));
+                    leftY += height + MachineScreen.SPACING;
+                } else {
+                    areas.add(new Rectangle(rightX, rightY, width, height));
+                    rightY += height + MachineScreen.SPACING;
+                }
             }
-            areas.add(new Rectangle(screen.getX() + screen.getImageWidth(), screen.getY(), Constant.TextureCoordinate.TAB_WIDTH, Constant.TextureCoordinate.TAB_HEIGHT * 2));
             return areas;
         });
     }
