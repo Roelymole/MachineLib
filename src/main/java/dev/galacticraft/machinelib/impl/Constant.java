@@ -102,7 +102,7 @@ public interface Constant {
         /**
          * The height of a configuration panel.
          */
-        int PANEL_HEIGHT = 93;
+        int PANEL_HEIGHT = 92;
         /**
          * The width of a configuration tab.
          */
