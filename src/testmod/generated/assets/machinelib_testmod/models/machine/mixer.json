@@ -1,4 +1,5 @@
 {
   "data": {},
-  "machinelib:type": "machine"
+  "machinelib:type": "machine",
+  "item_override": "minecraft:block/magenta_glazed_terracotta"
 }
