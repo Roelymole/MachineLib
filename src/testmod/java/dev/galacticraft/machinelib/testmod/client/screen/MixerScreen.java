@@ -39,14 +39,8 @@ public class MixerScreen extends MachineScreen<MixerBlockEntity, MachineMenu<Mix
     private static final ResourceLocation TEXTURE = Constant.id("textures/gui/mixer_screen.png");
 
     public MixerScreen(@NotNull MachineMenu<MixerBlockEntity> menu, @NotNull Inventory inv, @NotNull Component title) {
-        super(menu, title, TEXTURE, faceOverrides());
+        super(menu, title, TEXTURE);
         this.capacitorX = 8;
         this.capacitorY = 30;
-    }
-    
-    private static Map<BlockFace, ResourceLocation> faceOverrides() {
-        Map<BlockFace, ResourceLocation> overrides = new HashMap<BlockFace, ResourceLocation>();
-        overrides.put(BlockFace.TOP, ResourceLocation.withDefaultNamespace("container/beacon/confirm"));
-        return overrides;
     }
 }

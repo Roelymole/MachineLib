@@ -154,8 +154,17 @@ public final class MachineBakedModel implements FabricBakedModel, BakedModel {
             }
         }
 
+        if (state == null) {
+            TextureAtlasSprite override = this.provider.getItemOverride(face);
+            if (override != null) return override;
+        }
         TextureAtlasSprite sprite = this.provider.getSprite(face);
         return sprite == null ? this.base.base() : sprite;
+    }
+
+    public TextureAtlasSprite getItemOverride(@Nullable BlockState state, @NotNull BlockFace face, @Nullable IOConfig config) {
+        TextureAtlasSprite override = this.provider.getItemOverride(face);
+        return override != null ? override : this.getSprite(state, face, config);
     }
 
     public TextureProvider.BoundTextureProvider getProvider() {
