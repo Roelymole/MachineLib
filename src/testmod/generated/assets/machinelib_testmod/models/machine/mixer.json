@@ -1,6 +1,4 @@
 {
-  "data": {
-    "top_item_override": "minecraft:block/furnace_top"
-  },
+  "data": {},
   "machinelib:type": "machine"
 }
