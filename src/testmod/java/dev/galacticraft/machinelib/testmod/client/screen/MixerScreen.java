@@ -23,7 +23,6 @@
 package dev.galacticraft.machinelib.testmod.client.screen;
 
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
-import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.block.entity.MixerBlockEntity;
@@ -31,9 +30,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class MixerScreen extends MachineScreen<MixerBlockEntity, MachineMenu<MixerBlockEntity>> {
     private static final ResourceLocation TEXTURE = Constant.id("textures/gui/mixer_screen.png");

@@ -1,6 +1,6 @@
 {
   "data": {
-    "top_item_override": "minecraft:block/magenta_glazed_terracotta"
+    "top_item_override": "minecraft:block/furnace_top"
   },
   "machinelib:type": "machine"
 }
