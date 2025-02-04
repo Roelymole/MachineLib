@@ -77,7 +77,9 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -171,6 +173,10 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     private final @NotNull ResourceLocation texture;
     /**
+     * The face override textures.
+     */
+    private final Map<BlockFace, ResourceLocation> overrides;
+    /**
      * The skin of the owner of this machine.
      * Defaults to steve if the skin cannot be found.
      */
@@ -201,15 +207,28 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param menu The screen handler to create the screen from.
      * @param title The title of the screen.
      * @param texture The texture of the background screen.
+     * @param overrides The face override textures.
      */
-    protected MachineScreen(@NotNull Menu menu, @NotNull Component title, @NotNull ResourceLocation texture) {
+    protected MachineScreen(@NotNull Menu menu, @NotNull Component title, @NotNull ResourceLocation texture, Map<BlockFace, ResourceLocation> overrides) {
         super(menu, menu.playerInventory, title);
 
         this.texture = texture;
+        this.overrides = overrides;
 
         UUID owner = this.menu.security.getOwner() == null ? this.menu.player.getUUID() : this.menu.security.getOwner();
         this.owner = SkullBlockEntity.fetchGameProfile(owner).thenApply(o -> o.orElse(new GameProfile(owner, "???")));
         this.ownerSkin = this.owner.thenCompose(profile -> Minecraft.getInstance().getSkinManager().getOrLoad(profile));
+    }
+
+    /**
+     * Creates a new screen from the given screen handler.
+     *
+     * @param menu The screen handler to create the screen from.
+     * @param title The title of the screen.
+     * @param texture The texture of the background screen.
+     */
+    protected MachineScreen(@NotNull Menu menu, @NotNull Component title, @NotNull ResourceLocation texture) {
+        this(menu, title, texture, new HashMap<BlockFace, ResourceLocation>());
     }
 
     /**
@@ -382,7 +401,9 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @param face the face to draw
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull IOConfig ioConfig, @NotNull BlockFace face) {
-        if (this.model != null) {
+        if (this.overrides.containsKey(face)) {
+            graphics.blitSprite(this.overrides.get(face), x, y, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE);
+        } else if (this.model != null) {
             graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, this.model.getSprite(this.menu.be.getBlockState(), face, ioConfig));
         }
     }

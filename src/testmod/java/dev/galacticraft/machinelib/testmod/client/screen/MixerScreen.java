@@ -23,6 +23,7 @@
 package dev.galacticraft.machinelib.testmod.client.screen;
 
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
+import dev.galacticraft.machinelib.api.util.BlockFace;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
 import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.block.entity.MixerBlockEntity;
@@ -31,12 +32,21 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MixerScreen extends MachineScreen<MixerBlockEntity, MachineMenu<MixerBlockEntity>> {
     private static final ResourceLocation TEXTURE = Constant.id("textures/gui/mixer_screen.png");
 
     public MixerScreen(@NotNull MachineMenu<MixerBlockEntity> menu, @NotNull Inventory inv, @NotNull Component title) {
-        super(menu, title, TEXTURE);
+        super(menu, title, TEXTURE, faceOverrides());
         this.capacitorX = 8;
         this.capacitorY = 30;
+    }
+    
+    private static Map<BlockFace, ResourceLocation> faceOverrides() {
+        Map<BlockFace, ResourceLocation> overrides = new HashMap<BlockFace, ResourceLocation>();
+        overrides.put(BlockFace.TOP, ResourceLocation.withDefaultNamespace("container/beacon/confirm"));
+        return overrides;
     }
 }
