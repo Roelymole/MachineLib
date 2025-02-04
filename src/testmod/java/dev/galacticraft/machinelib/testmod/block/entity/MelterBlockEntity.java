@@ -68,7 +68,7 @@ public class MelterBlockEntity extends MachineBlockEntity {
                     ItemResourceSlot.builder(TransferType.INPUT)
                             .pos(59, 42)
                             .filter(ResourceFilters.ofResource(Items.COBBLESTONE)),
-                    ItemResourceSlot.builder(TransferType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(152, 62)
                             .filter(ResourceFilters.canInsertFluid(Fluids.LAVA))
             ),

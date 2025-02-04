@@ -66,10 +66,10 @@ public class MixerBlockEntity extends MachineBlockEntity {
                             .pos(8, 8)
                             .filter(ResourceFilters.CAN_EXTRACT_ENERGY)
                             .capacity(32),
-                    ItemResourceSlot.builder(TransferType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(48, 8)
                             .filter(ResourceFilters.canExtractFluid(Fluids.WATER)),
-                    ItemResourceSlot.builder(TransferType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(70, 8)
                             .filter(ResourceFilters.canExtractFluid(Fluids.LAVA)),
                     ItemResourceSlot.builder(TransferType.OUTPUT)

@@ -54,7 +54,7 @@ public class GeneratorBlockEntity extends MachineBlockEntity {
 
     public static final StorageSpec STORAGE_SPEC = StorageSpec.of(
             MachineItemStorage.spec(
-                    ItemResourceSlot.builder(TransferType.TRANSFER)
+                    ItemResourceSlot.builder(TransferType.PROCESSING)
                             .pos(8, 62)
                             .filter(ResourceFilters.CAN_INSERT_ENERGY)
                             .capacity(32),

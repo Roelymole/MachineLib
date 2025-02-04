@@ -389,7 +389,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      * @see #titleLabelY
      */
     protected void drawTitle(@NotNull GuiGraphics graphics) {
-        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFFFFFFFF, false);
+        graphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
     }
 
     /**

@@ -26,6 +26,7 @@ import com.google.common.collect.Iterators;
 import dev.galacticraft.machinelib.api.compat.transfer.ExposedSlot;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.ResourceFlow;
+import dev.galacticraft.machinelib.api.transfer.TransferType;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.TransferVariant;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
@@ -57,7 +58,15 @@ public abstract class ExposedSlotImpl<Resource, Variant extends TransferVariant<
 
     @Override
     public long extract(Variant variant, long maxAmount, TransactionContext transaction) {
-        return this.supportsExtraction() ? this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction) : 0;
+        if (this.supportsExtraction()) {
+            if (this.slot.transferMode() == TransferType.PROCESSING) {
+                if (this.slot.getFilter().test(variant.getObject(), variant.getComponents())) {
+                    return 0;
+                }
+            }
+            return this.slot.extract(variant.getObject(), variant.getComponents(), maxAmount, transaction);
+        }
+        return 0;
     }
 
     @Override
