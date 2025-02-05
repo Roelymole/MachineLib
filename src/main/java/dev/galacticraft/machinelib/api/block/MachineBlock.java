@@ -212,7 +212,7 @@ public abstract class MachineBlock extends BaseBlock {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (Screen.hasShiftDown()) {
-            tooltip.addAll(DisplayUtil.wrapText(Component.translatable(this.getDescriptionId() + ".description"), 128));
+            tooltip.addAll(DisplayUtil.wrapText(Component.translatable(this.getDescriptionId() + ".description").withStyle(Constant.Text.GRAY_STYLE), 150));
         } else {
             tooltip.add(PRESS_SHIFT);
         }
