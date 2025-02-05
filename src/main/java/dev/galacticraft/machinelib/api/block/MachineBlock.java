@@ -214,7 +214,7 @@ public abstract class MachineBlock extends BaseBlock {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (Screen.hasShiftDown()) {
-            tooltip.addAll(Minecraft.getInstance().font.getSplitter().splitLines(this.getDescriptionId() + ".description", 150, Style.EMPTY).stream().map(formattedText -> Component.literal(formattedText.getString()).withStyle(Constant.Text.GRAY_STYLE)).toList());
+            tooltip.addAll(DisplayUtil.wrapText(Component.translatable(this.getDescriptionId() + ".description").withStyle(Constant.Text.GRAY_STYLE), 150));
         } else {
             tooltip.add(PRESS_SHIFT);
         }

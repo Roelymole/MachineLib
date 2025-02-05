@@ -91,26 +91,10 @@ public final class DisplayUtil {
     }
 
     public static @NotNull @Unmodifiable List<Component> wrapText(@NotNull String text, int length, @Nullable Style style) {
-        if (text.length() <= length) {
-            return ImmutableList.of(Component.literal(text));
-        }
-
         Minecraft minecraft = Minecraft.getInstance();
         ImmutableList.Builder<Component> list = ImmutableList.builder();
-        StringBuilder builder = new StringBuilder();
-        int lineLength = 0;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            lineLength += minecraft.font.width(String.valueOf(c));
-            if (Character.isWhitespace(c) && lineLength >= length) {
-                lineLength = 0;
-                list.add(Component.literal(builder.toString()).setStyle(style));
-                builder.delete(0, builder.length());
-            } else {
-                builder.append(c);
-            }
-        }
-        list.add(Component.literal(builder.toString()).setStyle(style));
+        minecraft.font.getSplitter().splitLines(text, length, Style.EMPTY).stream()
+                .forEach(formattedText -> list.add(Component.literal(formattedText.getString()).withStyle(style)));
         return list.build();
     }
 
