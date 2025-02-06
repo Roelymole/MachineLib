@@ -67,6 +67,7 @@ public class TestModModelProvider extends FabricModelProvider {
 
         MachineModelGenerator.createTrivialMachine(gen, TestModBlocks.GENERATOR, TextureProvider.builder()
                 .front(TextureMapping.getBlockTexture(Blocks.FURNACE, "_front"))
+                .topOverride(TextureMapping.getBlockTexture(Blocks.FURNACE, "_top"))
                 .build());
         MachineModelGenerator.createTrivialMachine(gen, TestModBlocks.MIXER, TextureProvider.none());
     }

@@ -403,7 +403,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
      */
     private void drawMachineFace(@NotNull GuiGraphics graphics, int x, int y, @NotNull IOConfig ioConfig, @NotNull BlockFace face) {
         if (this.model != null) {
-            graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, this.model.getSprite(this.menu.be.getBlockState(), face, ioConfig));
+            graphics.blit(x, y, 0, MACHINE_FACE_SIZE, MACHINE_FACE_SIZE, this.model.getItemOverride(this.menu.be.getBlockState(), face, ioConfig));
         }
     }
 

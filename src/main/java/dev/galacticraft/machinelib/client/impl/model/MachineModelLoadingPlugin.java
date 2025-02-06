@@ -57,15 +57,21 @@ public class MachineModelLoadingPlugin implements PreparableModelLoadingPlugin<M
             DataResult<? extends Pair<TextureProvider, JsonElement>> sprites = TextureProvider.CODEC.decode(JsonOps.INSTANCE, json.get("data"));
             JsonElement baseId = json.get("base");
             ResourceLocation base = baseId == null ? context.id().withPath(DEFAULT_MACHINE_BASE) : ResourceLocation.parse(baseId.getAsString());
+            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/"));
             MachineUnbakedModel model = new MachineUnbakedModel(sprites.getOrThrow().getFirst(), base);
-            this.pendingItemModels.put(ResourceLocation.fromNamespaceAndPath(context.id().getNamespace(), context.id().getPath().replace("machine/", "item/")), model);
+            this.pendingItemModels.put(location, model);
+            if (json.has("item_override")) {
+                JsonElement itemOverride = json.get("item_override");
+                UnbakedModel unbaked = context.getOrLoadModel(ResourceLocation.parse(itemOverride.getAsString()));
+                this.pendingItemModels.put(location, unbaked);
+            }
             return model;
         }
 
         MachineTextureBase base = this.data.getBase(context.id());
         if (base != null) return base;
 
-        return this.pendingItemModels.remove(context.id()); //todo: allow overriding item models
+        return this.pendingItemModels.remove(context.id());
     }
 
     @Override
