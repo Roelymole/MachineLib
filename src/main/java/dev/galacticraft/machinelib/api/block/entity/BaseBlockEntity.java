@@ -26,6 +26,8 @@ import dev.galacticraft.machinelib.api.menu.SynchronizedMenu;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.BundlePacket;
 import net.minecraft.network.protocol.Packet;
@@ -81,9 +83,18 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
      */
     public abstract @Nullable CustomPacketPayload createUpdatePayload();
 
+    public abstract void populateUpdateTag(CompoundTag tag);
+
     @Override
     public BlockPos getScreenOpeningData(ServerPlayer player) {
         return this.getBlockPos();
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        CompoundTag tag = super.getUpdateTag(registryLookup);
+        populateUpdateTag(tag);
+        return tag;
     }
 
     @Override

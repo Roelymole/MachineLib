@@ -280,15 +280,13 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
-        CompoundTag tag = super.getUpdateTag(registryLookup);
-        tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
-        return tag;
+    public @NotNull CustomPacketPayload createUpdatePayload() {
+        return new BaseMachineUpdatePayload(this.worldPosition, this.configuration);
     }
 
     @Override
-    public @NotNull CustomPacketPayload createUpdatePayload() {
-        return new BaseMachineUpdatePayload(this.worldPosition, this.configuration);
+    public void populateUpdateTag(CompoundTag tag) {
+        tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
     }
 
     private IOFace @NotNull [] generateIOFaces() {
