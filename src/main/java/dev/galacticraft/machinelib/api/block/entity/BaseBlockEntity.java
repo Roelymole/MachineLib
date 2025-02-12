@@ -27,10 +27,13 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.BundlePacket;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -42,6 +45,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * A block entity with additional synchronization utilities.
@@ -85,9 +90,7 @@ public abstract class BaseBlockEntity extends BlockEntity implements ExtendedScr
     public final @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
         CustomPacketPayload payload = this.createUpdatePayload();
 
-        // safe cast because the ClientCommonPacketListener is a superclass of ClientGamePacketListener
-        // noinspection unchecked, rawtypes
-        return payload == null ? null : (Packet) new ClientboundCustomPayloadPacket(payload);
+        return payload == null ? null : new ClientboundBundlePacket(List.of(ClientboundBlockEntityDataPacket.create(this), new ClientboundCustomPayloadPacket(payload)));
     }
 
     /**
