@@ -46,6 +46,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -356,6 +357,11 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
                 this.type = type;
                 this.flow = flow;
 
+                ConfiguredBlockEntity.this.level.neighborChanged(
+                        ConfiguredBlockEntity.this.worldPosition.relative(face.toDirection(ConfiguredBlockEntity.this.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING))),
+                        ConfiguredBlockEntity.this.getBlockState().getBlock(),
+                        ConfiguredBlockEntity.this.worldPosition
+                );
                 ConfiguredBlockEntity.this.setChanged();
                 ConfiguredBlockEntity.this.requestRerender();
                 if (ConfiguredBlockEntity.this.level != null && !ConfiguredBlockEntity.this.level.isClientSide) {
