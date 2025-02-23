@@ -911,7 +911,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
     /**
      * Plays a button click sound.
      */
-    private void playButtonSound() {
+    protected void playButtonSound() {
         assert this.minecraft != null;
         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
