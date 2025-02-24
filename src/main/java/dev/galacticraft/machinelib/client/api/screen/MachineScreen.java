@@ -448,6 +448,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseY -= SPACING;
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.REDSTONE.toggle();
+                this.playButtonSound();
                 return true;
             }
             if (mouseIn(mouseX, mouseY, REDSTONE_IGNORE_X, REDSTONE_IGNORE_Y, BUTTON_WIDTH, BUTTON_HEIGHT)) {
@@ -475,6 +476,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseY -= SPACING;
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.REDSTONE.toggle();
+                this.playButtonSound();
                 return true;
             }
         }
@@ -485,6 +487,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseY -= TAB_HEIGHT + SPACING * 2;
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.CONFIGURATION.toggle();
+                this.playButtonSound();
                 return true;
             }
             if (button >= GLFW.GLFW_MOUSE_BUTTON_LEFT && button <= GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
@@ -517,6 +520,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             }
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.CONFIGURATION.toggle();
+                this.playButtonSound();
                 return true;
             }
         }
@@ -527,11 +531,13 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         if (Tab.STATS.isOpen()) {
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.STATS.toggle();
+                this.playButtonSound();
                 return true;
             }
         } else {
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.STATS.toggle();
+                this.playButtonSound();
                 return true;
             }
         }
@@ -542,6 +548,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             mouseY -= TAB_HEIGHT + SPACING * 2;
             if (mouseIn(mouseX, mouseY, 0, 0, PANEL_WIDTH, PANEL_UPPER_HEIGHT)) {
                 Tab.SECURITY.toggle();
+                this.playButtonSound();
                 return true;
             }
 
@@ -570,6 +577,7 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
             }
             if (mouseIn(mouseX, mouseY, 0, 0, TAB_WIDTH, TAB_HEIGHT)) {
                 Tab.SECURITY.toggle();
+                this.playButtonSound();
             }
         }
         return false;
