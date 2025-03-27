@@ -92,7 +92,7 @@ public abstract class MachineBlock extends BaseBlock {
     /**
      * Tooltip prompt text. Shown instead of the long-form description when shift is not pressed.
      */
-    private static final Component PRESS_SHIFT = Component.translatable(Constant.TranslationKey.PRESS_SHIFT).setStyle(Constant.Text.DARK_GRAY_STYLE);
+    protected static final Component PRESS_SHIFT = Component.translatable(Constant.TranslationKey.PRESS_SHIFT).setStyle(Constant.Text.DARK_GRAY_STYLE);
 
     /**
      * Creates a new machine block.
