@@ -84,6 +84,7 @@ public class MixerBlockEntity extends MachineBlockEntity {
                             .filter(ResourceFilters.ofResource(Fluids.WATER)),
                     FluidResourceSlot.builder(TransferType.INPUT)
                             .pos(70, 30)
+                            .unmarked()
                             .capacity(FluidConstants.BUCKET * 16)
                             .filter(ResourceFilters.ofResource(Fluids.LAVA))
             )

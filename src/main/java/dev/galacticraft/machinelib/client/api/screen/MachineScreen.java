@@ -826,10 +826,12 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
                             tank.getCapacity(), tank.createVariant(), tank.getAmount());
                 }
 
-                boolean primary = true;
-                for (int y = tank.getY() + tank.getHeight() - 2; y > tank.getY(); y -= 3) {
-                    graphics.hLine(tank.getX(), tank.getX() + Mth.ceil(primary ? tank.getWidth() / 2.5 : tank.getWidth() / 3.5), y, 0xFFB31212);
-                    primary = !primary;
+                if (tank.isMarked()) {
+                    boolean primary = true;
+                    for (int y = tank.getY() + tank.getHeight() - 2; y > tank.getY(); y -= 3) {
+                        graphics.hLine(tank.getX(), tank.getX() + Mth.ceil(primary ? tank.getWidth() / 2.5 : tank.getWidth() / 3.5), y, 0xFFB31212);
+                        primary = !primary;
+                    }
                 }
 
                 if (this.hoveredTank == null && mouseIn(mouseX, mouseY, this.leftPos + tank.getX(), this.topPos + tank.getY(), tank.getWidth(), tank.getHeight())) {

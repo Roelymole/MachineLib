@@ -56,10 +56,24 @@ public interface TankDisplay {
         return create(x, y, 16, height);
     }
 
+    /**
+     * Creates a display with the specified x and y coordinates, width and height.
+     *
+     * @param x the x-coordinate of the tank display
+     * @param y the y-coordinate of the tank display
+     * @param width the width of the tank display in pixels
+     * @param height the height of the tank display in pixels
+     * @return a new display
+     */
     @Contract("_, _, _, _ -> new")
     static @NotNull TankDisplay create(int x, int y, int width, int height) {
+        return create(x, y, width, height, true);
+    }
+
+    @Contract("_, _, _, _, _ -> new")
+    static @NotNull TankDisplay create(int x, int y, int width, int height, boolean marked) {
         if (width <= 0 || height <= 0) throw new IllegalArgumentException("Invalid size!");
-        return new TankDisplayImpl(x, y, width, height);
+        return new TankDisplayImpl(x, y, width, height, marked);
     }
 
     /**
@@ -77,9 +91,13 @@ public interface TankDisplay {
      */
     int width();
 
-
     /**
      * {@return the height of the tank}
      */
     int height();
+
+    /**
+     * {@return whether the tank has markings}
+     */
+    boolean marked();
 }

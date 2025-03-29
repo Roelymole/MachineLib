@@ -59,7 +59,7 @@ public interface Tank {
     @Contract(value = "_, _, _, _ -> new", pure = true)
     static @NotNull Tank create(@NotNull ResourceSlot<Fluid> slot, @NotNull TankDisplay display, @NotNull TransferType transferType, int index) {
         Preconditions.checkNotNull(slot);
-        return new TankImpl(slot, transferType, index, display.x(), display.y(), display.width(), display.height());
+        return new TankImpl(slot, transferType, index, display.x(), display.y(), display.width(), display.height(), display.marked());
     }
 
     /**
@@ -118,6 +118,11 @@ public interface Tank {
      * {@return the width of this tank} Currently, always returns {@code 16}.
      */
     int getWidth();
+
+    /**
+     * {@return whether this tank has markings}
+     */
+    boolean isMarked();
 
     /**
      * {@return the id of this tank (the index of the tank in the screen)}

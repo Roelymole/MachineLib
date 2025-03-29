@@ -31,6 +31,7 @@ import dev.galacticraft.machinelib.api.storage.slot.display.TankDisplay;
  * @param y The y position of the tank.
  * @param width The width of the tank.
  * @param height The height of the tank.
+ * @param marked Whether the tank has markings.
  */
-public record TankDisplayImpl(int x, int y, int width, int height) implements TankDisplay {
+public record TankDisplayImpl(int x, int y, int width, int height, boolean marked) implements TankDisplay {
 }

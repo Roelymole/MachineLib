@@ -53,9 +53,10 @@ public final class TankImpl implements Tank {
     private final int y;
     private final int height;
     private final int width;
+    private final boolean marked;
     public int id = -1;
 
-    public TankImpl(ResourceSlot<Fluid> slot, TransferType transferType, int index, int x, int y, int width, int height) {
+    public TankImpl(ResourceSlot<Fluid> slot, TransferType transferType, int index, int x, int y, int width, int height, boolean marked) {
         this.slot = slot;
         this.transferType = transferType;
         this.index = index;
@@ -63,6 +64,7 @@ public final class TankImpl implements Tank {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.marked = marked;
     }
 
     private static boolean mouseIn(double mouseX, double mouseY, int x, int y, int width, int height) {
@@ -92,6 +94,11 @@ public final class TankImpl implements Tank {
     @Override
     public boolean isEmpty() {
         return this.slot.isEmpty();
+    }
+
+    @Override
+    public boolean isMarked() {
+        return this.marked;
     }
 
     @Override

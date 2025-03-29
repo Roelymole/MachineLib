@@ -60,6 +60,7 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
         private final TransferType transferType;
 
         private boolean hidden = false;
+        private boolean marked = true;
 
         private int x = 0;
         private int y = 0;
@@ -84,6 +85,12 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
         @Contract(value = "-> this", mutates = "this")
         public @NotNull Spec hidden() {
             this.hidden = true;
+            return this;
+        }
+
+        @Contract(value = "-> this", mutates = "this")
+        public @NotNull Spec unmarked() {
+            this.marked = false;
             return this;
         }
 
@@ -136,7 +143,7 @@ public interface FluidResourceSlot extends ResourceSlot<Fluid> {
                     throw new UnsupportedOperationException("Display properties changed while hidden!");
             }
 
-            return FluidResourceSlot.create(this.transferType, this.hidden ? null : TankDisplay.create(this.x, this.y, this.width, this.height), this.capacity, this.filter);
+            return FluidResourceSlot.create(this.transferType, this.hidden ? null : TankDisplay.create(this.x, this.y, this.width, this.height, this.marked), this.capacity, this.filter);
         }
     }
 }
