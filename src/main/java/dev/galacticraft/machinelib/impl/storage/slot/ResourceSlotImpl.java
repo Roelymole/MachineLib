@@ -120,7 +120,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
     public boolean canInsert(@NotNull Resource resource, @NotNull DataComponentPatch components, long amount) {
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
-        return this.amount + amount <= this.getCapacityFor(resource, components) && this.canAccept(resource, components);
+        return amount <= this.getCapacityFor(resource, components) - this.amount && this.canAccept(resource, components);
     }
 
     @Override
@@ -128,7 +128,7 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
         StoragePreconditions.notNegative(amount);
         assert this.isSane();
 
-        return this.canAccept(resource, components) ? Math.min(this.amount + amount, this.getCapacityFor(resource, components)) - this.amount : 0;
+        return this.canAccept(resource, components) ? Math.min(amount, this.getCapacityFor(resource, components) - this.amount) : 0;
     }
 
     @Override

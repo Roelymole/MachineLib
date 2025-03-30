@@ -148,7 +148,7 @@ public final class StorageHelper {
         StoragePreconditions.notNegative(maxAmount);
 
         // limit movement to the amount that can be inserted
-        maxAmount = Math.min(maxAmount, to.tryInsert(variant.getObject(), variant.getComponents(), maxAmount));
+        maxAmount = to.tryInsert(variant.getObject(), variant.getComponents(), maxAmount);
 
         try (Transaction transaction = Transaction.openNested(context)) {
             // extract the resource from the source storage
