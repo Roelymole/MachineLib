@@ -181,7 +181,7 @@ public final class MachineEnergyStorageImpl extends SnapshotParticipant<Long> im
     @Override
     public void setEnergy(long amount) {
         assert amount >= 0;
-        this.amount = amount;
+        this.amount = Math.min(amount, this.capacity);
     }
 
     @Override

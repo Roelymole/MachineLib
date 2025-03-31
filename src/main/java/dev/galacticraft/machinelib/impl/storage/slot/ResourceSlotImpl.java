@@ -338,7 +338,8 @@ public abstract class ResourceSlotImpl<Resource> extends SnapshotParticipant<Res
 
     @VisibleForTesting
     public boolean isSane() {
-        return (this.resource == null && this.components.isEmpty() && this.amount == 0) || (this.resource != null && this.amount > 0);
+        return (this.resource == null && this.components.isEmpty() && this.amount == 0)
+                || (this.resource != null && 0 < this.amount && this.amount <= this.getCapacityFor(this.resource, this.components));
     }
 
     private long doExtraction(long extracted) {
