@@ -16,7 +16,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Copy translations
-        run: cp src/main/resources/assets/machinelib/lang/en_us.json machinelib.json
+        run: |
+          mkdir tmp
+          cp src/main/resources/assets/machinelib/lang/en_us.json tmp/machinelib.json
 
       - name: Crowdin Push
         uses: crowdin/github-action@v2
@@ -25,7 +27,7 @@ jobs:
           upload_translations: false
           download_translations: false
 
-          source: 'machinelib.json'
+          source: 'tmp/machinelib.json'
           translation: 'src/main/resources/assets/machinelib/lang/%locale_with_underscore%.json'
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
