@@ -71,6 +71,7 @@ public interface Constant {
         String ITEM_STORAGE = "ItemStorage";
         String FLUID_STORAGE = "FluidStorage";
         String STATE = "State";
+        String ACTIVE = "Active";
     }
 
     interface ScreenTexture {

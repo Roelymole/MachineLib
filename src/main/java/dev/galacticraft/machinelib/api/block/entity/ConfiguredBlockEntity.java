@@ -161,14 +161,8 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
             profiler.push("active");
             this.state.setStatus(this.tick(level, pos, state, profiler));
             profiler.pop();
-            if (!this.active) {
-                if (this.state.isActive()) {
-                    MachineBlock.updateActiveState(level, pos, state, this.active = true);
-                }
-            } else {
-                if (!this.state.isActive()) {
-                    MachineBlock.updateActiveState(level, pos, state, this.active = false);
-                }
+            if (this.active != this.state.isActive()) {
+                MachineBlock.updateActiveState(level, pos, state, this.active = this.state.isActive());
             }
         }
     }
@@ -225,7 +219,17 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
      * @see #active
      */
     public boolean isActive() {
-        return active;
+        return this.active;
+    }
+
+    /**
+     * Sets whether the machine is currently active or not.
+     *
+     * @param active {@code true} if the machine is active, {@code false} otherwise.
+     * @see #active
+     */
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     /**
@@ -250,6 +254,7 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
         tag.put(Constant.Nbt.SECURITY, this.security.createTag());
         tag.put(Constant.Nbt.REDSTONE_MODE, this.redstone.createTag());
         tag.put(Constant.Nbt.STATE, this.state.createTag());
+        tag.putBoolean(Constant.Nbt.ACTIVE, this.active);
     }
 
     /**
@@ -269,6 +274,8 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
             this.redstone = RedstoneMode.readTag(tag.get(Constant.Nbt.REDSTONE_MODE));
         if (tag.contains(Constant.Nbt.STATE, Tag.TAG_BYTE))
             this.state.readTag((ByteTag) tag.get(Constant.Nbt.STATE));
+        if (tag.contains(Constant.Nbt.ACTIVE))
+            this.active = tag.getBoolean(Constant.Nbt.ACTIVE);
 
         if (this.level != null && this.level.isClientSide()) {
             this.level.sendBlockUpdated(this.worldPosition, Blocks.AIR.defaultBlockState(), this.getBlockState(), Block.UPDATE_IMMEDIATE);
@@ -282,12 +289,13 @@ public abstract class ConfiguredBlockEntity extends BaseBlockEntity implements R
 
     @Override
     public @NotNull CustomPacketPayload createUpdatePayload() {
-        return new BaseMachineUpdatePayload(this.worldPosition, this.configuration);
+        return new BaseMachineUpdatePayload(this.worldPosition, this.configuration, this.active);
     }
 
     @Override
     public void populateUpdateTag(CompoundTag tag) {
         tag.put(Constant.Nbt.CONFIGURATION, this.configuration.createTag());
+        tag.putBoolean(Constant.Nbt.ACTIVE, this.active);
     }
 
     private IOFace @NotNull [] generateIOFaces() {

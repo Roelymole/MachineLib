@@ -29,17 +29,20 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record BaseMachineUpdatePayload(BlockPos pos, IOConfig config) implements CustomPacketPayload {
+public record BaseMachineUpdatePayload(BlockPos pos, IOConfig config, boolean active) implements CustomPacketPayload {
     public static final Type<BaseMachineUpdatePayload> TYPE = new Type<>(Constant.id("machine_update"));
     public static final StreamCodec<ByteBuf, BaseMachineUpdatePayload> CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC,
             BaseMachineUpdatePayload::pos,
             IOConfig.CODEC,
             BaseMachineUpdatePayload::config,
+            ByteBufCodecs.BOOL,
+            BaseMachineUpdatePayload::active,
             BaseMachineUpdatePayload::new
     );
 
@@ -52,6 +55,7 @@ public record BaseMachineUpdatePayload(BlockPos pos, IOConfig config) implements
         ClientLevel level = context.client().level;
         if (level != null && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
             this.config.copyInto(machine.getIOConfig());
+            machine.setActive(this.active);
             machine.setChanged();
             machine.requestRerender();
         }
