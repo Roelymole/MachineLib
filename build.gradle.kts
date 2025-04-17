@@ -238,7 +238,7 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Jar> {
     from("LICENSE") {
-        rename { "${it}_${project.name}"}
+        rename { "${it}_${modId}"}
     }
 
     manifest {
