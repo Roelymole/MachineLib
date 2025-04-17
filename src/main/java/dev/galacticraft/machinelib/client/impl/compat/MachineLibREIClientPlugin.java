@@ -24,7 +24,6 @@ package dev.galacticraft.machinelib.client.impl.compat;
 
 import dev.architectury.event.CompoundEventResult;
 import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
-import dev.galacticraft.machinelib.impl.Constant;
 import dev.galacticraft.machinelib.impl.Constant.TextureCoordinate;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;

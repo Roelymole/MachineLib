@@ -44,10 +44,10 @@ val wthit = project.property("wthit.version").toString()
 plugins {
     java
     `maven-publish`
-    id("fabric-loom") version("1.9-SNAPSHOT")
-    id("org.cadixdev.licenser") version("0.6.1")
-    id("org.ajoberstar.grgit") version("5.2.2")
-    id("dev.galacticraft.mojarn") version("0.5.2+15")
+    id("fabric-loom") version("1.10-SNAPSHOT")
+    id("com.diffplug.spotless") version("7.0.3")
+    id("org.ajoberstar.grgit") version("5.3.0")
+    id("dev.galacticraft.mojarn") version("0.6.0+18")
 }
 
 group = "dev.galacticraft"
@@ -268,9 +268,15 @@ tasks.javadoc {
     options.encoding = "UTF-8"
 }
 
-license {
-    header(rootProject.file("LICENSE_HEADER.txt"))
-    include("**/dev/galacticraft/**/*.java")
+spotless {
+    lineEndings = com.diffplug.spotless.LineEnding.UNIX
+
+    java {
+        licenseHeader(processLicenseHeader(rootProject.file("LICENSE")))
+        leadingTabsToSpaces()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
 }
 
 publishing {
@@ -319,4 +325,12 @@ publishing {
             }
         }
     }
+}
+
+fun processLicenseHeader(license: File): String {
+    val text = license.readText()
+    return "/*\n * " + text.substring(text.indexOf("Copyright"))
+        .replace("\n", "\n * ")
+        .replace("* \n", "*\n")
+        .trim() + "/\n\n"
 }
