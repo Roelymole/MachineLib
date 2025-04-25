@@ -78,6 +78,11 @@ public final class DisplayUtil {
         return formatNumber(amount).append(Component.translatable(Constant.TranslationKey.UNIT_GJ));
     }
 
+    @Contract(pure = true, value = "_ -> new")
+    public static @NotNull MutableComponent formatEnergyGeneration(long rate) {
+        return formatNumber(rate).append(Component.translatable(Constant.TranslationKey.UNIT_GJT));
+    }
+
     @Contract(pure = true, value = "_, _ -> new")
     public static @NotNull MutableComponent formatFluid(long amount, boolean forceDetail) {
         if (!forceDetail && MachineLib.CONFIG.fluidUnits() == Config.FluidUnits.MILLIBUCKET) {
@@ -120,5 +125,9 @@ public final class DisplayUtil {
 
     public static MutableComponent createEnergyTooltip(long amount, long capacity) {
         return Component.translatable(Constant.TranslationKey.CURRENT_ENERGY, DisplayUtil.formatNumber(amount).setStyle(Style.EMPTY.withColor(DisplayUtil.colorScale(amount, capacity))), DisplayUtil.formatEnergy(capacity).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
+    }
+
+    public static MutableComponent createEnergyGenerationTooltip(long rate) {
+        return Component.translatable(Constant.TranslationKey.CURRENT_ENERGY_GENERATION, DisplayUtil.formatEnergyGeneration(rate).setStyle(Constant.Text.LIGHT_PURPLE_STYLE)).setStyle(Constant.Text.GRAY_STYLE);
     }
 }

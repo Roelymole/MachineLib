@@ -22,8 +22,8 @@
 
 package dev.galacticraft.machinelib.testmod.client.screen;
 
-import dev.galacticraft.machinelib.api.menu.MachineMenu;
-import dev.galacticraft.machinelib.client.api.screen.MachineScreen;
+import dev.galacticraft.machinelib.api.menu.GeneratorMachineMenu;
+import dev.galacticraft.machinelib.client.api.screen.GeneratorMachineScreen;
 import dev.galacticraft.machinelib.testmod.Constant;
 import dev.galacticraft.machinelib.testmod.block.entity.GeneratorBlockEntity;
 import net.minecraft.network.chat.Component;
@@ -31,10 +31,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
-public class GeneratorScreen extends MachineScreen<GeneratorBlockEntity, MachineMenu<GeneratorBlockEntity>> {
+public class GeneratorScreen extends GeneratorMachineScreen<GeneratorBlockEntity, GeneratorMachineMenu<GeneratorBlockEntity>> {
     private static final ResourceLocation TEXTURE = Constant.id("textures/gui/generator_screen.png");
 
-    public GeneratorScreen(@NotNull MachineMenu<GeneratorBlockEntity> menu, @NotNull Inventory inv, @NotNull Component title) {
+    public GeneratorScreen(@NotNull GeneratorMachineMenu<GeneratorBlockEntity> menu, @NotNull Inventory inv, @NotNull Component title) {
         super(menu, title, TEXTURE);
         this.capacitorX = 8;
         this.capacitorY = 8;

@@ -159,6 +159,7 @@ public interface Constant {
         String STATUS_IDLE = "status.machinelib.idle";
 
         String CURRENT_ENERGY = "ui.machinelib.machine.current_energy";
+        String CURRENT_ENERGY_GENERATION = "ui.machinelib.machine.current_energy_generation";
 
         String SECURITY = "ui.machinelib.machine.security";
         String ACCESS_LEVEL = "ui.machinelib.machine.security.access";
@@ -205,6 +206,7 @@ public interface Constant {
 
         String UNIT_GJ = "ui.machinelib.units.energy.base";
         String UNIT_MEGA_GJ = "ui.machinelib.units.energy.mega";
+        String UNIT_GJT = "ui.machinelib.units.energy.per_tick";
         String UNIT_BUCKET = "ui.machinelib.units.fluid.base";
         String UNIT_MILLIBUCKET = "ui.machinelib.units.fluid.milli";
 

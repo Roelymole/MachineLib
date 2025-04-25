@@ -22,6 +22,7 @@
 
 package dev.galacticraft.machinelib.testmod.menu;
 
+import dev.galacticraft.machinelib.api.menu.GeneratorMachineMenu;
 import dev.galacticraft.machinelib.api.menu.MachineMenu;
 import dev.galacticraft.machinelib.api.menu.SynchronizedMenuType;
 import dev.galacticraft.machinelib.testmod.Constant;
@@ -33,7 +34,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
 
 public class TestModMenuTypes {
-    public static final MenuType<MachineMenu<GeneratorBlockEntity>> GENERATOR = SynchronizedMenuType.createSimple(MachineMenu::new);
+    public static final MenuType<GeneratorMachineMenu<GeneratorBlockEntity>> GENERATOR = SynchronizedMenuType.createSimple(GeneratorMachineMenu::new);
     public static final MenuType<MachineMenu<MixerBlockEntity>> MIXER = SynchronizedMenuType.createSimple(MachineMenu::new);
     public static final MenuType<MachineMenu<MelterBlockEntity>> MELTER = SynchronizedMenuType.createSimple(MachineMenu::new);
 
