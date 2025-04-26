@@ -247,7 +247,7 @@ public abstract class MachineBlock extends BaseBlock {
                 List<ItemEntity> entities = new ArrayList<>();
                 for (ItemResourceSlot slot : inv.getSlots()) {
                     if (!slot.isEmpty()) {
-                        entities.add(new ItemEntity(level, pos.getX(), pos.getY() + 1, pos.getZ(), ItemStackUtil.create(slot)));
+                        entities.add(new ItemEntity(level, pos.getX() + 0.5d, pos.getY() + 0.5d, pos.getZ() + 0.5d, ItemStackUtil.create(slot)));
                         slot.set(null, DataComponentPatch.EMPTY, 0);
                     }
                 }
