@@ -30,6 +30,7 @@ import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.impl.menu.TankImpl;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.material.Fluid;
@@ -162,4 +163,15 @@ public interface Tank {
      * {@return the input type of this tank}
      */
     TransferType getInputType();
+
+    /**
+     * Draws the tank.
+     *
+     * @param graphics The gui graphics.
+     * @param leftPos The screen's leftPos.
+     * @param topPos The screen's topPos.
+     * @param mouseX The mouse's x-position.
+     * @param mouseY The mouse's y-position.
+     */
+    void drawTank(@NotNull GuiGraphics graphics, int leftPos, int topPos, int mouseX, int mouseY);
 }

@@ -22,18 +22,22 @@
 
 package dev.galacticraft.machinelib.impl.menu;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.galacticraft.machinelib.api.menu.Tank;
 import dev.galacticraft.machinelib.api.storage.slot.ResourceSlot;
 import dev.galacticraft.machinelib.api.transfer.TransferType;
 import dev.galacticraft.machinelib.api.util.StorageHelper;
 import dev.galacticraft.machinelib.client.api.util.DisplayUtil;
+import dev.galacticraft.machinelib.client.api.util.GraphicsUtil;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -184,5 +188,30 @@ public final class TankImpl implements Tank {
     @Override
     public TransferType getInputType() {
         return this.transferType;
+    }
+
+    @Override
+    public void drawTank(@NotNull GuiGraphics graphics, int leftPos, int topPos, int mouseX, int mouseY) {
+        if (this.getHeight() > 0 && this.getWidth() > 0) {
+            if (this.getAmount() > 0) {
+                GraphicsUtil.drawFluid(graphics, this.getX(), this.getY(), this.getWidth(), this.getHeight(),
+                        this.getCapacity(), this.createVariant(), this.getAmount());
+            }
+
+            if (this.isMarked()) {
+                boolean primary = true;
+                int r = (this.getHeight() % 3) == 0 ? 2 : 3;
+                for (int y = this.getY() + this.getHeight() - r; y > this.getY(); y -= 3) {
+                    graphics.hLine(this.getX(), this.getX() + Mth.ceil(primary ? this.getWidth() / 2.5 : this.getWidth() / 3.5), y, 0xFFB31212);
+                    primary = !primary;
+                }
+            }
+
+            if (this.mouseIn(mouseX, mouseY, leftPos + this.getX(), topPos + this.getY(), this.getWidth(), this.getHeight())) {
+                RenderSystem.disableDepthTest();
+                graphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), 0x80ffffff);
+                RenderSystem.enableDepthTest();
+            }
+        }
     }
 }

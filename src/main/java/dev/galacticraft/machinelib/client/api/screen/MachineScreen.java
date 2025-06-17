@@ -62,7 +62,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -819,36 +818,16 @@ public class MachineScreen<Machine extends MachineBlockEntity, Menu extends Mach
         graphics.pose().translate(this.leftPos, this.topPos, 0);
         this.hoveredTank = null;
         for (Tank tank : this.menu.tanks) {
-            if (tank.getHeight() > 0 && tank.getWidth() > 0) {
-                if (tank.getAmount() > 0) {
-                    GraphicsUtil.drawFluid(graphics, tank.getX(), tank.getY(), tank.getWidth(), tank.getHeight(),
-                            tank.getCapacity(), tank.createVariant(), tank.getAmount());
-                }
+            tank.drawTank(graphics, this.leftPos, this.topPos, mouseX, mouseY);
 
-                if (tank.isMarked()) {
-                    boolean primary = true;
-                    for (int y = tank.getY() + tank.getHeight() - 2; y > tank.getY(); y -= 3) {
-                        graphics.hLine(tank.getX(), tank.getX() + Mth.ceil(primary ? tank.getWidth() / 2.5 : tank.getWidth() / 3.5), y, 0xFFB31212);
-                        primary = !primary;
-                    }
-                }
-
-                if (this.hoveredTank == null && mouseIn(mouseX, mouseY, this.leftPos + tank.getX(), this.topPos + tank.getY(), tank.getWidth(), tank.getHeight())) {
+            if (mouseIn(mouseX, mouseY, this.leftPos + tank.getX(), this.topPos + tank.getY(), tank.getWidth(), tank.getHeight())) {
+                if (this.hoveredTank == null) {
                     this.hoveredTank = tank;
-                    RenderSystem.disableDepthTest();
-                    graphics.fill(tank.getX(), tank.getY(), tank.getX() + tank.getWidth(), tank.getY() + tank.getHeight(), 0x80ffffff);
-                    RenderSystem.enableDepthTest();
+                    this.setTooltipForNextRenderPass(Lists.transform(tank.getTooltip(), Component::getVisualOrderText));
                 }
             }
         }
         graphics.pose().popPose();
-
-        for (Tank tank : this.menu.tanks) {
-            if (mouseIn(mouseX, mouseY, this.leftPos + tank.getX(), this.topPos + tank.getY(), tank.getWidth(), tank.getHeight())) {
-                this.setTooltipForNextRenderPass(Lists.transform(tank.getTooltip(), Component::getVisualOrderText));
-                break;
-            }
-        }
     }
 
     @ApiStatus.Internal
